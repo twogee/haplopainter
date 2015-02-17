@@ -21,25 +21,24 @@ use warnings;
 use strict;
 use File::Basename;
 use File::Spec::Functions;
-use vars qw / $mw $opt $canvas $menubar $self $grid %pedigree %haplo %map %info @info_head / ;
+use vars qw / $mw $opt $canvas $menubar $self $grid %pedigree %haplo %map %info @info_head $batch/ ;
 use subs qw / _MainMenu _ContextMenu /;
 use Tk;
 use Tk::DialogBox;
-use Tk::ProgressBar;
 use Tk::BrowseEntry;
 use Tk::NoteBook;
 use Tk::ErrorDialog;
 use Sort::Naturally;
 use Storable qw /freeze thaw retrieve store dclone/;
 use Data::Dumper;
-
+use Carp;
 
 ###########################################################################
 
 ### Hash for global variables - not family specific
 my $param = {
-	VERSION			=> '024 beta',
-	LAST_CHANGE		=> '31-08-2004',
+	VERSION			=> '027 beta',
+	LAST_CHANGE		=> '21-06-2006',
 	PAPER			=> 'A4',
 	ORIENTATION 	=> 'Landscape',
 	PAPER_SIZE		=> {
@@ -56,14 +55,18 @@ my $param = {
 		Legal 	=> { X => 216, Y => 356  },
 		'11x17' => { X => 279, Y => 432  }
 	},
-	PRINT_SUPPORT	=> { MSWin32 => 1, linux => 1 },
-	BORDER_UP    	=> 	100,
-	BORDER_DOWN    	=> 	100,
-	BORDER_LEFT    	=> 	100,
-	BORDER_RIGHT    => 	100,
+	PRINT_SUPPORT	=> { MSWin32 => 'gswin32c', linux => 'gs' },
+	BORDER_UP    	=> 	25,
+	BORDER_DOWN    	=> 	25,
+	BORDER_LEFT    	=> 	25,
+	BORDER_RIGHT    => 	25,
+	GRAPHIC_FORMAT  =>  'postscript',
+	GRAPHIC_FORMATS_OK => { qw / jpeg jpg png16m png pngalpha png postscript ps pdfwrite pdf Print ps/ },
+	RESOLUTION      =>  144,
+	TEXT_ALPHA_BITS	=> 4,
+	GRAPHICS_ALPHA_BITS => 4,
 	DEFAULT			=> {}
 };
-
 
 
 
@@ -71,8 +74,8 @@ my $param = {
 #  family specific variable $self->{$struk} as nested array of arrays of ....
 #  holds pedigree structure Hierachy: Generation->Sibgroups->Person/Couples
 #  Sibgroups are considered as 'extended' in sense of sibs + spouses 
-#  ( + paned unrelated founder couples which also may positioned 
-#  inside sibgroups )
+#  
+#  
 #
 #
 #  $struk =
@@ -108,12 +111,12 @@ sub MakeSelf {
 		AFF_COLOR       => { 0 => 'grey80', 1 => 'white', 2 => 'black' },
 		SHOW_QUEST		=> 1,
 		LINE_COLOR		=> 'black',
-		BACKGROUND		=> 'white',
+		BACKGROUND		=> '#ffffff',
 		COUNT			=>  1,
 		CROSS_FAKTOR1   =>  1,
 		CONSANG_DIST	=>	4,
-		GITTER_X		=>  22,
-		GITTER_Y		=>  26,
+		GITTER_X		=>  25,
+		GITTER_Y		=>  25,
 		SYMBOL_SIZE		=>  26,
 		FONT1			=> { 	FAMILY 	=> 'Lucida',
 								SIZE	=> 16,
@@ -173,10 +176,10 @@ sub MakeSelf {
 		SHOW_LEGEND_RIGHT	=> 0,
 		SHOW_COLORED_TEXT => 0,
 		ALIGN_LEGEND	=> 1,
-		SHOW_DATE		=> 1,
+		SHOW_DATE		=> 0,
 		SHOW_HEAD		=> 1,
-		SHOW_HAPLOFILE	=> 1,
-		SHOW_PEDFILE	=> 1,
+		SHOW_HAPLOFILE	=> 0,
+		SHOW_PEDFILE	=> 0,
 		SHOW_HAPLO_BBOX	=> 1,
 		BBOX_WIDTH		=> 35,
 		ALIVE_SPACE		=> 5,
@@ -215,12 +218,19 @@ Main();
 #=========
 sub Main {
 #=========
+	
 	MakeSelf();
+	
+	### prepare batch mode
+	if ($ARGV[0]) { $batch=1; PrepareBatch() }	
+		
 	Default('update');
+	
 	my $f = $self->{FONT_HAPLO};
 	my $z = $self->{ZOOM};
 
 	$mw = MainWindow->new(-title => "HaploPainter V.$param->{VERSION}");
+	$mw->withdraw;
 	my $scr_x  = $mw->screenwidth;
 	my $scr_y  = $mw->screenheight;
 	my $mw_szx = 0.9;
@@ -238,7 +248,7 @@ sub Main {
 	$mw->scaling(1);
 
 	$canvas = $mw->Scrolled(
-		'Canvas',-width => 10000, -height => 10000, -bg => 'white',
+		'Canvas',-width => 10000, -height => 10000, -bg => $self->{BACKGROUND},
 		-scrollbars => 'osoe', 
 		-scrollregion => [ 0,0,2000,2000],-cursor => 'left_ptr',
 	)->pack(-padx => 3, -pady => 3, -expand => 1, -fill => 'both');
@@ -278,39 +288,19 @@ sub Main {
 	$mw->bind('<Key-F8>' 			=> sub { AdjustView(-fit => 'center') });
 	$mw->bind('<Control-Key-h>' 	=> sub { OptionsHaplotype() });
 	$mw->bind('<Control-Key-l>' 	=> sub { OptionsLines() });
-
-	### temporary development code
-	$mw->bind('<KeyPress-F2>', sub {
-		
-		ReadPed(
-			-file => 'C:\projects\753\allegro_753_mai_04\dmx_09.pre',
-			-format => 'PRAEMAKEPED'
-		) or return undef;
-    	
-    	ReadHaplo(
-    		-file => 'C:\projects\753\allegro_753_mai_04\haplo.out',
-			-format => 'ALLEGRO'
-		) or return undef;
-    	
-    	
-		ReadMap(
-			-file => 'C:\projects\753\allegro_753_mai_04\map.txt',
-			-format => 'MEGA2',
-		);
-		
-		DoIt('1');
-    
-		my $fileref = $menubar->entrycget('View', -menu);
-		my $drawref = $fileref->entrycget('Draw Family ...', -menu);
-		$drawref->delete(0,'end');
-		for my $fam (nsort keys %pedigree) { $drawref->add('command', -label => $fam, -command => sub {DoIt($fam)} ) }
-	});
+	
 	
 	# MainWindow icon
  	$mw->idletasks; 
  	$mw->iconimage($mw->Photo(-format => 'gif', -data => GetIconData()));
  	
-	MainLoop;
+ 	# batch modus ausführen
+ 	if ($batch) { $mw->afterIdle(\&BatchProcess) } else { 		
+ 		$mw->deiconify;
+ 		$mw->raise;
+ 	}
+ 	
+	MainLoop;	
 }
 
 
@@ -331,8 +321,9 @@ sub _MainMenu {
 				,'-',
 				[ 'cascade', 'Import Pedigrees ...', -tearoff => 0,	-menuitems =>
 					[
-						['command', 'Prae-Makeped',	-command => [ \&ImportPedfile, 'PRAEMAKEPED' ] ],
-						['command', 'Post-Makeped',	-command => [ \&ImportPedfile, 'POSTMAKEPED' ] ],
+						['command', 'Prae-Makeped',			-command => [ \&ImportPedfile, 'PRAEMAKEPED' ] ],
+						['command', 'Prae-Makeped-Plus',	-command => [ \&ImportPedfile, 'PRAEMAKEPED_PLUS' ] ],
+						['command', 'Post-Makeped',			-command => [ \&ImportPedfile, 'POSTMAKEPED' ] ],
 					]
 				],
 				[ 'cascade', 'Import Haplotypes ...', -tearoff => 0,	-menuitems =>
@@ -356,9 +347,25 @@ sub _MainMenu {
 
 				'-',
 				[ 'cascade', 'Export ...', -tearoff => 0, -menuitems =>
-					[
-						[ 'command', 'Current Pedigree as Postscript', -command => \&Export  ],
-						[ 'command', 'All Pedigrees as Postscript', -command => \&BatchExport ],
+					[				
+						[ 'cascade', 'Export current ...', -tearoff => 0, -menuitems =>
+							[
+								[ 'command', 'POSTSCRIPT', 	-command => [ \&Export, 'postscript']  ],
+								[ 'command', 'PNG', 		-command => [ \&Export, 'png16m']  ],
+								[ 'command', 'PNG ALPHA', 	-command => [ \&Export, 'pngalpha']  ],
+								[ 'command', 'JPEG', 		-command => [ \&Export, 'jpeg']  ],
+								[ 'command', 'PDF', 		-command => [ \&Export, 'pdfwrite']  ]							
+							],
+						],	
+						[ 'cascade', 'Export all ...', -tearoff => 0, -menuitems =>
+							[
+								[ 'command', 'POSTSCRIPT', 	-command => [ \&BatchExport, 'postscript']  ],
+								[ 'command', 'PNG', 		-command => [ \&BatchExport, 'png16m']  ],
+								[ 'command', 'PNG ALPHA', 	-command => [ \&BatchExport, 'pngalpha']  ],
+								[ 'command', 'JPEG', 		-command => [ \&BatchExport, 'jpeg']  ],
+								[ 'command', 'PDF', 		-command => [ \&BatchExport, 'pdfwrite']  ]							
+							],
+						]																					
 					]
 				],
 				'-',
@@ -416,7 +423,11 @@ sub _ContextMenu {
 		[ 'command', 'Configuration ...', 	-command => \&Configuration ],
 		[ 'command', 'Print Options ...', -command => \&OptionsPrint,   ],
 		,'-',
-		[ 'command', 'Postscript', -command => [ \&Export, 'POSTSCRIPT' ] ],
+		[ 'command', 'Save as Postscript', 	-command => [ \&Export, 'postscript' ] ],
+		[ 'command', 'Save as JPEG', 		-command => [ \&Export, 'jpeg' ] ],
+		[ 'command', 'Save as PNG', 		-command => [ \&Export, 'png16m' ] ],
+		[ 'command', 'Save as PNG ALPHA', 	-command => [ \&Export, 'pngalpha']  ],
+		[ 'command', 'Save as PDF', 		-command => [ \&Export, 'pdfwrite' ] ],
 		,'-',
 		[ 'checkbutton', ' Show Grid' , -variable => \$grid , -command => \&ShowGrid ]
 	]
@@ -532,11 +543,13 @@ sub EnterAllel {
 				$a2 = $self->{HAPLO}{PID}{$mo}{M}{TEXT}[$2]
 			}
 
-			if ( (! $a1 || ! $a2) || ( $a1 == $a2 ) ) {
-				$param->{ACTIVE_ITEM} = $tag;
-				$param->{ACTIVE_COLOUR} = $c->itemcget($tag, -fill);
+			
+			$param->{ACTIVE_ITEM} = $tag;
+			$param->{ACTIVE_COLOUR} = $c->itemcget($tag, -fill);
+			
+			if ( (! $a1 || ! $a2) || ( $a1 == $a2 ) ) {	
 				$c->itemconfigure($tag, -fill => 'red');
-			} else { return }
+			}
 		}
 	}
 }
@@ -708,6 +721,7 @@ sub DoIt {
 	# 	SetLines();
 	# 	DrawLines();
 	# });
+	1;
 }
 
 
@@ -718,6 +732,9 @@ sub DoIt {
 sub ShowInfo {
 #=============	
 	my ($info, $type) = @_;
+	if ($batch) {
+		print "$info\n"; return	undef;
+	}
 	$mw->messageBox(
 		-title => 'Status report', -message => $info,
 		-type => 'OK', -icon => $type || 'info'
@@ -795,9 +812,8 @@ sub DrawPed {
 			until (AlignMatrix()) { $self->{COUNT}++ ; last if $self->{COUNT} > 120 }
 			FillCanvas();
 			my $c = SetLines();
-			#print "$c crossings observerd\n";
+			$canvas->update();
 			unless ($c) {
-				$bar->update() if $bar;
 				undef $self->{TITLE_X};
 				FillCanvas();
 				DrawLines();
@@ -805,20 +821,15 @@ sub DrawPed {
 				last WHILE
 			}
 			$CrossMin = $c unless $CrossMin;
-
-			if ($c && ! $flag2) {
-				($bar, $b) =  ProgressBar($c, \$CrossMin); $flag2 = 1;
-			}
-
+		
 			if ($c < $CrossMin) {
 				$CrossMin = $c;
 				$save = freeze($self);
 				$flag = 1;
-				$b->configure(-text => "Observed crossings: $CrossMin");
-				$bar->update;
 				last FOR;
 			}
 		}
+		
 		unless ($flag) {
 			$self = thaw($save) if $save;
 			ShowInfo("Error restoring data\n$@\n", 'error') if $@;
@@ -830,7 +841,6 @@ sub DrawPed {
 			last WHILE;
 		}
 	}
-	$bar->destroy()if Tk::Exists($bar);
 }
 
 # $self will be stored by Storable ...
@@ -898,7 +908,7 @@ sub FindLoops {
 	}
 	### go back if no loops found
 	return undef unless $countl;
-
+		
 	### Loops found
 	foreach my $nr (keys % { $self->{LOOP}{NR} } ) {
 		my ($pe1, $pe2) = @ { $self->{LOOP}{NR}{$nr} };
@@ -933,9 +943,14 @@ sub FindLoops {
 					my $mf1 = $self->{SID2MOTHER}{$f1} || 0; my $mf2 = $self->{SID2MOTHER}{$f2} || 0;
 					my $fm1 = $self->{SID2FATHER}{$m1} || 0; my $fm2 = $self->{SID2FATHER}{$m2} || 0;
 					my $mm1 = $self->{SID2MOTHER}{$m1} || 0; my $mm2 = $self->{SID2MOTHER}{$m2} || 0;
-
+										
 					### 'regular' mariage in same generation
 					if  ( ( "$f1" eq "$f2" ) and ( "$m1" eq "$m2" ) ) {
+						
+						### brother-sister mariage
+						### change 19-06-2006 -> V.027b
+						last W if $self->{CHILDREN_COUPLE}{$f1}{$m1}{$s1} && $self->{CHILDREN_COUPLE}{$f1}{$m1}{$s2};
+																		
 						SetLoopPara( -start => [ $s1, $s2 ], -end => [ $pe1, $pe2 ], -nr => $nr);
 						last W
 					}
@@ -1023,14 +1038,14 @@ sub ReadHaplo {
 				my ($M, $z, $P) = ($_,$file[++$i], $file[++$i] );
 				my ($pid, $haplo);
 				if ( ($pid, $haplo) = $M =~ /^M (\S+).+\s{7}([0-9@].+[0-9@])\s+$/) {
-					#print "M = $1, $2\n";
+					print "M = $1, $2\n";
 					$h1->{"$pid"}{M}{TEXT} = [ split ' ', $haplo ];
 					s/\@/$self->{HAPLO_UNKNOWN}/ foreach @{$h1->{"$pid"}{M}{TEXT}};
 				} else {
 					ShowInfo("Having problems in finding maternal haplotype in line\n$M", 'error'); return undef
 				}
 				if ( ($pid, $haplo) = $P =~ /^P (\S+).+\s{7}([0-9@].+[0-9@])\s+$/) {
-					#print "P = $1, $2\n";
+					print "P = $1, $2\n";
 					$h1->{"$pid"}{P}{TEXT} = [ split ' ', $haplo ];
 					s/\@/$self->{HAPLO_UNKNOWN}/ foreach @{$h1->{"$pid"}{P}{TEXT}};
 				} else {
@@ -1117,12 +1132,16 @@ sub ReadHaplo {
 			chomp;
 			next unless $_;
 			next if /^       /;
-			@_ = split; $haplo{$_[0]}{PID}{$_[1]}{P}{TEXT} = [ @_[ 6 .. $#_] ];
-			@_ = split ' ', $file[++$i]; $haplo{$_[0]}{PID}{$_[1]}{M}{TEXT} = [ @_[ 6 .. $#_] ];
+			@_ = split; 
+			next unless @_;
+			$haplo{$_[0]}{PID}{$_[1]}{P}{TEXT} = [ @_[ 6 .. $#_] ];
+			@_ = split ' ', $file[++$i]; 
+			next unless @_;
+			$haplo{$_[0]}{PID}{$_[1]}{M}{TEXT} = [ @_[ 6 .. $#_] ];
 		}
 	}
 
-	else { ShowInfo ("Häääää ?", 'info') ; return undef }
+	else { ShowInfo ("Unknown haplotype file format $arg{-format} !", 'info') ; return undef }
 
 	### produce 'dummy map' when haplotype information are loaded
 	### this is replaced later when 'real' map files come in
@@ -1137,7 +1156,6 @@ sub ReadHaplo {
 	}
 	
 	$param->{HAPLO_PATH} = $arg{-file};
-	
 	1;
 }
 
@@ -1147,9 +1165,9 @@ sub ReadMap {
 #============	
 	my (%arg) = @_;
 	if ($arg{-file}) {
-		open (FH, "<" , $arg{-file}) or die "$! $arg{-file}";
-			while (<FH>) { ${$arg{-data}} .= $_ }  ### -file wird in -data ueberfuehrt
-		close FH;
+		open (FHM, "<" , $arg{-file}) or ShowInfo("$! $arg{-file}",'warning') && return;
+			while (<FHM>) { ${$arg{-data}} .= $_ }  ### -file wird in -data ueberfuehrt
+		close FHM;
 	}
 	unless ($arg{-data}) { ShowInfo("No data to read !", 'warning'); return undef }
 
@@ -1175,6 +1193,7 @@ sub ReadMap {
 		ShowInfo("This map file consists of more marker then have been loaded from the haplotype file !",'warning');
 		for (0 .. $sc--) { $map{MARKER}[$_] = 'Marker' . sprintf("%02.0f",$_+1) unless $map{MARKER}[$_] }
 	}
+	1;
 }
 
 # Read Info files ?
@@ -1228,10 +1247,10 @@ sub ReadPed {
 #============	
 	my (%arg) = @_;
 	if ($arg{-file}) {
-		open (FH, "<" , $arg{-file}) or (ShowInfo("$! $arg{-file}",'warning'), return);
+		open (FH, "<" , $arg{-file}) or (ShowInfo("$! $arg{-file}",'warning'), return undef);
 			while (<FH>) { ${$arg{-data}} .= $_ }  ### -file wird in -data ueberfuehrt
 		close FH;
-	}
+	} 
 	ShowInfo("File $arg{-file} is emty !", 'warning') unless $arg{-data};
 
 	#########################################################################
@@ -1242,9 +1261,10 @@ sub ReadPed {
 	%haplo = ();
 	%map = ();
 	undef $self->{HAPLO};
+	
 
-	### PRAEMAKEPED Format
-	if (uc $arg{-format} eq 'PRAEMAKEPED') {
+	### PRAEMAKEPED --- Delimiter = space; Felder = 5
+	if ( uc $arg{-format} eq 'PRAEMAKEPED' ) {
 		foreach (split "\n", ${$arg{-data}}) {
 			next unless $_;
 			s/\t/ /g;
@@ -1257,6 +1277,20 @@ sub ReadPed {
 		}
 	}
 
+	### PRAEMAKEPED_PLUS Format
+	elsif ( uc $arg{-format} eq 'PRAEMAKEPED_PLUS') {
+		foreach (split "\n", ${$arg{-data}}) {
+			next unless $_;
+			next if /^#|\*|!/;
+			my @line =  split "\t", $_;
+			next unless @line;
+			my $fam = shift @line;
+			next unless $fam;
+			push @{ $pedigree{$fam} }, \@line;
+		}
+	}
+	
+
 	### POSTMAKEPED Format
 	elsif (uc $arg{-format} eq 'POSTMAKEPED') {
 		foreach (split "\n", ${$arg{-data}}) {
@@ -1264,14 +1298,18 @@ sub ReadPed {
 			next if /^#|\*|!/;
 			@_ =  split;
 			next unless @_;
-			push @{ $pedigree{$_[0]} }, [ @_[ 1..3, 7, 8 .. $#_-4  ] ]
+			push @{ $pedigree{$_[0]} }, [ @_[ 1..3, 7, 9 .. $#_-4  ] ]
+			
 		}
+	} else {
+		ShowInfo("Unknown format $arg{-format} !", 'warning'); return undef
 	}
 
 	unless (%pedigree) {
 		ShowInfo("There are no data to read !", 'warning'); return undef
 	}
 	$param->{PEDIGREE_PATH} = $arg{-file};
+	$param->{PEDIGREE_FORMAT} = $arg{-format};
 	undef $param->{HAPLO_PATH};
 	1;
 }
@@ -1289,12 +1327,12 @@ sub ProcessFamily {
 	my %sex = (0,1,1,1,2,1);
 	### erlaubte aff Status Werte
 	my %aff = (0,1,1,1,2,1);
-
+	
 	unless ($pedigree{$fam}) { ShowInfo("There is no family $fam ???",'error'); return undef }
 
 	foreach (@{$pedigree{$fam}}) {
 		next unless @$_;
-		my ($sid, $fid, $mid, $sex, $aff) = @$_;
+		my ($sid, $fid, $mid, $sex, $aff, $livestat, @sample_info) = @$_;
 		if (! $sid || ! defined $fid || ! defined $mid) {
 			$line_error .= "Error in line: @$_\n"; next
 		}
@@ -1339,8 +1377,27 @@ sub ProcessFamily {
 		if ($fid) { $self->{SIBS}{$fid . '__' . $mid}{$sid} = 1 }
 
 		$self->{PID}{$sid} = 1;
-		$self->{SID2ALIVE}{$sid} = 1;
+		
+		### Anzeige von Live Status wenn vorhanden
+		if ( ($param->{PEDIGREE_FORMAT} eq 'PRAEMAKEPED_PLUS') and (defined $livestat) ) {
+			if ($livestat) { $self->{SID2ALIVE}{$sid} = 1 } else { $self->{SID2ALIVE}{$sid} = 0 }			
+		} else {
+			$self->{SID2ALIVE}{$sid} = 1
+		}
+		
+		### Anzeige von Zusatzinformationen wenn vorhanden
+		if ( ($param->{PEDIGREE_FORMAT} eq 'PRAEMAKEPED_PLUS') and (@sample_info) ) {
+			%info = ();
+			for (1..3) {								
+				if (defined $sample_info[$_-1]) {
+					$self->{CASE_INFO}{$sid}{$_} = $sample_info[$_-1];
+					$self->{SHOW_CASE}[$_] = 1;
+				}	
+			}							
+		}	
 	}
+	
+	
 
 	if ($line_error) { ShowInfo("There are errors in this pedfile !\n$line_error", 'error'); return undef }
 
@@ -1414,7 +1471,7 @@ sub ShuffleFounderColors {
 #=========================	
 	return unless $self->{HAPLO};
 	return unless $self->{HAPLO}{PID};
-
+			
 	my $h = $self->{HAPLO}{PID};
 	my $un = $self->{HAPLO_UNKNOWN};
 	my $huc = $self->{HAPLO_UNKNOWN_COLOR};
@@ -1794,7 +1851,7 @@ sub BuildStruk {
 										}
 
 										(my $ps2) = keys %{ $self->{LOOP}{START}{$pe} }; $ps2 = '' unless $ps2;
-										#print "-LoopEnd:$pe-BuildNewLoopStartWith:$ps2-LoopNr:$nr-Ori:$ori---\n";
+										print "-LoopEnd:$pe-BuildNewLoopStartWith:$ps2-LoopNr:$nr-Ori:$ori---\n";
 
 
 										if ( $ori eq 'right') {
@@ -2140,6 +2197,7 @@ sub OptionsPrint {
 		[ 'BORDER_DOWN',	'Margin down',       2,0,   10,  300,    5  ],
 		[ 'BORDER_LEFT',	'Margin left',       3,0,   10,  300,    5  ],
 		[ 'BORDER_RIGHT',	'Margin right',      4,0,   10,  300,    5  ],
+		[ 'RESOLUTION',     'Resolution [dpi]',  5,0,   72,  600,    4  ],
 	) {
 		$f->Scale(
 			-label  => @$s[1], -variable => \$param->{@$s[0]},
@@ -2701,13 +2759,16 @@ sub ChangeColor {
 sub Export {
 #===========
 	return unless $self->{FAMILY};
-	my ($file) = shift;
+	my $graphic_format = shift || $param->{GRAPHIC_FORMAT};
+		
+	if (! $batch && ! $param->{EXPORT_PATH} && ! ($graphic_format eq 'Print') ) {
+		my $suffix = $param->{GRAPHIC_FORMATS_OK}{$graphic_format} || BatchError('Bad graphic format !');
+		$param->{EXPORT_PATH}=$mw->getSaveFile(-initialfile => "Family_$self->{FAMILY}.$suffix" ) or return
+	}
+			                          		
+	my $paper = $param->{PAPER};
 	my $out;
 	
-	if (! $file) { $file = $mw->getSaveFile(-initialfile => "Family_$self->{FAMILY}.ps" ) or return }
-
-	my $paper = $param->{PAPER};
-
 	my ($x1, $y1, $x2, $y2) = $canvas->bbox('all');
 	$x1 -= $param->{BORDER_LEFT};
 	$x2 += $param->{BORDER_RIGHT};
@@ -2720,26 +2781,26 @@ sub Export {
 	my ($cx, $cy) = ($canvas->width,  $canvas->height);
 	my ($pxm, $pym) = ( $param->{PAPER_SIZE}{$paper}{X}, $param->{PAPER_SIZE}{$paper}{Y} );
 	my @scale;
-	my ($startx, $starty);
-
-	if ($param->{ORIENTATION} eq 'Landscape') {
+	my ($startx, $starty);	
+	my ($xdim, $ydim, $f);		
+	
+	if ( ($param->{ORIENTATION} eq 'Landscape') && (($graphic_format eq 'postscript')  || ($graphic_format eq 'Print'))) {
 		if ( $xdiff/$ydiff > sqrt(2) ) {
 			@scale = ( -pagewidth  => $pym .'m');
-			my $f = $xdiff/$mw->pixels($pym . 'm');
-			my $ydim = $ydiff/$f;
+			$f = $xdiff/$mw->pixels($pym . 'm');
+			$ydim = $ydiff/$f;
+			$xdim = $xdiff/$f;
 			$startx = ($mw->pixels($pxm . 'm')-$ydim)/3;
 			$starty = 0;
 		}
 		else {
 			@scale = ( -pageheight  => $pxm .'m' );
-			my $f = $ydiff/$mw->pixels($pxm . 'm');
-			my $xdim = $xdiff/$f;
+			$f = $ydiff/$mw->pixels($pxm . 'm');
+			$xdim = $xdiff/$f;
 			$starty = ($mw->pixels($pym . 'm')-$xdim)/3;
 			$startx = 0;
 		}
-
-		$canvas->postscript(
-			-file =>$file,
+		$out = $canvas->postscript(
 			-rotate => 1,
 			-pageanchor => 'nw',
 			-pagex  => $startx,
@@ -2754,31 +2815,88 @@ sub Export {
 		### Image ist 'breit' -> Scaling X
 		if ( $xdiff/$ydiff > sqrt(2) ) {
 			@scale = ( -pagewidth  => $pxm .'m');
-			my $f = $xdiff/$mw->pixels($pxm . 'm');
-			my $ydim = $ydiff/$f;
+			$f = $xdiff/$mw->pixels($pxm . 'm');
+			$ydim = $ydiff/$f;
 			$starty = ($mw->pixels($pym . 'm')-$ydim)/2.66;    ### empirical value
 			$startx = 0;
 		} else {
 			@scale = ( -pageheight  => $pym .'m' );
-			my $f = $ydiff/$mw->pixels($pym . 'm');
-			my $xdim = $xdiff/$f;
+			$f = $ydiff/$mw->pixels($pym . 'm');
+			$xdim = $xdiff/$f;
 			$startx = ($mw->pixels($pxm . 'm')-$xdim)/2.66;
 			$starty = 0;
 		}
-
-		$canvas->postscript(
-			-file =>$file,
-			-rotate => 0,
-			-pageanchor => 'sw',
-			-pagex  => $startx,
-			-pagey  => $starty,
-			-x => $x1,
-			-y => $y1,
-			-width  => $xdiff ,
-			-height => $ydiff ,
-			@scale,
-		)
+		
+		if (! $batch && (($graphic_format eq 'postscript') || ($graphic_format eq 'Print'))) {
+			
+			$out = $canvas->postscript(
+				-rotate => 0,
+				-pageanchor => 'sw',
+				-pagex  => $startx,
+				-pagey  => $starty,
+				-x => $x1,
+				-y => $y1,
+				-width  => $xdiff ,
+				-height => $ydiff ,
+				@scale
+			);
+			
+		} else {
+			$out = $canvas->postscript(			
+				-rotate => 0,
+				-pagewidth  => $xdiff,				
+				-width  => $xdiff,
+				-height => $ydiff,
+				-pageanchor => 'sw',
+				-pagex  => 0,
+				-pagey  => 0,
+				-x => $x1,
+				-y => $y1,				
+				@scale
+			);
+		}																		
 	}
+	
+	if ($graphic_format eq 'postscript') {
+		open (FH, ">", $param->{EXPORT_PATH}) or ShowInfo($!) and return;
+		print FH $out;
+		close FH;
+		undef $param->{EXPORT_PATH};
+	} 
+	elsif ($graphic_format eq 'Print') { return $out }
+		
+	else {
+		my $file = basename($param->{EXPORT_PATH});
+		my $dir = dirname($param->{EXPORT_PATH});
+		if ($dir ne '.') { chdir $dir }
+		open (FH, ">", 'tmp.ps') or ShowInfo($!) and return;
+		print FH $out;
+		close FH;	
+		
+		$out =~ /BoundingBox: 0 0 (\d+) (\d+)/;			
+					
+		@_ = (
+		$param->{PRINT_SUPPORT}{$^O} || 'gs',
+		'-dSAFER', '-dBATCH', '-dNOPAUSE', '-dNOPROMT',  '-q',
+		"-dDEVICEWIDTHPOINTS=$1",
+		"-dDEVICEHEIGHTPOINTS=$2",
+		"-sDEVICE=$graphic_format",
+		"-dTextAlphaBits=$param->{TEXT_ALPHA_BITS}",		
+		"-r$param->{RESOLUTION}",
+		"-dBackgroundColor=16$self->{BACKGROUND}"
+		);
+		
+		if (! $graphic_format eq 'pdfwrite') {
+			push @_, "-dGraphicsAlphaBits=$param->{GRAPHICS_ALPHA_BITS}",
+		}
+				
+		push @_, ("-sOutputFile=$file","tmp.ps");																															
+						
+		ShowInfo("Unable to covert graphics ! Did you forget to install 'Ghostscript' ?\n") if system (join ' ', @_) != 0;				
+		unlink 'tmp.ps';
+		undef $param->{EXPORT_PATH};
+	}			
+	1;
 }
 
 
@@ -2786,19 +2904,19 @@ sub Export {
 # new function since V.024b
 #================
 sub BatchExport {
-#================
-	ShowInfo("Please select working directory and basic file name without any suffix.\nPostscript outputs will be extended by family identifiers.\n\n" .
-	"Current page format is $param->{PAPER} - $param->{ORIENTATION} ");
+#==============
+	Showinfo("Please select working directory and basic file name without any suffix.\nGraphics outputs will be extended by family identifiers.\n\n");
 	my $file = $mw->getSaveFile(-initialfile => 'Family') or return;	
+	my $gr_format=shift;
 	foreach (keys %pedigree) {
-		my $s = File::Spec->catfile( dirname($file), basename($file) . '_' . $_ . '.ps');
+		$param->{EXPORT_PATH} = File::Spec->catfile( dirname($file), basename($file) . '_' . $_ . '.ps');
 		DoIt($_);
 		$canvas->update;		
-		Export($s);
-	}			
+		export($gr_format);
+	}	
 }
 
-# Printing functions
+# Printi functions
 # Windows -> postscript is directed to PrintFile 
 # Linux   -> postscript is directed GtkLP, this could also work for other unix systems
 # but need to be tested
@@ -2810,13 +2928,17 @@ sub Print {
 		ShowInfo("For this system there is still no print support available !\nPlease contact the author.\n", 'warning'); return
 	}
 	
-	Export('temp.ps');
+	my $ps = Export('Print');
 	
+	open (FH, ">" , 'temp.ps') or die $!;
+	print FH $ps;
+	close FH;
+
 	if ($^O eq 'MSWin32') {		
-		system ('prfile32.exe /q temp.ps ') == 0 or ShowInfo("Unable to print ! Did you forget to install 'PrintFile'  ?\n", 'warning');	
+		system ("gsprint -query temp.ps ") == 0 or ShowInfo("Unable to print ! Did you forget to install 'GSview' ?\n", 'warning');	
 	}
 	elsif ($^O eq 'linux') {
-		system ('gtklp  temp.ps') == 0 or ShowInfo("Unable to print ! Did you forget to install 'GtkLP'  ?\n", 'warning');
+		system ("gtklp  temp.ps") == 0 or ShowInfo("Unable to print ! Did you forget to install 'GtkLP' ?\n", 'warning');
 	}
 		
 	unlink 'temp.ps';
@@ -2833,7 +2955,8 @@ sub AdjustView {
 	my $c = $canvas;
 	my @bx;
 	my $flag;
-
+	return if $batch;
+	
 	if ($grid) {
 		$grid = 0;
 		$flag = 1;
@@ -2841,7 +2964,6 @@ sub AdjustView {
 	}
 
 	@bx = $c->bbox('all');
-
 	unless (@bx) {
 		if ($flag) { $grid = 1; ShowGrid() }
 		return;
@@ -2864,6 +2986,8 @@ sub AdjustView {
 	my $xsd = $sc[2]-$sc[0];
 	my $ysd = $sc[3]-$sc[1];
 
+
+
 	if (! $arg{-fit}) {
 		$c->configure(-scrollregion => [ $bx[0]-1000, $bx[1]-1000, $bx[2]+1000, $bx[3]+1000 ]);
 		### Zentrierung der Scrollbalken
@@ -2877,7 +3001,7 @@ sub AdjustView {
 
 		my $wx = $xsd*$xvd;
 		my $wy = $ysd*$yvd;
-
+		
 		if  ($xbd/$ybd > $wx/$wy) {$self->{ZOOM} *= $wx/$xbd*0.9} else { $self->{ZOOM} *= $wy/$ybd*0.9  }
 
 		RedrawPed();
@@ -2950,7 +3074,7 @@ sub FillCanvas {
 	$c->delete('all');
 
 	ShowGrid();
-
+	
 	### Uerberschrift		
 	if (! $self->{TITLE_X}) {  
 		($_) = sort { $a <=> $b } keys %{$m->{YX2P}} or return;
@@ -2960,7 +3084,7 @@ sub FillCanvas {
 	}	
 	
 	if ($self->{SHOW_HEAD} ) {						
-		if (! $self->{TITLE} && $self->{FAMILY}) { $self->{TITLE} = "Family - $self->{FAMILY}" }				
+		if (! $self->{TITLE} && $self->{FAMILY}) {  $self->{TITLE} = "Family - $self->{FAMILY}" }				
 		$c->createText(
 			$self->{TITLE_X}*$self->{GITTER_X}*$z, $self->{TITLE_Y}*$self->{GITTER_Y}*$z, 			
 			-anchor => 'center', -text => $self->{TITLE} , 
@@ -3602,9 +3726,9 @@ sub SetLines {
 
 						my $xm1 = ($X1[0]+$X1[1])/2;
 						my $xm2 = ($X2[0]+$X2[1])/2;
-						my $y = ($c1[1]+$c1[3])/2;
-						if (  $self->{LOOP}{END}{$c1} && $self->{LOOP}{END}{$c2} && 
-							  keys % { $self->{LOOP}{END_START}{$c1} }	) {
+						my $y = ($c1[1]+$c1[3])/2;					
+						
+						if (  $self->{LOOP}{END}{$c1} && $self->{LOOP}{END}{$c2}) {
 								$d->{COUPLE}{"$CG$CS$CP$CC"}{POS} =
 							[
 								[ $xm1, $y+$cd*$z, $xm2, $y+$cd*$z ],
@@ -3652,11 +3776,14 @@ sub SetLines {
 				$K_L, $cy[0] - ($self->{GITTER_Y}*$z),
 				$K_L, $ch{$K_L}{COOR}[1]
 			);
-
-            push @$r, [ $xa1, $ya1, $xa2, $ya2, $xa3, $ya3, $xa4, $ya4 ];
+      
+			push @$r, [ $xa1, $ya1, $xa2, $ya2, $xa3, $ya3, $xa4, $ya4 ];
+			
 			foreach my $xm (@child_x) {
-			 	push @$r, [ $xm, $ch{$xm}{COOR}[1], $xm, $cy[0]-($self->{GITTER_Y}*$z) ]
+				#push @$r, [ $xm, $ch{$xm}{COOR}[1], $xm, $cy[0]-($self->{GITTER_Y}*$z) ]
+				push @$r, [ $xm, $ya1, $xm, $ya2 ]
 			}
+			
 		}
 		### Einzelkind
 		else {
@@ -3756,11 +3883,14 @@ sub SetLines {
 			next if ! ($A->[3] == $B->[3]);
 			next if ! 	(($A->[2] < $B->[2]) && ($A->[4] > $B->[2])) ||
 						(($B->[2] < $A->[2]) && ($B->[4] > $A->[2]));
-
+						
 			$A->[3]  -= 6 * $z;
 			$A->[5]  -= 6 * $z;
 			$C->[-1] -= 6 * $z;
 
+			@_ = @ {  $d->{SIB}{$id1} }; shift;
+			$_->[3] -= 6 * $z foreach @_;
+			
 			$cr++;
 		}
 	}
@@ -4015,32 +4145,6 @@ sub BarTextOk {
 }
 
 
-#================
-sub ProgressBar {
-#================	
-    (my $from, my $var) = @_;
-    my $w = $mw->Toplevel(-title => '');
-    
-    ### prevents error message under linux/perl5.8 - posted by Kristina Loeschner
-    $w->update;    
-    
-    $w->grabGlobal;
-    my $scr_x  = $mw->screenwidth;
-    my $scr_y  = $mw->screenheight;
-    my $w_length = 400;
-    $w->geometry ('+' . (abs($scr_x/2)-($w_length/2)) . '+' . abs($scr_y/2) );
-    my $pb = $w->ProgressBar(
-        -width => 22,-length => $w_length,
-        -blocks => 0,-colors => [0,'blue'],-from => $from, -to => 0,
-        -variable => $var,-cursor => 'watch',-resolution => 1,
-    )->pack(-side => 'top');
-    my $pb_b = $w->Label(-text => "Observed line crossings : $$var" )->pack(-side => 'left');
-    $pb->update();
-    return ($w,$pb_b);
-}
-
-
-
 # wie der Name schon sagt ...
 #=============
 sub ShowHelp {
@@ -4062,7 +4166,11 @@ sub ShowHelp {
 		-bg => 	'#f4e3aa'
 	)->pack(-fill => 'both', -expand => 1);
 	
-	unless ($param->{HELP}) { while (<DATA>) { $param->{HELP} .= $_ } }
+	unless ($param->{HELP}) { while (<DATA>) {
+		chomp;
+		$param->{HELP} .= "$_\n" 
+		} 
+	}
 	
 	$t->insert('end',$param->{HELP});
 	
@@ -4096,7 +4204,7 @@ sub Default {
 	SHOW_HAPLO_BAR SHOW_HAPLO_NI_0 SHOW_HAPLO_NI_1 SHOW_HAPLO_NI_2 SHOW_HAPLO_NI_3 HAPLO_SEP_BL
 	FILL_HAPLO HAPLO_WIDTH HAPLO_WIDTH_NI HAPLO_SPACE HAPLO_LW SHOW_MARKER SHOW_POSITION 
 	SHOW_DATE SHOW_HEAD SHOW_HAPLO_BBOX BBOX_WIDTH TITLE_X TITLE_Y SHOW_HAPLOFILE SHOW_PEDFILE	
-	SHOW_LEGEND_LEFT  SHOW_LEGEND_RIGHT  ALIGN_LEGEND  SHOW_COLORED_TEXT
+	SHOW_LEGEND_LEFT  SHOW_LEGEND_RIGHT  ALIGN_LEGEND  SHOW_COLORED_TEXT 
 	LEGEND_SHIFT_LEFT LEGEND_SHIFT_RIGHT/;
 	
 	### updates defaults from $self
@@ -4146,6 +4254,153 @@ sub Default {
 	}
 }
 
+# Preparation for later batch mode processing. There are still no active Tk Elements.
+# Used for early argument error checking 
+#=================
+sub PrepareBatch {
+#=================
+	my $path = shift @ARGV;
+	my %arg;
+	if ($path =~ /-h|-help|help|\?|-\?/i) { BatchError(); exit }
+	open (FH, "<", $path) or die ($!);
+		while (<FH>) {
+			chomp;
+			next unless $_;			
+			next if /^\#/;
+			@_ = split '=', $_;
+			foreach (@_) { $_ =~ s/^\s+//g; s/\s+$//g }
+			next if scalar @_ != 2;
+			$arg{$_[0]} = $_[1];
+			#print "@_\n";
+		}			
+	close FH;
+
+	return undef unless %arg;
+		
+	
+	foreach (qw /BORDER_UP BORDER_DOWN BORDER_LEFT BORDER_RIGHT GRAPHIC_FORMAT RESOLUTION
+	             EXPORT_PATH PNGALPHA_COLOR TEXT_ALPHA_BITS GRAPHICS_ALPHA_BITS/) {	
+		if (defined $arg{$_}) {		
+			$param->{$_} = $arg{$_};
+		} 		 
+	} 
+			
+	foreach (qw /SHOW_HEAD SHOW_DATE SHOW_PEDFILE SHOW_HAPLOFILE SHOW_QUEST 
+	             GITTER_X GITTER_Y X_SPACE Y_SPACE CROSS_LOOP ALIVE_SPACE
+	             SYMBOL_SIZE CONSANG_DIST LINE_WIDTH  TITLE HAPLO_TEXT_LW
+	             LEGEND_SHIFT_LEFT LEGEND_SHIFT_RIGHT MARKER_POS_SHIFT ALLELES_SHIFT
+	             LINE_COLOR FAMILY HAPLO_UNKNOWN HAPLO_UNKNOWN_COLOR
+	             SHOW_HAPLO_TEXT SHOW_HAPLO_BAR SHOW_HAPLO_NI_0  SHOW_HAPLO_NI_1 SHOW_HAPLO_NI_2
+	             SHOW_HAPLO_NI_3 HAPLO_SEP_BL FILL_HAPLO HAPLO_WIDTH HAPLO_WIDTH_NI HAPLO_SPACE
+	             HAPLO_LW SHOW_MARKER SHOW_POSITION SHOW_LEGEND_LEFT SHOW_LEGEND_RIGHT 
+	             SHOW_COLORED_TEXT ALIGN_LEGEND BACKGROUND 
+	             /) {
+		if (defined $arg{$_}) {	
+			$self->{$_} = $arg{$_};
+		}	
+	}	
+		
+	if (defined $arg{AFF_COLOR_0}) { $self->{AFF_COLOR}{0} = $arg{AFF_COLOR_0} }
+	if (defined $arg{AFF_COLOR_1}) { $self->{AFF_COLOR}{1} = $arg{AFF_COLOR_1} }
+	if (defined $arg{AFF_COLOR_2}) { $self->{AFF_COLOR}{2} = $arg{AFF_COLOR_2} }
+	
+	if (defined $arg{FONT1_FAMILY}) { 
+		$self->{FONT1}{FAMILY} = $arg{FONT1_FAMILY};
+		$self->{FONT_HEAD}{FAMILY} = $arg{FONT1_FAMILY};  
+	}
+	if (defined $arg{FONT1_SIZE})   { $self->{FONT1}{SIZE} = $arg{FONT1_SIZE} }
+	if (defined $arg{FONT1_WEIGHT}) { $self->{FONT1}{WEIGHT} = $arg{FONT1_WEIGHT} }
+	if (defined $arg{FONT1_SLANT})  { $self->{FONT1}{SLANT} = $arg{FONT1_SLANT} }
+	if (defined $arg{FONT1_COLOR})  { $self->{FONT1}{COLOR} = $arg{FONT1_COLOR} }
+		
+	foreach (qw /PEDIGREE_PATH PEDIGREE_FORMAT EXPORT_PATH/) {
+		if (defined $arg{$_}) {	
+			$self->{$_} = $arg{$_};
+		} else { BatchError("You must declare $_ !") }
+	}
+	
+	if ($arg{HAPLO_PATH} && $arg{HAPLO_FORMAT}) {	
+		$self->{HAPLO_PATH} = $arg{HAPLO_PATH};
+		$self->{HAPLO_FORMAT} = $arg{HAPLO_FORMAT};
+		
+	}		
+	if ($arg{MAP_PATH}) {
+		$self->{MAP_PATH} = $arg{MAP_PATH}
+	}
+}
+
+
+#=================
+sub BatchProcess {
+#=================	
+	ReadPed(-file => $self->{PEDIGREE_PATH},-format => $self->{PEDIGREE_FORMAT}) or exit;	
+	
+	if ($self->{MAP_PATH}) {
+		ReadMap(-file => $self->{MAP_PATH}, -format => 'MEGA2') or exit;
+		$self->{HAPLO}{MAP} = \%map;
+	}
+	
+	if ($self->{HAPLO_PATH}) {
+		ReadHaplo(-file => $self->{HAPLO_PATH}, -format => $self->{HAPLO_FORMAT}) or exit;
+		if ($self->{FAMILY} && $haplo{$self->{FAMILY}}) {
+			$self->{HAPLO} = $haplo{$self->{FAMILY}};
+			$self->{HAPLO}{MAP} = \%map;
+		}
+	}
+						
+	ProcessFamily() or exit;
+	FindLoops();
+	FindTops() or exit;
+	BuildStruk();
+	CheckPedigree() or exit;
+	ShuffleFounderColors();
+	ProcessHaplotypes();
+	DrawPed();				
+	Export();
+	exit;
+}
+
+#===============
+sub BatchError {
+#===============
+
+	print shift @_ if @_;
+	print "\n\nUsage: perl HaploPainter.pl <INFILE>\n\nDemonstration of input parameters\n";
+	print '
+PEDIGREE_PATH=C:\tmp\pedfile.pre
+FORMAT=[PRAEMAKEPED_PLUS PRAEMAKEPED POSTMAKEPED]
+GRAPHIC_FORMAT=[jpeg png16m png pngalpha postscript pdfwrite ] 
+TEXT_ALPHA_BITS=2
+GRAPHICS_ALPHA_BITS=2
+RESOLUTION=300
+BACKGROUND=#ffffff
+FAMILY=100
+TITLE=This is family 100
+EXPORT_PATH=C:\tmp\family100.ps
+SHOW_HEAD=1
+SHOW_DATE=0
+SHOW_PEDFILE=0
+GITTER_X=25
+GITTER_Y=25
+SHOW_QUEST=1
+SYMBOL_SIZE=25
+BORDER_UP=50
+BORDER_DOWN=50
+BORDER_LEFT=50
+BORDER_RIGHT=50
+LINE_COLOR=red
+AFF_COLOR_0=#456789
+AFF_COLOR_1=yellow
+AFF_COLOR_2=brown
+FONT1_FAMILY=arial
+FONT1_SIZE=20
+FONT1_WEIGHT=bold
+FONT1_SLANT=roman
+FONT1_COLOR=green
+';
+	
+	exit
+}
 
 ##################################################################################
 ##################################################################################
@@ -4153,115 +4408,155 @@ sub Default {
 
 __DATA__
 
-Last modification: 31.8.2004
+Last modification: 21.06.2006
 
 
 Usage
-
+**********
 To draw pedigrees with haplotype and marker information:
 
 1. File->Import Pedigrees
 
-	Prae Makeped format must start with columns separated by white space or tabs.
-	Further columns will be ignored, so most files in linkage format are accepted
-
-	FAMILY_ID   SAMPLE_ID   FATHER_ID   MOTHER_ID  SEX   AFFECTION_STATUS  ...
-
-	Post Makeped format is what the name suggest - the output from the makeped program.
-	You may find it useful for coding the pedigree person IDs and allele numbers, but
-	remember that loops will be broken by duplication of persons. This will result in
-	errors, so don't use this format when your pedigree consists of loops !
-
-	When finished, the first pedigree from the file is drawn or the program does something
-	strange. The other families are accessible from the View->Draw Family menue.
+Prae Makeped format must start with columns separated by blank space. Further columns will be ignored, so most files in linkage format are accepted
+ 
+FAMILY_ID
+SAMPLE_ID
+FATHER_ID
+MOTHER_ID
+SEX
+AFFECTION_STATUS 
+... [ignored]
+ 
+Post Makeped format is what the name suggest - the output from the makeped program. You may find it useful for coding the pedigree person IDs and allele numbers, but remember that loops will be broken by duplication of persons. This will result in errors, so don't use this format when your pedigree consists of loops !
+ 
+When finished, the first pedigree from the file is drawn or the program does something strange. The other families are accessible from the View->Draw Family menu.
+ 
+Prae-Makeped-Plus format is the combination of PRAEMAKEPED format and case information. First columns are the same like Prae-Makeped format except for the separator which is *tab key* After them some new columns for live status and sampleID information (max 3) may follow.
+ 
+FAMILY_ID
+SAMPLE_ID
+FATHER_ID
+MOTHER_ID
+SEX
+AFFECTION_STATUS 
+LIVE_STATUS
+INFO_1
+INFO_2
+INFO_3
 
 2. File->Import Haplotypes
 
-	At the moment four haplotypes generating programs are supported
-
-	2.1 Genehunter -> load haplo.dump file
-	2.2 SimWalk -> load HAPLO.??? file
-	2.3 Merlin -> load merlin.chr file (vertical orientation)
-	2.4 Allegro -> load haplo.out, ihaplo.out or founder.out
-
-	Supplementary information such recombination events are ignored at this state.
-	Instead HaploPainter will perform further haplotype analysis.
-
-	Rules for haplotype drawing:
-	1. Finding out the first marker from p telomer from which the phase can be derived
-	   and back tracing the haplotype with the color from given phase at the chromosomal
-	   starting point.
-	2. The first marker showing differences is declared as the point of recombination and
-	   the color is changed to the recombinant haplotype until the next recombination event occurs.
-	   Be carful - the 'real' point of recombination may be surrounded by uninformative markers.
-	   Colored bars are like suggestive traps - region of interests should be checked and manually corrected !
-	   I have warned you !
-	3. Missing genotypes are interpreted as uninformative
-	4. Other uninformative genotypes are drawn in special thin blocks when set in options
-	
+At the moment four haplotypes generating programs are supported
+ 
+2.1 Genehunter -> load haplo.dump file
+2.2 SimWalk -> load HAPLO.??? file
+2.3 Merlin -> load merlin.chr file (vertical orientation)
+2.4 Allegro -> load haplo.out, ihaplo.out or founder.out
+ 
+Supplementary information such recombination events are ignored at this state. Instead HaploPainter will perform further haplotype analysis.
+ 
+Rules for haplotype drawing are :
+* Finding out the first marker from p telomer from which the phase can be derived and back tracing the haplotype with the color from given phase at the chromosomal starting point.
+* The first marker showing differences is declared as the point of recombination and the color is changed to the recombinant haplotype until the next recombination event occurs. Be careful the 'real' point of recombination may be surrounded by uninformative markers. Colored bars are like suggestive traps - region of interests should be checked and manually corrected ! I have warned you !
+* Missing genotypes are interpreted as uninformative
+* Other uninformative genotypes are drawn in special thin blocks when set in options
 	
 
 3. File->Import Map File
 
-	The one supported format for marker and positional information must follow this column order
+The one supported format for marker and positional information must follow this column order Rows starting with # , * or CHR are ignored. Column separator  is white space.
 
-	Rows starting with # , * or CHR are ignored. Column separator  is white space.
+CHROMOSOM   
+POSITION     
+MARKER
 
-	CHROMOSOM   POSITION     MARKER...
 
-	Map files produced from Mega2 export map files in this way.
+Map files produced from Mega2 export map files in this way.
 
 4. File->Import Case info file
 
-	Imported file structures is: tab delimited + first row = head.
+Imported file structures is: tab delimited + first row = head.
 
-	FAMILY_ID	SAMPLE_ID	INFO_1	INFO_2	INFO_3 ...
+FAMILY_ID	
+SAMPLE_ID	
+INFO_1	
+INFO_2	
+INFO_3 
+...
 
-	The number of columns is unlimited but only 3 additionally columns can be shown at once.
-	The order is selectable from the Options -> configuration -> case info menu
+The number of columns is unlimited but only 3 additionally columns can be shown at once. The order is selectable from the Options -> configuration -> case info menu
 
+Once, all information are loaded in, they appear in the drawing window. Now you can play around with different drawing styles available from the option menus. Try it out !
 
-Once, all information are loaded in, they appear in the drawing window. Now you can play around
-with different drawing styles available from the option menus. Try it out !
+While moving the mouse pointer over uninformative alleles the color is changing. You can double click at the allele and manually change the phase (maternal/paternal/not-informative) From the configuration menu a check button, selective hiding user defined changes, is selectable.
 
-While moving the mouse pointer over uninformative alleles the color is changing.
-You can double click at the allele and manually change the phase (maternal/paternal/not-informative)
-From the configuration menu a check button, selective hiding user defined changes, is selectable.
+Saving pedigrees as HaploPainter specific format is recommended in case of lots of pedigree modifications use File->Save or File->Save as ... 
 
-Saving pedigrees as HaploPainter specific format is recommended in case of lots of pedigree modifications
-use File->Save or File->Save as ... 
-
-Default parameters can be saved/restored.
-use File->Save Default as .../File->Open Defaults 
+Default parameters can be saved/restored. use File->Save Default as .../File->Open Defaults 
 
 A double click an symbols opens a dialog box wherefrom affection and vital status can be changed.
 
-You can export the current drawing in postscript format from the 
-File->Export ... -> Current Pedigree as Postscript menu or all at once (-> All Pedigrees as Postscript menu)
+Export and Printing
+********************
 
-What you may do with this files is ...
+You can export the current drawings in different formats from the File->Export ... -> Current Pedigree ... menu or all at once (-> All Pedigrees ... menu)
 
-1. Viewing and converting with Ghostview (use the PS to Edit Module available for Ghostview)
-2. Viewing and converting with other programs like FreeHand, Adobe Illustrator, Corel Draw ...
-3. Send it to a printer using PrintFile, GtkLP ...
-4. Convert it to pdf with Adobe Acrobat Distiller
+jpeg (JPG)
+png16m (PNG)
+pngalpha (PNG + Background information in Alpha channel)
+pdfwrite (PDF)
 
-Some drag and drop features are implemented like moving symbols and titel.
+Postscript is the only native supported graphics format. 
+Other are assisted by help of 'Ghostscript' which has to be installed before.
+Direct printing from Windows systems is possible but demand further installation of 'GSview' (gsprint)
+GSview and Ghostscript can both be obtained from this site: http://www.cs.wisc.edu/~ghost/
 
-For easy zooming also try shift/Contr + left mouse button.
+After installation of GSview and Ghostscript you must manually modify the system or user PATH variable
 
-Direct printing from Windows systems is possible but demand installation of 'PrintFile'
-You find this program here: http://www.lerup.com/printfile/
-Just put a copy of the prfile32.exe file into the system folder WINNT or somewhere else inside
-your PATH environment
+Windows 2000, XP
+**********************
+1. Right-click on the My Computer icon. (Under Windows XP, the My Computer Icon may be located in the start menu.) 
 
-Printing from linux systems depends on installation of GtkLP (http://gtklp.sourceforge.net/)
+2. Choose Properties from the context menu.
+
+(Alternatively, you can double-click on the System icon in the Control Panel)
+
+4. Click the Advanced tab.
+
+5. Click the Environment Variables button.
+
+6. Add the target directory to the end of the Path using a semi-colon as a separator.
+(If no user PATH variable exists you have to create one)
+
+7. Your PATH variable should look something like
+%PATH%;C:\Program Files\gs\gs8.54\bin;C:\Program Files\Ghostgum\gsview; <other paths ...>
+
+Also try getting information from this pages:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;310519&sd=tech
+http://www.ats.ucla.edu/stat/hlm/faq/path.htm
+
+Linux
+********
+If you are a Linux user you probably are familiar with paths. Haplopainter expect having 'gs'
+in path environment pointing to the ghostscript executable
+Printing from Linux systems depends on installation of GtkLP (http://gtklp.sourceforge.net/)
+
+Some drag and drop features like moving symbols and title are implemented.
+For easy zooming also try shift/contr. + left mouse button.
+
+
+Comand Line
+*************
+For using HaploPainter in command line mode you have to create a parameter input file first. 
+Usage is >perl HaploPainter[version].pl <INPUT FILE> 
+To see some currently supported parameters start haplopainter with -h switch.
+It is possible to integrate Haplopainter in a webserver in command mode but, therefor an active X-server must running in background.
 
 Further on line help is available: http://haplopainter.sourceforge.net
 
-HaploPainter is open source software and anybody is invited to participate in the project !
+HaploPainter is open source software and anybody is invited to participate in the project ! 
 Please send any bugs and comments to : hthiele@users.sourceforge.net
 
-Good luck ...
+Good luck  ...
 
 Holger Thiele
