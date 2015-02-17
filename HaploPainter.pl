@@ -1,4 +1,4 @@
-#! perl
+#! c:\perl\bin\
 
 ###########################################################################
 #                                                                         #
@@ -20,6 +20,7 @@
 use warnings;
 use strict;
 use File::Basename;
+use File::Spec::Functions;
 use vars qw / $mw $opt $canvas $menubar $self $grid %pedigree %haplo %map %info @info_head / ;
 use subs qw / _MainMenu _ContextMenu /;
 use Tk;
@@ -37,8 +38,8 @@ use Data::Dumper;
 
 ### Hash for global variables - not family specific
 my $param = {
-	VERSION			=> '023 beta',
-	LAST_CHANGE		=> '03-07-2004',
+	VERSION			=> '024 beta',
+	LAST_CHANGE		=> '31-08-2004',
 	PAPER			=> 'A4',
 	ORIENTATION 	=> 'Landscape',
 	PAPER_SIZE		=> {
@@ -138,7 +139,7 @@ sub MakeSelf {
 		LINE_WIDTH		=>  1.5,
 		X_SPACE 		=>  3,
 		Y_SPACE 		=>  6,
-		Y_SPACE_EXTRA	=>  0,
+		Y_SPACE_EXTRA	=>  0.5,
 		Y_SPACE_DEFAULT	=>	6,
 		STRUK			=>  [  ],
 		MATRIX			=>  {},
@@ -147,8 +148,9 @@ sub MakeSelf {
 		FAMILY			=> $family,
 		FILENAME		=> "Family_$family.dump",
 		CROSS_LOOP		=> 6,
-		MARKER_SHIFT	=> 200,
-		POSITION_SHIFT	=> 45,
+		LEGEND_SHIFT_LEFT	=> 200,
+		LEGEND_SHIFT_RIGHT	=> 50,
+		MARKER_POS_SHIFT	=> 155,
 		ALLELES_SHIFT	=> 15,
 		HAPLO_UNKNOWN	=> '0',
 		HAPLO_UNKNOWN_COLOR	=> 'black',
@@ -167,14 +169,22 @@ sub MakeSelf {
 		HAPLO_LW		=> 1,
 		SHOW_MARKER		=> 1,
 		SHOW_POSITION	=> 1,
-		SHOW_DATE		=> 0,
+		SHOW_LEGEND_LEFT	=> 1,
+		SHOW_LEGEND_RIGHT	=> 0,
+		SHOW_COLORED_TEXT => 0,
+		ALIGN_LEGEND	=> 1,
+		SHOW_DATE		=> 1,
 		SHOW_HEAD		=> 1,
+		SHOW_HAPLOFILE	=> 1,
+		SHOW_PEDFILE	=> 1,
 		SHOW_HAPLO_BBOX	=> 1,
 		BBOX_WIDTH		=> 35,
 		ALIVE_SPACE		=> 5,
+		PEDIGREE_PATH	=> $param->{PEDIGREE_PATH},
+		HAPLO_PATH		=> $param->{HAPLO_PATH},
 	};
 	### Haplotype information from multiple pedigrees can be handled
-	### Transfer in $self is realyzed by 'reference hand shake'
+	### Transfer into $self is realyzed by 'reference hand shake'
 	if ($family && defined $haplo{$family}) {
 		$self->{HAPLO} = $haplo{$family};
 		$self->{HAPLO}{MAP} = \%map if	%map;
@@ -248,9 +258,7 @@ sub Main {
 	$canvas->bind('HEAD', '<B1-Motion>' => [ \&MoveHead, Ev('x'), Ev('y') ] );
 	
 	$canvas->bind('ALLEL', '<Leave>', sub {
-		$canvas->itemconfigure($param->{ACTIVE_ITEM}, 
-			-fill => $self->{FONT_HAPLO}{COLOR}
-		);
+		$canvas->itemconfigure($param->{ACTIVE_ITEM}, -fill => $param->{ACTIVE_COLOUR});
 		delete $param->{ACTIVE_ITEM}
 	});
 	$canvas->bind('ALLEL', '<Double-1>', \&KlickAllel  );
@@ -275,16 +283,22 @@ sub Main {
 	$mw->bind('<KeyPress-F2>', sub {
 		
 		ReadPed(
-			-file => 'A:\simwalk_haplo\pedfile.pro',
+			-file => 'C:\projects\753\allegro_753_mai_04\dmx_09.pre',
 			-format => 'PRAEMAKEPED'
 		) or return undef;
-    
-		ReadHaplo(
-			-file => 'A:\simwalk_haplo\HAPLO-01.001',
-			-format => 'SIMWALK',
+    	
+    	ReadHaplo(
+    		-file => 'C:\projects\753\allegro_753_mai_04\haplo.out',
+			-format => 'ALLEGRO'
+		) or return undef;
+    	
+    	
+		ReadMap(
+			-file => 'C:\projects\753\allegro_753_mai_04\map.txt',
+			-format => 'MEGA2',
 		);
 		
-		DoIt('01');
+		DoIt('1');
     
 		my $fileref = $menubar->entrycget('View', -menu);
 		my $drawref = $fileref->entrycget('Draw Family ...', -menu);
@@ -343,7 +357,8 @@ sub _MainMenu {
 				'-',
 				[ 'cascade', 'Export ...', -tearoff => 0, -menuitems =>
 					[
-						[ 'command', 'Postscript', -command => [ \&Export, 'POSTSCRIPT' ] ],
+						[ 'command', 'Current Pedigree as Postscript', -command => \&Export  ],
+						[ 'command', 'All Pedigrees as Postscript', -command => \&BatchExport ],
 					]
 				],
 				'-',
@@ -519,6 +534,7 @@ sub EnterAllel {
 
 			if ( (! $a1 || ! $a2) || ( $a1 == $a2 ) ) {
 				$param->{ACTIVE_ITEM} = $tag;
+				$param->{ACTIVE_COLOUR} = $c->itemcget($tag, -fill);
 				$c->itemconfigure($tag, -fill => 'red');
 			} else { return }
 		}
@@ -782,6 +798,7 @@ sub DrawPed {
 			#print "$c crossings observerd\n";
 			unless ($c) {
 				$bar->update() if $bar;
+				undef $self->{TITLE_X};
 				FillCanvas();
 				DrawLines();
 				DrawHaplo();
@@ -805,6 +822,7 @@ sub DrawPed {
 		unless ($flag) {
 			$self = thaw($save) if $save;
 			ShowInfo("Error restoring data\n$@\n", 'error') if $@;
+			undef $self->{TITLE_X};
 			FillCanvas();
 			SetLines();
 			DrawLines();
@@ -1117,8 +1135,10 @@ sub ReadHaplo {
 			}
 		}
 	}
+	
+	$param->{HAPLO_PATH} = $arg{-file};
+	
 	1;
-	#print Dumper(\%haplo);
 }
 
 # Read map files ?
@@ -1251,7 +1271,8 @@ sub ReadPed {
 	unless (%pedigree) {
 		ShowInfo("There are no data to read !", 'warning'); return undef
 	}
-
+	$param->{PEDIGREE_PATH} = $arg{-file};
+	undef $param->{HAPLO_PATH};
 	1;
 }
 
@@ -2000,6 +2021,7 @@ sub ImportHaplofile {
 	if ($fam && $haplo{$fam}) {
 		$self->{HAPLO} = $haplo{$fam};
 		$self->{HAPLO}{MAP} = \%map;
+		$self->{HAPLO_PATH} = $param->{HAPLO_PATH};
 		ShuffleFounderColors();
 		ProcessHaplotypes();
 		RedrawPed();
@@ -2072,7 +2094,7 @@ sub ShowAbout {
 		"Last change: $param->{LAST_CHANGE}\n" .
 		"Author: Holger Thiele\n" .
 		"Contact: hthiele\@users.sourceforge.net\n\n" .
-		'http://haplopainter.sourceforge.net/html/ManualIndex.htm',
+		'http://haplopainter.sourceforge.net',
 		-type => 'OK', -icon => 'info'
 	)		
 }
@@ -2108,6 +2130,10 @@ sub OptionsPrint {
 	$f->Checkbutton( -text => "Show Date", -variable => \$self->{SHOW_DATE},
 	)->grid( -row => 2, -column => 4, -sticky => 'e');
 	
+	$f->Checkbutton( -text => "Show pedigree file path", -variable => \$self->{SHOW_PEDFILE},
+	)->grid( -row => 3, -column => 1, -sticky => 'w');
+	$f->Checkbutton( -text => "Show haplotype file path", -variable => \$self->{SHOW_HAPLOFILE},
+	)->grid( -row => 4, -column => 1, -sticky => 'w');
 
 	foreach my $s (
 		[ 'BORDER_UP',		'Margin up',         1,0,   10,  300,    5  ],
@@ -2183,13 +2209,13 @@ sub Configuration {
 			-background => '#28D0F0'
 		)->pack(-expand => 1, -fill => 'both');
 
-		my $p1 = $n->add( 'page1' , -label => 'Hap-A');
-		my $p2 = $n->add( 'page2' , -label => 'Hap-B');
-		my $p3 = $n->add( 'page3' , -label => 'Hap-C');
-		my $p4 = $n->add( 'page4' , -label => 'Hap-D');
+		my $p1 = $n->add( 'page1' , -label => 'Hap Style');
+		my $p2 = $n->add( 'page2' , -label => 'Hap Show');
+		my $p3 = $n->add( 'page3' , -label => 'Hap Font');
+		my $p4 = $n->add( 'page4' , -label => 'Hap Region');
 
-		my $p5 = $n->add( 'page5' , -label => 'Line-A');
-		my $p6 = $n->add( 'page6' , -label => 'Line-B');
+		my $p5 = $n->add( 'page5' , -label => 'Line Style');
+		my $p6 = $n->add( 'page6' , -label => 'Line Colour');
 
 		my $p7 = $n->add( 'page7' , -label => 'Case Info');
 
@@ -2197,20 +2223,22 @@ sub Configuration {
 		### page1
 		### place Scale Widgets
 		foreach my $s (
-			[ 'HAPLO_WIDTH'   , 'Bar width',                 0,0,   1, 50,    1  ],
-			[ 'HAPLO_WIDTH_NI', 'Bar width uninformative',   1,0,   1, 50,    1  ],
-			[ 'HAPLO_SPACE'   , 'Space between bars',        2,0,   1, 50,    1  ],
-			[ 'HAPLO_LW'	  , 'Line width',                3,0, 0.1, 10,  0.1  ],
-			[ 'HAPLO_TEXT_LW' , 'Allele distance',           0,1,   0,  5,  0.1  ],
-			[ 'MARKER_SHIFT'  , 'Marker name distance',      1,1,  20,500,    5  ],
-			[ 'POSITION_SHIFT', 'Marker position distance',  2,1,  20,500,    5  ],
-			[ 'ALLELES_SHIFT' , 'Allele position distance',  3,1,   0,100,    1  ],
-			[ 'BBOX_WIDTH'    , 'Width of boundig boxes',    4,1,  10,100,    1  ],
+			[ 'HAPLO_WIDTH'        , 'Bar width',                     0,0,   1, 50,    1  ],
+			[ 'HAPLO_WIDTH_NI'     , 'Bar width uninformative',       1,0,   1, 50,    1  ],
+			[ 'HAPLO_SPACE'        , 'Space between bars',            2,0,   1, 50,    1  ],
+			[ 'HAPLO_LW'	       , 'Line width',                    3,0, 0.1, 10,  0.1  ],
+			[ 'LEGEND_SHIFT_LEFT' , 'Legend distance left',           4,0,  20,500,    5  ],
+			
+			[ 'HAPLO_TEXT_LW'      , 'Allele distance',               0,1,   0,  5,  0.1  ],						
+			[ 'MARKER_POS_SHIFT'   , 'Marker <-> position distance',  1,1,-500,500,    5  ],
+			[ 'ALLELES_SHIFT'      , 'Allele position distance',      2,1,   0,100,    1  ],
+			[ 'BBOX_WIDTH'         , 'Width of boundig boxes',        3,1,  10,100,    1  ],
+			[ 'LEGEND_SHIFT_RIGHT' , 'Legend distance right',         4,1,  20,500,    5  ],
 		) {
 			$p1->Scale(
 				-label  => @$s[1], -variable => \$self->{@$s[0]},
 				-from   => @$s[4], -to => @$s[5],-orient => 'horizontal',
-				-length => 130, -width => 12, -resolution => @$s[6],
+				-length => 150, -width => 12, -resolution => @$s[6],
 			)->grid( -row => @$s[2], -column => @$s[3], -sticky => 'ns');
 			$p1->gridColumnconfigure( @$s[2], -pad => 50);
 		}
@@ -2225,12 +2253,16 @@ sub Configuration {
 			[ 'SHOW_MARKER'        , 'Show marker names',                       3,0  ],
 			[ 'SHOW_HAPLO_BBOX'    , 'Show haplotypes bounding box',            4,0  ],
 			[ 'SHOW_QUEST'         , 'Show question mark',                      5,0  ],
+			[ 'ALIGN_LEGEND',      , 'Justify map legend',                      6,0  ],
+			[ 'SHOW_COLORED_TEXT', , 'Show alleles like bar colours',           7,0  ],
 			[ 'FILL_HAPLO'		   , 'Fill out bars',                           0,1  ],
 			[ 'SHOW_HAPLO_NI_0'    , 'Show completly lost Haplotypes',          1,1  ],
 			[ 'SHOW_HAPLO_NI_1'    , 'Show other lost genotypes',               2,1  ],
 			[ 'SHOW_HAPLO_NI_2'    , 'Show user defined non-informative',       3,1  ],
 			[ 'SHOW_HAPLO_NI_3'    , 'Show other non-informative',              4,1  ],
 			[ 'HAPLO_SEP_BL'       , 'Draw each allel as separate bar',         5,1  ],
+			[ 'SHOW_LEGEND_LEFT'   , 'Show legend left',                        6,1  ],
+			[ 'SHOW_LEGEND_RIGHT'  , 'Show legend right',                       7,1  ],
 		) {
 			$p2->Checkbutton( -text => @$s[1], -variable => \$self->{@$s[0]},
 			)->grid( -row => @$s[2], -column => @$s[3], -sticky => 'w');
@@ -2669,87 +2701,101 @@ sub ChangeColor {
 sub Export {
 #===========
 	return unless $self->{FAMILY};
-	my ($format, $file) = @_;
+	my ($file) = shift;
 	my $out;
-	if ($format eq 'POSTSCRIPT') {
-		if (! $file) { $file = $mw->getSaveFile(-initialfile => "Family_$self->{FAMILY}.ps" ) or return }
+	
+	if (! $file) { $file = $mw->getSaveFile(-initialfile => "Family_$self->{FAMILY}.ps" ) or return }
 
-		my $paper = $param->{PAPER};
+	my $paper = $param->{PAPER};
 
-		my ($x1, $y1, $x2, $y2) = $canvas->bbox('all');
-		$x1 -= $param->{BORDER_LEFT};
-		$x2 += $param->{BORDER_RIGHT};
-		$y1 -= $param->{BORDER_UP};
-		$y2 += $param->{BORDER_DOWN};
+	my ($x1, $y1, $x2, $y2) = $canvas->bbox('all');
+	$x1 -= $param->{BORDER_LEFT};
+	$x2 += $param->{BORDER_RIGHT};
+	$y1 -= $param->{BORDER_UP};
+	$y2 += $param->{BORDER_DOWN};
 
-		my $xdiff = $x2-$x1;
-		my $ydiff = $y2-$y1;
+	my $xdiff = $x2-$x1;
+	my $ydiff = $y2-$y1;
 
-		my ($cx, $cy) = ($canvas->width,  $canvas->height);
-		my ($pxm, $pym) = ( $param->{PAPER_SIZE}{$paper}{X}, $param->{PAPER_SIZE}{$paper}{Y} );
-		my @scale;
-		my ($startx, $starty);
+	my ($cx, $cy) = ($canvas->width,  $canvas->height);
+	my ($pxm, $pym) = ( $param->{PAPER_SIZE}{$paper}{X}, $param->{PAPER_SIZE}{$paper}{Y} );
+	my @scale;
+	my ($startx, $starty);
 
-		if ($param->{ORIENTATION} eq 'Landscape') {
-			if ( $xdiff/$ydiff > sqrt(2) ) {
-				@scale = ( -pagewidth  => $pym .'m');
-				my $f = $xdiff/$mw->pixels($pym . 'm');
-				my $ydim = $ydiff/$f;
-				$startx = ($mw->pixels($pxm . 'm')-$ydim)/3;
-				$starty = 0;
-			}
-			else {
-				@scale = ( -pageheight  => $pxm .'m' );
-				my $f = $ydiff/$mw->pixels($pxm . 'm');
-				my $xdim = $xdiff/$f;
-				$starty = ($mw->pixels($pym . 'm')-$xdim)/3;
-				$startx = 0;
-			}
-
-			$canvas->postscript(
-				-file =>$file,
-				-rotate => 1,
-				-pageanchor => 'nw',
-				-pagex  => $startx,
-				-pagey  => $starty,
-				-x => $x1 ,
-				-y => $y1 ,
-				-width  => $xdiff,
-				-height => $ydiff,
-				@scale
-			)
-		} else {
-			### Image ist 'breit' -> Scaling X
-			if ( $xdiff/$ydiff > sqrt(2) ) {
-				@scale = ( -pagewidth  => $pxm .'m');
-				my $f = $xdiff/$mw->pixels($pxm . 'm');
-				my $ydim = $ydiff/$f;
-				$starty = ($mw->pixels($pym . 'm')-$ydim)/2.66;    ### empirical value
-				$startx = 0;
-			} else {
-				@scale = ( -pageheight  => $pym .'m' );
-				my $f = $ydiff/$mw->pixels($pym . 'm');
-				my $xdim = $xdiff/$f;
-				$startx = ($mw->pixels($pxm . 'm')-$xdim)/2.66;
-				$starty = 0;
-			}
-
-			$canvas->postscript(
-				-file =>$file,
-				-rotate => 0,
-				-pageanchor => 'sw',
-				-pagex  => $startx,
-				-pagey  => $starty,
-				-x => $x1,
-				-y => $y1,
-				-width  => $xdiff ,
-				-height => $ydiff ,
-				@scale,
-			)
+	if ($param->{ORIENTATION} eq 'Landscape') {
+		if ( $xdiff/$ydiff > sqrt(2) ) {
+			@scale = ( -pagewidth  => $pym .'m');
+			my $f = $xdiff/$mw->pixels($pym . 'm');
+			my $ydim = $ydiff/$f;
+			$startx = ($mw->pixels($pxm . 'm')-$ydim)/3;
+			$starty = 0;
 		}
+		else {
+			@scale = ( -pageheight  => $pxm .'m' );
+			my $f = $ydiff/$mw->pixels($pxm . 'm');
+			my $xdim = $xdiff/$f;
+			$starty = ($mw->pixels($pym . 'm')-$xdim)/3;
+			$startx = 0;
+		}
+
+		$canvas->postscript(
+			-file =>$file,
+			-rotate => 1,
+			-pageanchor => 'nw',
+			-pagex  => $startx,
+			-pagey  => $starty,
+			-x => $x1 ,
+			-y => $y1 ,
+			-width  => $xdiff,
+			-height => $ydiff,
+			@scale
+		)
+	} else {
+		### Image ist 'breit' -> Scaling X
+		if ( $xdiff/$ydiff > sqrt(2) ) {
+			@scale = ( -pagewidth  => $pxm .'m');
+			my $f = $xdiff/$mw->pixels($pxm . 'm');
+			my $ydim = $ydiff/$f;
+			$starty = ($mw->pixels($pym . 'm')-$ydim)/2.66;    ### empirical value
+			$startx = 0;
+		} else {
+			@scale = ( -pageheight  => $pym .'m' );
+			my $f = $ydiff/$mw->pixels($pym . 'm');
+			my $xdim = $xdiff/$f;
+			$startx = ($mw->pixels($pxm . 'm')-$xdim)/2.66;
+			$starty = 0;
+		}
+
+		$canvas->postscript(
+			-file =>$file,
+			-rotate => 0,
+			-pageanchor => 'sw',
+			-pagex  => $startx,
+			-pagey  => $starty,
+			-x => $x1,
+			-y => $y1,
+			-width  => $xdiff ,
+			-height => $ydiff ,
+			@scale,
+		)
 	}
-	elsif ($format eq 'ANDERES FORMAT') {
-	}
+}
+
+
+# Export all pedigrees as postscript
+# new function since V.024b
+#================
+sub BatchExport {
+#================
+	ShowInfo("Please select working directory and basic file name without any suffix.\nPostscript outputs will be extended by family identifiers.\n\n" .
+	"Current page format is $param->{PAPER} - $param->{ORIENTATION} ");
+	my $file = $mw->getSaveFile(-initialfile => 'Family') or return;	
+	foreach (keys %pedigree) {
+		my $s = File::Spec->catfile( dirname($file), basename($file) . '_' . $_ . '.ps');
+		DoIt($_);
+		$canvas->update;		
+		Export($s);
+	}			
 }
 
 # Printing functions
@@ -2764,7 +2810,7 @@ sub Print {
 		ShowInfo("For this system there is still no print support available !\nPlease contact the author.\n", 'warning'); return
 	}
 	
-	Export('POSTSCRIPT', 'temp.ps');
+	Export('temp.ps');
 	
 	if ($^O eq 'MSWin32') {		
 		system ('prfile32.exe /q temp.ps ') == 0 or ShowInfo("Unable to print ! Did you forget to install 'PrintFile'  ?\n", 'warning');	
@@ -2921,7 +2967,7 @@ sub FillCanvas {
 			-font => $head1, -fill => $self->{FONT_HEAD}{COLOR}, -tags => [ 'TEXT' , 'HEAD', 'TAG' ]
 		)
 	}
-
+		
 	### Zeichnen aller Personen-bezogenen Elemente
 	my $sz = $self->{SYMBOL_SIZE}/2;
 	foreach my $Y (keys % { $m->{YX2P} }) {
@@ -3017,15 +3063,34 @@ sub FillCanvas {
 			}
 		}
 	}
-	if ($self->{SHOW_DATE}) {
-		@_ = $c->bbox('all');
+	
+	
+	@_ = $c->bbox('all');
+	if ($self->{SHOW_DATE}) {				
 		my @t = split ' ', localtime(time);
 		$c->createText(
-			$_[2]+25,  $_[1]-25,
-			-anchor => 'e', -text => "@t[0,1,2,4]",
+			$_[2]+25*$z,  $_[1]-80*$z,
+			-anchor => 'ne', -text => "@t[0,1,2,4]",
 			-font => $font1, -tags => [ 'TEXT', 'DATUM', 'TAG' ]
 		);
+	}	
+	
+	if ($self->{SHOW_PEDFILE} &&  $self->{PEDIGREE_PATH}) {
+		$c->createText(
+			$_[0]-150*$z,$_[1]-80*$z, -anchor => 'nw',
+			 -text => "Pedfile: $self->{PEDIGREE_PATH}" , 
+			-font => [ $self->{FONT1}{FAMILY}, 12*$z ]
+		)		
 	}
+	
+	if ($self->{SHOW_HAPLOFILE} &&  $self->{HAPLO_PATH}) {
+		$c->createText(
+			$_[0]-150*$z,$_[1]-80*$z+(14*$z), -anchor => 'nw',
+			 -text => "Haplofile: $self->{HAPLO_PATH}" , 
+			-font => [ $self->{FONT1}{FAMILY}, 12*$z ]
+		)		
+	}
+	
 }
 	
 
@@ -3050,8 +3115,10 @@ sub DrawHaplo {
 	my $hwni = $self->{HAPLO_WIDTH_NI};
 	my $hs = $self->{HAPLO_SPACE};
 	my $hlw = $self->{HAPLO_LW};
-	my $un = $self->{HAPLO_UNKNOWN};
-
+	my $un = $self->{HAPLO_UNKNOWN};		
+	
+	### find most left and right X matrix position for later legend drawing
+	my @X_GLOB; push @X_GLOB,( keys % { $m->{YX2P}{$_} }) foreach keys % { $m->{YX2P} }; @X_GLOB = sort { $a <=> $b } @X_GLOB;
 
 	### letzen gültigen Index finden ($i2) und Anzahl zu zeichnender Elemente ($i3)
 	my ($i1, $i2, $i3) = (0,0,0);
@@ -3172,19 +3239,32 @@ sub DrawHaplo {
 				### Haplotypen als TEXT
 				if ($self->{SHOW_HAPLO_TEXT}) {
 					my $cc = 0;
+					my $col;
 					my $sh = $self->{ALLELES_SHIFT};
 					my ($x1, $x2) = ( ($cx-$hs-$sh)*$z, ($cx+$hs+$sh)*$z );
-
 					my $y = $bbox[3] + $self->{FONT1}{SIZE}*$z + $td1/2;
-
+				
 					### Paternaler Haplotyp
 					for (my $i=0; $i <= $#{ $h->{PID}{$p}{P}{TEXT} };$i++) {
 						next unless $self->{HAPLO}{DRAW}[$i];
+						my $inf = $h->{PID}{$p}{P}{BAR}[$i][0];
+						
+						if (
+								$self->{SHOW_COLORED_TEXT} && ! (
+								( ($inf eq 'NI-0') && $self->{SHOW_HAPLO_NI_0} ) ||
+								( ($inf eq 'NI-1') && $self->{SHOW_HAPLO_NI_1} ) ||
+								( ($inf eq 'NI-2') && $self->{SHOW_HAPLO_NI_2} ) ||
+								( ($inf eq 'NI-3') && $self->{SHOW_HAPLO_NI_3} ) )
+							) { $col = $h->{PID}{$p}{P}{BAR}[$i][1] } else { $col = $fh->{COLOR} }
+								
+
+						
+						
 						$h->{PID}{$p}{P}{TEXT}[$i] =~ s/@/$self->{HAPLO_UNKNOWN}/;
 						$c->createText(
 							$x1, $y+ ($cc*$td1),
 							-anchor => 'center', -text => $h->{PID}{$p}{P}{TEXT}[$i] ,
-							-font => $font_haplo, -fill => $fh->{COLOR}, -tags => [ 'ALLEL', "ALLEL-P-$i-$p" ]
+							-font => $font_haplo, -fill => $col, -tags => [ 'ALLEL', "ALLEL-P-$i-$p" ]
 						);
 						$cc++
 					}
@@ -3194,11 +3274,22 @@ sub DrawHaplo {
 					### Maternaler Haplotyp
 					for (my $i=0; $i <= $#{ $h->{PID}{$p}{M}{TEXT} };$i++) {
 						next unless $self->{HAPLO}{DRAW}[$i];
+						my $inf = $h->{PID}{$p}{M}{BAR}[$i][0];
+						if (
+								$self->{SHOW_COLORED_TEXT} && ! (
+								( ($inf eq 'NI-0') && $self->{SHOW_HAPLO_NI_0} ) ||
+								( ($inf eq 'NI-1') && $self->{SHOW_HAPLO_NI_1} ) ||
+								( ($inf eq 'NI-2') && $self->{SHOW_HAPLO_NI_2} ) ||
+								( ($inf eq 'NI-3') && $self->{SHOW_HAPLO_NI_3} ) )
+							) { $col = $h->{PID}{$p}{M}{BAR}[$i][1] } else { $col = $fh->{COLOR} }
+						
+						
+						$h->{PID}{$p}{P}{TEXT}[$i] =~ s/@/$self->{HAPLO_UNKNOWN}/;
 						$h->{PID}{$p}{M}{TEXT}[$i] =~ s/@/$self->{HAPLO_UNKNOWN}/;
 						$c->createText(
 							$x2, $y + ($cc*$td1),
 							-anchor => 'center', -text => $h->{PID}{$p}{M}{TEXT}[$i],
-							-font => $font_haplo, -fill => $fh->{COLOR}, -tags => [ 'ALLEL', "ALLEL-M-$i-$p" ]
+							-font => $font_haplo, -fill => $col, -tags => [ 'ALLEL', "ALLEL-M-$i-$p" ]
 						);
 						$cc++
 					}
@@ -3239,38 +3330,99 @@ sub DrawHaplo {
 			}
 		}
 
-		### Map Informationen
+		### Map Informationen										
 		if (@X && $h->{MAP}) {
-			#my $cy = $Y*$self->{GITTER_Y} + $lw*$z*2;
 			my $cc = 0;
 			my $y = $bbox[3] + $self->{FONT1}{SIZE}*$z + $td1/2;
 			if ($self->{SHOW_MARKER}) {
-				my $x = ( ($X[0]*$self->{GITTER_X})  -   $self->{MARKER_SHIFT} ) * $z;
-				for (my $i=0; $i <= $#{ $h->{MAP}{MARKER} };$i++) {
-					next unless $self->{HAPLO}{DRAW}[$i];
-					$c->createText(
-						$x, $y + ($cc*$td1),
-						-anchor => 'w', -text => $h->{MAP}{MARKER}[$i] ,
-						-font => $font_haplo, -fill => $fh->{COLOR}
-					);
-					$cc++
+				
+				### Marker left side
+				if ($self->{SHOW_LEGEND_LEFT}) {
+					$cc = 0; 
+					my $x;
+					if ($self->{ALIGN_LEGEND}) {
+						$x = ( ($X_GLOB[0]*$self->{GITTER_X}) - $self->{LEGEND_SHIFT_LEFT} ) * $z;
+					} else {
+						$x = ( ($X[0]*$self->{GITTER_X}) - $self->{LEGEND_SHIFT_LEFT} ) * $z;
+					}																	 
+					for (my $i=0; $i <= $#{ $h->{MAP}{MARKER} };$i++) {
+						next unless $self->{HAPLO}{DRAW}[$i];
+						$c->createText(
+							$x, $y + ($cc*$td1),
+							-anchor => 'w', -text => $h->{MAP}{MARKER}[$i] ,
+							-font => $font_haplo, -fill => $fh->{COLOR}
+						);
+						$cc++
+					}
 				}
+				
+				### Marker right side
+				if ($self->{SHOW_LEGEND_RIGHT}) {
+					$cc = 0; 
+					my $x;
+					if ($self->{ALIGN_LEGEND}) {
+						$x = ( ($X_GLOB[-1]*$self->{GITTER_X}) + $self->{LEGEND_SHIFT_RIGHT} ) * $z;
+					} else {
+						$x = ( ($X[-1]*$self->{GITTER_X}) + $self->{LEGEND_SHIFT_RIGHT} ) * $z;
+					}																	 
+					for (my $i=0; $i <= $#{ $h->{MAP}{MARKER} };$i++) {
+						next unless $self->{HAPLO}{DRAW}[$i];
+						$c->createText(
+							$x, $y + ($cc*$td1),
+							-anchor => 'w', -text => $h->{MAP}{MARKER}[$i] ,
+							-font => $font_haplo, -fill => $fh->{COLOR}
+						);
+						$cc++
+					}
+				}
+			
+			
 			}
 
-			if ($self->{SHOW_POSITION}) {
-				my ($cx, $cy) = (($X[0]-1)*$self->{GITTER_X}, $Y*$self->{GITTER_Y});
-				$cc = 0;
-				my $y = $bbox[3] + $self->{FONT1}{SIZE}*$z + $td1/2;
-				for (my $i=0; $i <= $#{ $h->{MAP}{POS} };$i++) {
-					next unless $self->{HAPLO}{DRAW}[$i];
-					my $x = ( ($X[0]*$self->{GITTER_X})  -   $self->{POSITION_SHIFT} ) * $z;
-					$c->createText(
-						$x, $y + ($cc*$td1),
-						-anchor => 'e', -text => sprintf("%6.2f",$h->{MAP}{POS}[$i]) ,
-						-font => $font_haplo, -fill => $fh->{COLOR}
-					);
-					$cc++
+			if ($self->{SHOW_POSITION}) {				
+				
+				### Position left side
+				if ($self->{SHOW_LEGEND_LEFT}) {
+					$cc = 0; 
+					my $x;
+					if ($self->{ALIGN_LEGEND}) {
+						$x = ( ($X_GLOB[0]*$self->{GITTER_X}) - $self->{LEGEND_SHIFT_LEFT} + $self->{MARKER_POS_SHIFT} ) * $z;
+					} else {
+						$x = ( ($X[0]*$self->{GITTER_X}) - $self->{LEGEND_SHIFT_LEFT} + $self->{MARKER_POS_SHIFT} ) * $z;
+					}
+
+					for (my $i=0; $i <= $#{ $h->{MAP}{POS} };$i++) {
+						next unless $self->{HAPLO}{DRAW}[$i];
+						$c->createText(
+							$x, $y + ($cc*$td1),
+							-anchor => 'e', -text => sprintf("%6.2f",$h->{MAP}{POS}[$i]) ,
+							-font => $font_haplo, -fill => $fh->{COLOR}
+						);
+						$cc++
+					}													
 				}
+				
+				### Position right side
+				if ($self->{SHOW_LEGEND_RIGHT}) {
+					$cc = 0; 
+					my $x;
+					if ($self->{ALIGN_LEGEND}) {
+						$x = ( ($X_GLOB[-1]*$self->{GITTER_X}) + $self->{LEGEND_SHIFT_RIGHT} + $self->{MARKER_POS_SHIFT} ) * $z;
+					} else {
+						$x = ( ($X[-1]*$self->{GITTER_X}) + $self->{LEGEND_SHIFT_RIGHT} + $self->{MARKER_POS_SHIFT} ) * $z;
+					}
+
+					for (my $i=0; $i <= $#{ $h->{MAP}{POS} };$i++) {
+						next unless $self->{HAPLO}{DRAW}[$i];
+						$c->createText(
+							$x, $y + ($cc*$td1),
+							-anchor => 'e', -text => sprintf("%6.2f",$h->{MAP}{POS}[$i]) ,
+							-font => $font_haplo, -fill => $fh->{COLOR}
+						);
+						$cc++
+					}													
+				}
+				
 			}
 
 		}
@@ -3741,43 +3893,50 @@ sub DrawLines {
 	$c->Subwidget('canvas')->lower('GRID');
 }
 
+
+# examination of all mates and recursive mates of mates of child $child
+# the list of mates is represented as simple drawing order @S
+# and couples list @D as derived from @S
+# this sub is implemented new in V.024b
 #===============
 sub SetCouples {
 #===============	
 	my ($child) = shift;
-	my (@S, @D, @P );
-
+	my (@S, @D ,%P, $flag, %SAVE);
+	
+	## find everybody joined in couple group  
 	foreach ( keys % { $self->{COUPLE}{$child} }) {
-		push @P, $_  if ! $self->{CHILDREN}{$child}{$_}
+		$P{$_} = 1  if ! $self->{CHILDREN}{$child}{$_}
 	}
-	return $child unless @P;
-
-	ChangeOrder(\@P);
-	if ($#P) {
-		@S = ( shift @P, $child , @P );
-		@D = ( [ $S[0], $child ] ); push @D, [ $child, $_ ] foreach @P;
-		foreach my $p (@P) {
-			foreach ( nsort keys % { $self->{COUPLE}{$p} } ) {
-				if ( ($_ ne $child) && (! $self->{CHILDREN}{$p}{$_}) ){
-					push @S, $_; push @D, [ $p, $_ ]
+	W:while (1) {
+		undef $flag;
+		foreach my $p ( keys %P ) {
+			foreach my $c ( keys % { $self->{COUPLE}{$p} }) {
+				if (! $P{$c} && ! $self->{CHILDREN}{$p}{$c}) {
+					$P{$c} = 1; $flag = 1
 				}
 			}
 		}
-		foreach ( nsort keys % { $self->{COUPLE}{$S[0]} } ) {
-			if ( ($_ ne $child) &&  (! $self->{CHILDREN}{$_}{$child}) ) {
-				unshift @S, $_; unshift @D, [ $_ , $S[1] ]
-			}
-		}
-
-	} else {
-		@S = ($child, @P);
-		@D = ( [ $child, @P ] );
-		foreach ( nsort keys % { $self->{COUPLE}{$S[1]} } ) {
-			if ($_ ne $child) {
-				push @S, $_; push @D, [ $S[1], $_ ]
-			}
-		}
+		last W unless $flag
 	}
+	
+	### @S is drawing order of multiple mates in string form as ( p1, p2, p3, p4 )
+	@S = keys %P;
+	$self->{STORE_DRAWN}{$_} = 1 foreach @S;	  
+	return $child unless @S;
+	ChangeOrder(\@S);			
+	
+	### from @S derived order of couples for example (  [ p1, p3 ], [ p2, p3 ], [ p3, p4 ] )
+	### list @S is screened for most right hand free mate
+	foreach my $p1 (@S) {
+		foreach my $p2 (@S) {
+			if ($self->{CHILDREN_COUPLE}{$p1}{$p2} && ! $SAVE{$p1}{$p2} && ! $SAVE{$p2}{$p1}) {
+				push @D, [ $p1, $p2 ];
+				$SAVE{$p1}{$p2} = 1
+			}
+		}		
+	}	
+		
 	return [ [ @S ] , [ @D ] ];
 }
 
@@ -3861,6 +4020,10 @@ sub ProgressBar {
 #================	
     (my $from, my $var) = @_;
     my $w = $mw->Toplevel(-title => '');
+    
+    ### prevents error message under linux/perl5.8 - posted by Kristina Loeschner
+    $w->update;    
+    
     $w->grabGlobal;
     my $scr_x  = $mw->screenwidth;
     my $scr_y  = $mw->screenheight;
@@ -3928,11 +4091,13 @@ sub Default {
 	@_ = qw /
 	AFF_COLOR SHOW_QUEST LINE_COLOR BACKGROUND CROSS_FAKTOR1 CONSANG_DIST ALIVE_SPACE
 	GITTER_X GITTER_Y SYMBOL_SIZE FONT1 FONT_HAPLO FONT_HEAD SHOW_CASE  CASE_HEAD_ROW
-	ZOOM LINE_WIDTH X_SPACE Y_SPACE Y_SPACE_EXTRA Y_SPACE_DEFAULT CROSS_LOOP MARKER_SHIFT
-	POSITION_SHIFT ALLELES_SHIFT HAPLO_UNKNOWN HAPLO_UNKNOWN_COLOR HAPLO_TEXT_LW SHOW_HAPLO_TEXT
+	ZOOM LINE_WIDTH X_SPACE Y_SPACE Y_SPACE_EXTRA Y_SPACE_DEFAULT CROSS_LOOP 
+	MARKER_POS_SHIFT ALLELES_SHIFT HAPLO_UNKNOWN HAPLO_UNKNOWN_COLOR HAPLO_TEXT_LW SHOW_HAPLO_TEXT
 	SHOW_HAPLO_BAR SHOW_HAPLO_NI_0 SHOW_HAPLO_NI_1 SHOW_HAPLO_NI_2 SHOW_HAPLO_NI_3 HAPLO_SEP_BL
 	FILL_HAPLO HAPLO_WIDTH HAPLO_WIDTH_NI HAPLO_SPACE HAPLO_LW SHOW_MARKER SHOW_POSITION 
-	SHOW_DATE SHOW_HEAD SHOW_HAPLO_BBOX BBOX_WIDTH TITLE_X TITLE_Y/;
+	SHOW_DATE SHOW_HEAD SHOW_HAPLO_BBOX BBOX_WIDTH TITLE_X TITLE_Y SHOW_HAPLOFILE SHOW_PEDFILE	
+	SHOW_LEGEND_LEFT  SHOW_LEGEND_RIGHT  ALIGN_LEGEND  SHOW_COLORED_TEXT
+	LEGEND_SHIFT_LEFT LEGEND_SHIFT_RIGHT/;
 	
 	### updates defaults from $self
 	if ($arg eq 'update') {			
@@ -3988,7 +4153,7 @@ sub Default {
 
 __DATA__
 
-Last modification: 3.7.2004
+Last modification: 31.8.2004
 
 
 Usage
@@ -4027,9 +4192,9 @@ To draw pedigrees with haplotype and marker information:
 	   and back tracing the haplotype with the color from given phase at the chromosomal
 	   starting point.
 	2. The first marker showing differences is declared as the point of recombination and
-	   the color is changed to the recombinant haplotype until next recombination event occurs.
+	   the color is changed to the recombinant haplotype until the next recombination event occurs.
 	   Be carful - the 'real' point of recombination may be surrounded by uninformative markers.
-	   Colored bars are suggestive traps - region of interests should be checked and manually corrected !
+	   Colored bars are like suggestive traps - region of interests should be checked and manually corrected !
 	   I have warned you !
 	3. Missing genotypes are interpreted as uninformative
 	4. Other uninformative genotypes are drawn in special thin blocks when set in options
@@ -4071,12 +4236,14 @@ use File->Save Default as .../File->Open Defaults
 
 A double click an symbols opens a dialog box wherefrom affection and vital status can be changed.
 
-You can export the drawing in postscript format from the File->Export ...->Postscript menu.
-What you may do with this file is ...
+You can export the current drawing in postscript format from the 
+File->Export ... -> Current Pedigree as Postscript menu or all at once (-> All Pedigrees as Postscript menu)
+
+What you may do with this files is ...
 
 1. Viewing and converting with Ghostview (use the PS to Edit Module available for Ghostview)
 2. Viewing and converting with other programs like FreeHand, Adobe Illustrator, Corel Draw ...
-3. Send it to a printer with PrintFile
+3. Send it to a printer using PrintFile, GtkLP ...
 4. Convert it to pdf with Adobe Acrobat Distiller
 
 Some drag and drop features are implemented like moving symbols and titel.
@@ -4090,7 +4257,7 @@ your PATH environment
 
 Printing from linux systems depends on installation of GtkLP (http://gtklp.sourceforge.net/)
 
-Further on line help is available: http://haplopainter.sourceforge.net/html/ManualIndex.htm
+Further on line help is available: http://haplopainter.sourceforge.net
 
 HaploPainter is open source software and anybody is invited to participate in the project !
 Please send any bugs and comments to : hthiele@users.sourceforge.net
