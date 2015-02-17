@@ -20,7 +20,7 @@
 use warnings;
 use strict;
 use File::Basename;
-use vars qw / $mw $opt $canvas $menubar $self $grid %pedigree %haplo %map %info @info_head/ ;
+use vars qw / $mw $opt $canvas $menubar $self $grid %pedigree %haplo %map %info @info_head / ;
 use subs qw / _MainMenu _ContextMenu /;
 use Tk;
 use Tk::DialogBox;
@@ -29,7 +29,7 @@ use Tk::BrowseEntry;
 use Tk::NoteBook;
 use Tk::ErrorDialog;
 use Sort::Naturally;
-use Storable qw /freeze thaw retrieve store/;
+use Storable qw /freeze thaw retrieve store dclone/;
 use Data::Dumper;
 
 
@@ -37,7 +37,8 @@ use Data::Dumper;
 
 ### Hash for global variables - not family specific
 my $param = {
-	VERSION			=> '022 beta',
+	VERSION			=> '023 beta',
+	LAST_CHANGE		=> '03-07-2004',
 	PAPER			=> 'A4',
 	ORIENTATION 	=> 'Landscape',
 	PAPER_SIZE		=> {
@@ -59,7 +60,7 @@ my $param = {
 	BORDER_DOWN    	=> 	100,
 	BORDER_LEFT    	=> 	100,
 	BORDER_RIGHT    => 	100,
-	HEAD_DISTANCE	=>	120,
+	DEFAULT			=> {}
 };
 
 
@@ -109,13 +110,12 @@ sub MakeSelf {
 		BACKGROUND		=> 'white',
 		COUNT			=>  1,
 		CROSS_FAKTOR1   =>  1,
-		CROSS_FAKTOR2   =>  1.5,
-		CONSANG_DIST	=>	2,
+		CONSANG_DIST	=>	4,
 		GITTER_X		=>  22,
 		GITTER_Y		=>  26,
-		SYMBOL_SIZE		=>  22,
+		SYMBOL_SIZE		=>  26,
 		FONT1			=> { 	FAMILY 	=> 'Lucida',
-								SIZE	=> 14,
+								SIZE	=> 16,
 								WEIGHT 	=> 'bold',
 								SLANT	=> 'roman',
 								COLOR	=> 'black'
@@ -127,14 +127,14 @@ sub MakeSelf {
 								COLOR	=> 'black'
 							},
 		FONT_HEAD		=> { 	FAMILY 	=> 'Lucida',
-								SIZE	=> 28,
+								SIZE	=> 30,
 								WEIGHT 	=> 'bold',
 								SLANT	=> 'roman',
 								COLOR	=> 'black'
 							},
 		SHOW_CASE		=> [ 1, 0, 0, 0 ],
 		CASE_HEAD_ROW	=> [ 'SAMPLE_ID' ],
-		ZOOM			=>  0.8,
+		ZOOM			=>  1,
 		LINE_WIDTH		=>  1.5,
 		X_SPACE 		=>  3,
 		Y_SPACE 		=>  6,
@@ -169,9 +169,9 @@ sub MakeSelf {
 		SHOW_POSITION	=> 1,
 		SHOW_DATE		=> 0,
 		SHOW_HEAD		=> 1,
-		SHOW_DATE_TOP	=> 0,
 		SHOW_HAPLO_BBOX	=> 1,
 		BBOX_WIDTH		=> 35,
+		ALIVE_SPACE		=> 5,
 	};
 	### Haplotype information from multiple pedigrees can be handled
 	### Transfer in $self is realyzed by 'reference hand shake'
@@ -206,6 +206,7 @@ Main();
 sub Main {
 #=========
 	MakeSelf();
+	Default('update');
 	my $f = $self->{FONT_HAPLO};
 	my $z = $self->{ZOOM};
 
@@ -215,17 +216,11 @@ sub Main {
 	my $mw_szx = 0.9;
 	my $mw_szy = 0.75;
 
-
 	$mw->geometry (
 		int($scr_x*$mw_szx) . 'x' . int($scr_y * $mw_szy) .  '+' .
 		int($scr_x*(1-$mw_szx)/2) . '+' . int($scr_y * (1-$mw_szy)/3)
 	);
-
-	# MainWindow icon
-	my $icon = $mw->Photo(-format => 'gif', -data => do { GetIconData() }  );
- 	$mw->idletasks; 
- 	$mw->iconimage($icon);
-	
+		
 	### Attaching the menu from Main Window
 	$mw->configure(-menu => $menubar = $mw->Menu(-menuitems => _MainMenu));
 
@@ -247,9 +242,11 @@ sub Main {
 		$menu->Post($mw->pointerxy); $menu->grabRelease() 
 	});
 	$canvas->CanvasBind('<Configure>' => sub { AdjustView() });
-	$canvas->CanvasBind('<B1-Motion>', [ \&MouseB1Move, Ev('x'),Ev('y') ]);
-	$canvas->CanvasBind('<ButtonRelease-1>', [ \&MouseB1Release, Ev('x'),Ev('y') ] );
-
+	$canvas->bind('SYMBOL','<B1-Motion>', [ \&MouseB1Move, Ev('x'),Ev('y') ]);
+	$canvas->bind('SYMBOL','<ButtonRelease-1>', [ \&MouseB1Release, Ev('x'),Ev('y') ] );
+	$canvas->bind('HEAD', '<ButtonRelease-1>', [ \&HeadB1Release, Ev('x'),Ev('y') ] );
+	$canvas->bind('HEAD', '<B1-Motion>' => [ \&MoveHead, Ev('x'), Ev('y') ] );
+	
 	$canvas->bind('ALLEL', '<Leave>', sub {
 		$canvas->itemconfigure($param->{ACTIVE_ITEM}, 
 			-fill => $self->{FONT_HAPLO}{COLOR}
@@ -257,7 +254,8 @@ sub Main {
 		delete $param->{ACTIVE_ITEM}
 	});
 	$canvas->bind('ALLEL', '<Double-1>', \&KlickAllel  );
-	$canvas->bind('ALLEL', '<Enter>', [ \&EnterAllel, Ev('x'),Ev('y') ] );
+	$canvas->bind('SYMBOL','<Double-1>', \&KlickSymbol );
+	$canvas->bind('ALLEL', '<Enter>', \&EnterAllel );
 
 	### some ugly cursor shapes ( there is no minus symbol, thats live ! )
 	$mw->bind('<KeyPress-Shift_L>'	=> sub { $canvas->configure(-cursor => 'plus')  });
@@ -273,27 +271,31 @@ sub Main {
 	$mw->bind('<Control-Key-h>' 	=> sub { OptionsHaplotype() });
 	$mw->bind('<Control-Key-l>' 	=> sub { OptionsLines() });
 
-	### temporary code for development only
-	#$mw->bind('<KeyPress-F2>', sub {
-	#	
-	#	ReadPed(
-	#		-file => 'P:/projects/742/hemd1/omega/profiles/pedfile.pro',
-	#		-format => 'PRAEMAKEPED'
-	#	) or return undef;
-    #
-	#	ReadHaplo(
-	#		-file => 'P:/projects/742/hemd1/omega/simwalk_hap_c14_010304/c14/HAPLO-01_new.001',
-	#		-format => 'SIMWALK',
-	#	);
-	#	
-	#	DoIt('200');
-    #
-	#	my $fileref = $menubar->entrycget('View', -menu);
-	#	my $drawref = $fileref->entrycget('Draw Family ...', -menu);
-	#	$drawref->delete(0,'end');
-	#	for my $fam (nsort keys %pedigree) { $drawref->add('command', -label => $fam, -command => sub {DoIt($fam)} ) }
-	#});
-
+	### temporary development code
+	$mw->bind('<KeyPress-F2>', sub {
+		
+		ReadPed(
+			-file => 'A:\simwalk_haplo\pedfile.pro',
+			-format => 'PRAEMAKEPED'
+		) or return undef;
+    
+		ReadHaplo(
+			-file => 'A:\simwalk_haplo\HAPLO-01.001',
+			-format => 'SIMWALK',
+		);
+		
+		DoIt('01');
+    
+		my $fileref = $menubar->entrycget('View', -menu);
+		my $drawref = $fileref->entrycget('Draw Family ...', -menu);
+		$drawref->delete(0,'end');
+		for my $fam (nsort keys %pedigree) { $drawref->add('command', -label => $fam, -command => sub {DoIt($fam)} ) }
+	});
+	
+	# MainWindow icon
+ 	$mw->idletasks; 
+ 	$mw->iconimage($mw->Photo(-format => 'gif', -data => GetIconData()));
+ 	
 	MainLoop;
 }
 
@@ -308,7 +310,10 @@ sub _MainMenu {
 			[
 				[ 'command', 'Open ...',	-command => \&RestoreSelf ],
 				[ 'command', 'Save', 		-command => [\&SaveSelf, 0] ],
-				[ 'command', 'Save as ..',	-command => [\&SaveSelf, 1] ],
+				[ 'command', 'Save as ..',	-command => [\&SaveSelf, 1] ],				
+				,'-',
+				[ 'command', 'Open Defaults ...',	-command => [\&Default, 'open' ] ],
+				[ 'command', 'Save Defaults as ..',	-command => [\&Default, 'save' ] ],	
 				,'-',
 				[ 'cascade', 'Import Pedigrees ...', -tearoff => 0,	-menuitems =>
 					[
@@ -407,7 +412,8 @@ sub _ContextMenu {
 #===============
 sub KlickAllel {
 #===============	
-	@_ = $canvas->gettags($param->{ACTIVE_ITEM});
+	#@_ = $canvas->gettags($param->{ACTIVE_ITEM});
+	@_ = $param->{ACTIVE_ITEM};
 	foreach (@_) {
 		if (/ALLEL-(\w)-(\d+)-(.+)/) {
 
@@ -437,10 +443,12 @@ sub KlickAllel {
 			foreach my $l ( "Paternal", "Maternal", 'Not informative') {
 				$f->Radiobutton( -text => $l, -variable => \$var,-value => $l, -command => sub {
 					if ($var eq 'Paternal') {
-						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][1] = $P; $flag = 1
+						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][1] = $P; $flag = 1;
+						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][0] = 'NI-3';
 					}
 					elsif ($var eq 'Maternal') {
-						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][1] = $M; $flag = 1
+						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][1] = $M; $flag = 1;
+						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][0] = 'NI-3';
 					} else {
 						$self->{HAPLO}{PID}{$3}{$1}{BAR}[$2][0] = 'NI-2'; $flag = 1
 					}
@@ -459,16 +467,41 @@ sub KlickAllel {
 	}
 }
 
+#================
+sub KlickSymbol {
+#================
+	my ($c) = @_;
+	@_ = $c->itemcget('current', -tags);
+	foreach my $tag (@_) {
+		if ($tag =~ /SYM-(\S+)/) {
+			my $id = $1;
+			
+			my $d = $mw->DialogBox(-title => 'Change sample values',-buttons => ['Ok']);
+			my $f = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack( -padx => 5, -pady => 5, -expand => 1, -fill => 'both');
+			
+			$f->Radiobutton(-value => 2 ,-variable =>\$self->{SID2AFF}{$id},-text => 'affected')->grid(-row => 0, -column => 0, -sticky => 'w');
+			$f->Radiobutton(-value => 1 ,-variable =>\$self->{SID2AFF}{$id},-text => 'not affected')->grid(-row => 1, -column => 0, -sticky => 'w');
+			$f->Radiobutton(-value => 0 ,-variable =>\$self->{SID2AFF}{$id},-text => 'unknown')->grid(-row => 2, -column => 0, -sticky => 'w');
+			
+			$f->Radiobutton(-value => 1 ,-variable =>\$self->{SID2ALIVE}{$id},-text => 'alive')->grid(-row => 0, -column => 1, -sticky => 'w');
+			$f->Radiobutton(-value => 0 ,-variable =>\$self->{SID2ALIVE}{$id},-text => 'not alive')->grid(-row => 1, -column => 1, -sticky => 'w');
+			
+			$d->Show;
+			RedrawPed();
+		}
+	}
+}
+
+
 # Moving mouse over uninformative alleles from non-founder cause changing its color to red
 #===============
 sub EnterAllel {
 #===============	
-	my ($c, $x, $y) = @_;
-	$x = $c->canvasx($x);
-	$y = $c->canvasy($y);
+	my ($c) = @_;
 	my $z = $self->{ZOOM};
-	$_ = $c->find('closest', $x, $y);
-	@_ = $c->gettags($_);
+	
+	@_ = $c->itemcget('current', -tags);
+		
 	foreach my $tag (@_) {
 		if ($tag =~ /ALLEL-(\w)-(\d+)-(.+)/) {
 			my $fa = $self->{SID2FATHER}{$3};
@@ -485,12 +518,29 @@ sub EnterAllel {
 			}
 
 			if ( (! $a1 || ! $a2) || ( $a1 == $a2 ) ) {
-				$param->{ACTIVE_ITEM} = $_;
-				$c->itemconfigure($_, -fill => 'red');
+				$param->{ACTIVE_ITEM} = $tag;
+				$c->itemconfigure($tag, -fill => 'red');
 			} else { return }
 		}
 	}
 }
+
+
+#==================
+sub HeadB1Release {
+#==================
+	my $c = shift;
+	my $z = $self->{ZOOM};
+	my $gx = $self->{GITTER_X}*$z;
+	my $gy = $self->{GITTER_Y}*$z;	
+	@_ = $c->coords('HEAD');
+	my $X = $self->{TITLE_X} = sprintf ("%1.0f", $_[0]/$gx);
+	my $Y = $self->{TITLE_Y} = sprintf ("%1.0f", $_[1]/$gy);
+	
+	$c->coords('HEAD', $X*$self->{GITTER_X}*$z, $Y*$self->{GITTER_Y}*$z);
+	
+}
+
 
 # sub for drag and drop symbols features
 #===================
@@ -554,22 +604,36 @@ sub MouseB1Move {
 	$param->{Y} = $y;
 }
 
+# moving title 
+#=============
+sub MoveHead {
+#=============
+	my ($c, $x, $y) = @_;
+	my $z = $self->{ZOOM};
+	
+	$x = $c->canvasx($x);
+	$y = $c->canvasy($y);	
+	
+	$c->move('current',$x-$param->{X},$y-$param->{Y});
+
+	$param->{X} = $x;
+	$param->{Y} = $y;			
+}
+
+
 #===================
 sub ActivateSymbol {
 #===================
 	my ($c, $x, $y) = @_;
 	$x = $c->canvasx($x);
 	$y = $c->canvasy($y);
-
-	return unless $c->cget(-cursor) eq 'left_ptr';
-
+	
 	$param->{X} = $x;
 	$param->{Y} = $y;
 
-	@_ = $c->find("overlapping", $x-1,$y-1, $x+1,$y+1);
-	my %s;foreach (@_) { foreach my $tag ( $c->gettags($_) ) { $s{$tag} = 1 } }
+	return unless $c->cget(-cursor) eq 'left_ptr';	
 
-	foreach my $t (keys %s) {
+	foreach my $t ($c->itemcget('current', -tags)) {	
 		if ($t =~ /^SYM-(.+)$/) {
 			@_ = ( $c->coords($t),-width => $c->itemcget($t,-width),
 				-outline => $c->itemcget($t,-outline), -fill => 'red' );
@@ -591,6 +655,7 @@ sub DoIt {
 #=========	
 	my $fam = shift;
 	MakeSelf($fam);
+	Default('restore');
 	ProcessFamily()	or return;
 	FindLoops();
 	FindTops() or return;
@@ -699,7 +764,7 @@ sub CheckPedigree {
 
 
 # This sub implements maximal number of tryals to find good drawing solutions
-# Given values are found empirical to work well. Ok, the alligning algorhithm still could be improved !
+# Given values are found empirical working well. Ok, the alligning algorhithm still could be improved !
 #============
 sub DrawPed {
 #============
@@ -716,6 +781,7 @@ sub DrawPed {
 			my $c = SetLines();
 			#print "$c crossings observerd\n";
 			unless ($c) {
+				$bar->update() if $bar;
 				FillCanvas();
 				DrawLines();
 				DrawHaplo();
@@ -788,6 +854,7 @@ sub RestoreSelf {
 	AdjustView();
 
 }
+
 
 #  Loops there ? When yes collecting informations for later queries
 #==============
@@ -873,7 +940,7 @@ sub FindLoops {
 						last W
 					}
 					elsif ( ( "$f1" eq '0' and "$m1" eq '0' ) or ( "$f2" eq '0' and "$m2" eq '0' ) ) {
-						die "Impossible to draw loop affecting $pe1/$pe2\n"
+						ShowInfo("Impossible to draw loop affecting $pe1/$pe2\n", 'error'); return undef
 					}
 				}
 			}
@@ -1211,10 +1278,10 @@ sub ProcessFamily {
 			$line_error .= "Error in line: @$_\n"; next
 		}
 
-		if ( ! defined $sex{$sex} ) {
+		if ( ! defined $sex || ! defined $sex{$sex} ) {
 			$line_error .= "Unknown Sex in line: @$_\n"; $sex = 0
 		}
-		if ( ! defined $aff{$aff} ) {
+		if ( ! defined $aff || ! defined $aff{$aff} ) {
 			$line_error .= "Unknown Aff status  in line: @$_\n"; $aff = 0
 		}
 
@@ -1251,6 +1318,7 @@ sub ProcessFamily {
 		if ($fid) { $self->{SIBS}{$fid . '__' . $mid}{$sid} = 1 }
 
 		$self->{PID}{$sid} = 1;
+		$self->{SID2ALIVE}{$sid} = 1;
 	}
 
 	if ($line_error) { ShowInfo("There are errors in this pedfile !\n$line_error", 'error'); return undef }
@@ -2001,11 +2069,12 @@ sub ShowAbout {
 		-title => 'About HaploPainter',
 		-message =>
 		"Version: $param->{VERSION} \n" .
+		"Last change: $param->{LAST_CHANGE}\n" .
 		"Author: Holger Thiele\n" .
 		"Contact: hthiele\@users.sourceforge.net\n\n" .
 		'http://haplopainter.sourceforge.net/html/ManualIndex.htm',
 		-type => 'OK', -icon => 'info'
-	)
+	)		
 }
 
 #=================
@@ -2038,8 +2107,7 @@ sub OptionsPrint {
 	)->grid( -row => 1, -column => 4, -sticky => 'e');
 	$f->Checkbutton( -text => "Show Date", -variable => \$self->{SHOW_DATE},
 	)->grid( -row => 2, -column => 4, -sticky => 'e');
-	$f->Checkbutton( -text => "Date on Top", -variable => \$self->{SHOW_DATE_TOP},
-	)->grid( -row => 3, -column => 4, -sticky => 'e');
+	
 
 	foreach my $s (
 		[ 'BORDER_UP',		'Margin up',         1,0,   10,  300,    5  ],
@@ -2059,43 +2127,56 @@ sub OptionsPrint {
 	RedrawPed();
 }
 
+
+
+### additional layer
+{
+
+my ($freeze, $flag);
+
 # Configuratuion menu
 #==================
 sub Configuration {
 #==================	
-	### make copy of self for restoring data when cancel action
-	my $save = freeze($self);
+	### make copy of self for restoring data when cancel - action
+	$freeze = freeze($self);
+		
 	### Recycle menu
 	if (! Exists($opt)) {
-		$opt = $mw->Toplevel();
+		$opt = $mw->Toplevel();						
 		$opt->title('Configuration');
-		my $scr_x  = $opt->screenwidth;
-		my $scr_y  = $opt->screenheight;
-		my $mw_szx = 0.5;
-		my $mw_szy = 0.6;
-
-		$opt->geometry (
-			int($scr_x*$mw_szx) . 'x' . int($scr_y * $mw_szy) .  '+' .
-			int($scr_x*(1-$mw_szx)/2) . '+' . int($scr_y * (1-$mw_szy)/3)
-		);
-
+		
 		my $f1 = $opt->Frame(-relief => 'groove', -borderwidth => 2)->pack( -side => 'top', -padx => 5, -pady => 5, -expand => 1, -fill => 'both');
 		my $f2 = $opt->Frame()->pack( -side => 'top', -padx => 5, -pady => 5,  -fill => 'x');
-
+ 		
 		### Buttons on bottom
-		$f2->Button(-text => 'Ok', -width => 10, -command => sub {$opt->withdraw;	RedrawPed() ; undef $save}
-		)->grid( -row => 0, -column => 0, -sticky => 'w');
+		$f2->Button(-text => 'Ok', -width => 10, -command => sub {
+			$opt->withdraw;
+			if ($flag) {
+				BuildMatrix(); my $cc = 0;	until (AlignMatrix()) { $cc++ ; last if $cc > 120 }	
+			}
+			RedrawPed() ; 
+			undef $freeze;
+			undef $flag;
+			Default('update');
+		})->grid( -row => 0, -column => 0, -sticky => 'w');
+		
 		$f2->Button(-text => 'Cancel', -width => 10, -command => sub {
-			$self = thaw($save) if $self; $opt->destroy; undef $opt; RedrawPed() 
+			$self = thaw($freeze) if $self; 
+			$opt->destroy; 
+			undef $opt;
+			undef $flag; 
+			RedrawPed() 
 		})->grid( -row => 0, -column => 1, -sticky => 'w');
-		$f2->Button(-text => 'Apply', -width => 10, -command => sub { RedrawPed() }
-		)->grid( -row => 0, -column => 2, -sticky => 'w');
-		$f2->Button(-text => 'Apply & Redraw', -width => 15, -command => sub {
-			BuildMatrix();
-			my $cc = 0;	until (AlignMatrix()) { $cc++ ; last if $cc > 120 }
+				
+		
+		$f2->Button(-text => 'Apply', -width => 10, -command => sub {
+			if ($flag) {
+				BuildMatrix(); my $cc = 0;	until (AlignMatrix()) { $cc++ ; last if $cc > 120 }	
+			}
 			RedrawPed();
-		}
-		)->grid( -row => 0, -column => 3, -sticky => 'w');
+			undef $flag;
+		})->grid( -row => 0, -column => 3, -sticky => 'w');
 
 		### Notebook
 		my $n = $f1->NoteBook(
@@ -2129,7 +2210,7 @@ sub Configuration {
 			$p1->Scale(
 				-label  => @$s[1], -variable => \$self->{@$s[0]},
 				-from   => @$s[4], -to => @$s[5],-orient => 'horizontal',
-				-length => 120, -width => 12, -resolution => @$s[6],
+				-length => 130, -width => 12, -resolution => @$s[6],
 			)->grid( -row => @$s[2], -column => @$s[3], -sticky => 'ns');
 			$p1->gridColumnconfigure( @$s[2], -pad => 50);
 		}
@@ -2161,17 +2242,17 @@ sub Configuration {
 		### Fonts + Colors
 		my $hap_f = $p3->Frame->grid(-row => 0, -column => 0, -sticky => 'w');                                                                                                                                                                                 	### Font Farbe
 		my $hap_l = $hap_f->Label(-width => 3, -bg => $self->{FONT_HAPLO}{COLOR})->pack(-side => 'left', -padx => 10);
-		my $hap_b; $hap_b = $hap_f->Button( -text => 'Haplotypes Font', -width => 20, -command => sub {
+		my $hap_b; $hap_b = $hap_f->Button( -text => 'Haplotype Font', -width => 20, -command => sub {
 			ChooseFont('FONT_HAPLO', $hap_l);
 		})->pack(-side => 'left');
 		my $inf_f = $p3->Frame->grid(-row => 1, -column => 0, -sticky => 'w');                                                                                                                                                                                 	### Font Farbe
 		my $inf_l = $inf_f->Label(-width => 3, -bg => $self->{FONT1}{COLOR})->pack(-side => 'left', -padx => 10);
-		my $inf_b; $inf_b = $inf_f->Button( -text => 'Information Font', -width => 20,-command => sub {
+		my $inf_b; $inf_b = $inf_f->Button( -text => 'Symbol information Font', -width => 20,-command => sub {
 			ChooseFont('FONT1', $inf_l)
 		})->pack(-side => 'left');
 		my $head_f = $p3->Frame->grid(-row => 2, -column => 0, -sticky => 'w');                                                                                                                                                                                 	### Font Farbe
 		my $head_l = $head_f->Label(-width => 3, -bg => $self->{FONT_HEAD}{COLOR})->pack(-side => 'left', -padx => 10);
-		my $head_b; $head_b = $head_f->Button( -text => 'Head Font', -width => 20, -command => sub {
+		my $head_b; $head_b = $head_f->Button( -text => 'Title Font', -width => 20, -command => sub {
 			ChooseFont('FONT_HEAD', $head_l)
 		})->pack(-side => 'left');
 
@@ -2379,21 +2460,22 @@ sub Configuration {
 		### page5
 		### Lines Option Schieberegler
 		foreach my $s (
-			[ 'CROSS_FAKTOR1',	'Cross factor 1',         0,0,   0.1,  5,  0.1  ],
-			[ 'CROSS_FAKTOR2',	'Cross factor 2',         1,0,   0.1,  5,  0.1  ],
-			[ 'GITTER_X',		'Grid X space',           2,0,     5, 50,    1  ],
-			[ 'GITTER_Y',		'Grid Y space',           3,0,     5, 50,    1  ],
-			[ 'SYMBOL_SIZE',	'Symbol size',            0,1,     5, 50,    1  ],
-			[ 'LINE_WIDTH',		'Line width',             1,1,   0.1,  5,  0.1  ],
-			[ 'X_SPACE',		'Symbol min X distance',  2,1,     1, 20,    1  ],			
-			[ 'Y_SPACE_DEFAULT','Symbol min Y distance',  3,1,     3, 50,    1  ],
-			[ 'Y_SPACE_EXTRA',  'Symbol extra Y distance',4,1,    -2,  2,    1  ],
+			[ 'CROSS_FAKTOR1',	'Cross factor',             0,0,   0.1,  5,  0.1  ],
+			[ 'ALIVE_SPACE',	'Dead line length',         1,0,     1, 20,    1  ], 
+			[ 'GITTER_X',		'Grid X space',             2,0,     5, 50,    1  ],
+			[ 'GITTER_Y',		'Grid Y space',             3,0,     5, 50,    1  ],
+			[ 'CONSANG_DIST',	'Consanguine line distance',4,0,     1, 10,    1  ],
+			[ 'SYMBOL_SIZE',	'Symbol size',              0,1,     5, 50,    1  ],
+			[ 'LINE_WIDTH',		'Symbol outer line width',  1,1,   0.1,  5,  0.1  ],
+			[ 'X_SPACE',		'Inter symbol distance',    2,1,     1, 20,    1  ],			
+			[ 'Y_SPACE_DEFAULT','Inter generation distance',3,1,     3, 50,    1  ],
+			[ 'Y_SPACE_EXTRA',  'Haplo extra space',        4,1,    -5,  5,  0.1  ],
 		) {
 			$p5->Scale(
 				-label  => @$s[1], -variable => \$self->{@$s[0]},
 				-from   => @$s[4], -to => @$s[5],-orient => 'horizontal',
 				-length => 150, -width => 12, -resolution => @$s[6],-command => sub {
-					$self->{Y_SPACE} = $self->{Y_SPACE_DEFAULT} if @$s[0] eq 'Y_SPACE_DEFAULT';
+					 $flag = 1 if @$s[0] eq 'X_SPACE'					
 				}
 			)->grid( -row => @$s[2], -column => @$s[3], -sticky => 'w');
 			$p5->gridColumnconfigure( @$s[2], -pad => 50);
@@ -2484,7 +2566,14 @@ sub Configuration {
 		$opt->deiconify();
 		$opt->raise();
 	}
+	
+	$opt->withdraw();
+	$opt->Popup();	
+	$opt->idletasks;
+	$opt->iconimage($opt->Photo(-format =>'gif',-data => GetIconData()));
+}    	
 }
+
 
 #===============
 sub ChooseFont {
@@ -2494,19 +2583,12 @@ sub ChooseFont {
 	my $fo = $self->{$k};
 	my $tl = $mw->Toplevel();
 	$tl->title('Font');
-	my $scr_x  = $opt->screenwidth;
-	my $scr_y  = $opt->screenheight;
-	my $mw_szx = 0.25;
-	my $mw_szy = 0.3;
-
-	$tl->geometry (
-		int($scr_x*$mw_szx) . 'x' . int($scr_y * $mw_szy) .  '+' .
-		int($scr_x*(1-$mw_szx)/2) . '+' . int($scr_y * (1-$mw_szy)/3)
-	);
+	
 
 	my $f1 = $tl->Frame(-relief => 'groove', -borderwidth => 2)->pack( -side => 'top', -padx => 5, -pady => 5, -expand => 1, -fill => 'both');
 	my $f2 = $tl->Frame()->pack( -side => 'top', -padx => 5, -pady => 5,  -fill => 'x');
-
+		
+	
 	### Font Familie
 	my $fe1 = $f1->Frame->grid(-row => 0, -column => 1, -sticky => 'w');
 	my $lab1 = $fe1->Label(-text => 'Font:', -width => 6)->pack(-side => 'left', -anchor => 'w');
@@ -2529,7 +2611,7 @@ sub ChooseFont {
     my $lab3 = $fe3->Label(-text => 'Weight:', -width => 6)->pack(-side => 'left', -anchor => 'w');
     my $be3 = $fe3->BrowseEntry(
 		-variable => \$fo->{WEIGHT},-choices => [ 'bold', 'normal' ], -state => 'readonly',
-		-command => sub { $cb1->configure(-font => [ $fo->{FAMILY}, 8, $fo->{WEIGHT}, $fo->{SLANT} ]) }
+		-command => sub { $cb1->configure(-font => [ $fo->{FAMILY}, 10, $fo->{WEIGHT}, $fo->{SLANT} ]) }
 	)->pack(-side => 'left');
 
 	### Font Style
@@ -2537,7 +2619,7 @@ sub ChooseFont {
     my $lab4 = $fe4->Label(-text => 'Slant:', -width => 6)->pack(-side => 'left', -anchor => 'w');
     my $be4 = $fe4->BrowseEntry(
 		-variable => \$fo->{SLANT},  -state => 'readonly',-choices => [ 'italic', 'roman',  ]	,
-		-command => sub { $cb1->configure(-font => [ $fo->{FAMILY}, 8, $fo->{WEIGHT}, $fo->{SLANT} ]) }
+		-command => sub { $cb1->configure(-font => [ $fo->{FAMILY}, 10, $fo->{WEIGHT}, $fo->{SLANT} ]) }
 	)->pack(-side => 'left');
 
 	### Font Farbe
@@ -2558,7 +2640,12 @@ sub ChooseFont {
 
 	$f2->Button(-text => 'Ok', -width => 10, -command => sub {$tl->destroy(); $opt->focusForce
 	})->grid( -row => 0, -column => 0, -sticky => 'w');
-
+	
+	$tl->withdraw();
+	$tl->Popup();	
+	$tl->idletasks;
+ 	$tl->iconimage($opt->Photo(-format =>'gif',-data => GetIconData()));
+	
 }
 
 #================
@@ -2800,14 +2887,15 @@ sub FillCanvas {
 		$self->{FONT1}{FAMILY},
 		$self->{FONT1}{SIZE}*$z ,
 		$self->{FONT1}{WEIGHT},
-		$self->{FONT1}{WEIGHT},
+		$self->{FONT1}{SLANT},
 	];
 	my $head1 = [
-		$self->{FONT_HEAD}{NAME},
+		$self->{FONT_HEAD}{FAMILY},
 		$self->{FONT_HEAD}{SIZE}*$z ,
 		$self->{FONT_HEAD}{WEIGHT},
-		$self->{FONT_HEAD}{WEIGHT}
+		$self->{FONT_HEAD}{SLANT}
 	];
+	my $as = $self->{ALIVE_SPACE};
 	my %save;
 
 	CanvasTrimYdim();
@@ -2817,17 +2905,20 @@ sub FillCanvas {
 
 	ShowGrid();
 
-	### Uerberschrift
-	if (! $self->{TITLE} && $self->{FAMILY}) { $self->{TITLE} = "Family - $self->{FAMILY}" }
-	(my $Y) = sort { $a <=> $b } keys %{$m->{YX2P}} or return;
-	@_ = sort { $a <=> $b } keys % { $m->{YX2P}{$Y} } or return;
-	my $xh = ( ($_[0]*$self->{GITTER_X}*$z)+($_[-1]*$self->{GITTER_X}*$z))/2;
-	my $yh = (($Y*$self->{GITTER_Y})-$param->{HEAD_DISTANCE})*$z;
-
-	if ($self->{SHOW_HEAD} && @_) {
+	### Uerberschrift		
+	if (! $self->{TITLE_X}) {  
+		($_) = sort { $a <=> $b } keys %{$m->{YX2P}} or return;
+		@_ = sort { $a <=> $b } keys % { $m->{YX2P}{$_} } or return;
+		$self->{TITLE_X} = ($_[0]+$_[-1])/2;
+		$self->{TITLE_Y} = $_-3;
+	}	
+	
+	if ($self->{SHOW_HEAD} ) {						
+		if (! $self->{TITLE} && $self->{FAMILY}) { $self->{TITLE} = "Family - $self->{FAMILY}" }				
 		$c->createText(
-			$xh, $yh, -anchor => 'center', -text => $self->{TITLE} ,
-			-font => $head1, -fill => 'black', -tags => [ 'TEXT' , 'TAG' ]
+			$self->{TITLE_X}*$self->{GITTER_X}*$z, $self->{TITLE_Y}*$self->{GITTER_Y}*$z, 			
+			-anchor => 'center', -text => $self->{TITLE} , 
+			-font => $head1, -fill => $self->{FONT_HEAD}{COLOR}, -tags => [ 'TEXT' , 'HEAD', 'TAG' ]
 		)
 	}
 
@@ -2880,7 +2971,30 @@ sub FillCanvas {
 					-font => $font1, -fill => $self->{FONT1}{COLOR}, -tags => [ 'TEXT', "QUEST-$p", 'QUEST' ]
 				);
 			}
-
+			
+			### live status
+			if (! $self->{SID2ALIVE}{$p}) {
+				if ($self->{SID2AFF}{$p} == 0 && $self->{SHOW_QUEST}) {				
+					$c->createLine(
+						($cx-$sz-$as)*$z, ($cy+$sz+$as)*$z ,
+						($cx-$sz+$as+1)*$z, ($cy+$sz-$as-1)*$z ,
+						-width => $l*$z,-fill => $lnc, -tags => [ 'TOT' ]			
+					);
+					
+					$c->createLine(
+						($cx+$sz-$as-1)*$z, ($cy-$sz+$as+1)*$z ,
+						($cx+$sz+$as)*$z, ($cy-$sz-$as)*$z ,
+						-width => $l*$z,-fill => $lnc, -tags => [ 'TOT' ]			
+					)					
+				} else {
+					$c->createLine(
+						($cx-$sz-$as)*$z, ($cy+$sz+$as)*$z ,
+						($cx+$sz+$as)*$z, ($cy-$sz-$as)*$z ,
+						-width => $l*$z,-fill => $lnc, -tags => [ 'TOT' ]			
+					)				
+				}												
+			}			
+			
 			### Personenbezeichner und Case Infos
 			my $cc = 0;
 			for (my $i = 0; $i <= $#{ $self->{SHOW_CASE} }; $i++) {
@@ -2906,14 +3020,14 @@ sub FillCanvas {
 	if ($self->{SHOW_DATE}) {
 		@_ = $c->bbox('all');
 		my @t = split ' ', localtime(time);
-		my $y; if ($self->{SHOW_DATE_TOP}) { $y = $yh } else {  $y = $_[3]+50 }
 		$c->createText(
-			$_[2],  $y,
+			$_[2]+25,  $_[1]-25,
 			-anchor => 'e', -text => "@t[0,1,2,4]",
 			-font => $font1, -tags => [ 'TEXT', 'DATUM', 'TAG' ]
 		);
 	}
 }
+	
 
 #==============
 sub DrawHaplo {
@@ -2981,9 +3095,9 @@ sub DrawHaplo {
 					my ($col, $inf, $ncol, $ninf, $out, $lr, $fill, $al, $x1, $x2, $y1, $y2 );
 
 					### BAR wird auf Y_SPACE Niveau geschrumpft
-					if (! $self->{SHOW_HAPLO_TEXT} ) {
+					if (! BarTextOk()) {
 						my $cc = 0; foreach (@ { $self->{SHOW_CASE} }) { $cc++ if $_ }
-						$td = ((($self->{Y_SPACE}-3.5)*$self->{GITTER_Y}*$z)-($cc*$self->{FONT1}{SIZE}*$z))/$i3;
+						$td = ((($self->{Y_SPACE}- 2.8 -$self->{Y_SPACE_EXTRA})*$self->{GITTER_Y}*$z)-($cc*$self->{FONT1}{SIZE}*$z))/$i3;
 					}
 
 					my $y = $bbox[3] + $self->{FONT1}{SIZE}*$z + $td;
@@ -3161,6 +3275,7 @@ sub DrawHaplo {
 
 		}
 	}
+	$canvas->Subwidget('canvas')->lower('GRID');
 }
 
 
@@ -3304,11 +3419,11 @@ sub SetLines {
 	my $s = $self->{STRUK};
 	my $gy = $self->{GITTER_Y};
 	my $cf1 = $self->{CROSS_FAKTOR1};
- 	my $cf2 = $self->{CROSS_FAKTOR2};
+ 	#my $cf2 = $self->{CROSS_FAKTOR2};
 	my $cl  = $self->{CROSS_LOOP};
 	my $cd  = $self->{CONSANG_DIST};
-	my $f   = $cl*$z;					### bestimmt Groesse der Kreuzungs-Schleife
-
+	my $f   = $cl*$z;					### bestimmt Groesse der Kreuzungs-Schleife	
+	
 	### Phase 1: erst mal alle Linien-Koordinanten bestimmen
 	### 1. Linien zwischen den Eltern berechnen
 	my $CG = 0; foreach my $G (@$s) {
@@ -3336,14 +3451,15 @@ sub SetLines {
 						my $xm1 = ($X1[0]+$X1[1])/2;
 						my $xm2 = ($X2[0]+$X2[1])/2;
 						my $y = ($c1[1]+$c1[3])/2;
-						if ( ! ( $self->{LOOP}{END}{$c1} and $self->{LOOP}{END}{$c2}) ) {
-							$d->{COUPLE}{"$CG$CS$CP$CC"}{POS} = [ [ $x1, $y, $x2, $y ] ]
-						} else {
-							$d->{COUPLE}{"$CG$CS$CP$CC"}{POS} =
+						if (  $self->{LOOP}{END}{$c1} && $self->{LOOP}{END}{$c2} && 
+							  keys % { $self->{LOOP}{END_START}{$c1} }	) {
+								$d->{COUPLE}{"$CG$CS$CP$CC"}{POS} =
 							[
 								[ $xm1, $y+$cd*$z, $xm2, $y+$cd*$z ],
 							 	[ $xm1, $y-$cd*$z, $xm2, $y-$cd*$z ]
-							]
+							]												
+						} else {
+							$d->{COUPLE}{"$CG$CS$CP$CC"}{POS} = [ [ $x1, $y, $x2, $y ] ]
 						} $CC++
 					} $CP++
 				} $CS++
@@ -3415,8 +3531,8 @@ sub SetLines {
 				$d->{COUPLE_SIB}{$id} =
 					[
 						$xm1, $y1,
-						$xm1, $y2-($cf1*$cf2*$gy*$z),
-						$xm2, $y2-($cf1*$cf2*$gy*$z),
+						$xm1, $y2-($cf1*$gy*$z),
+						$xm2, $y2-($cf1*$gy*$z),
 						$xm2, $y2
 					]
 			}
@@ -3444,8 +3560,8 @@ sub SetLines {
 				$d->{COUPLE_SIB}{$id} =
 					[
 						$xm1, $y1,
-						$xm1, $y2-($cf1*$cf2*$gy*$z),
- 						$x3,  $y2-($cf1*$cf2*$gy*$z),
+						$xm1, $y2-($cf1*$gy*$z),
+ 						$x3,  $y2-($cf1*$gy*$z),
  						$x3,  $y2
 					]
 			}
@@ -3517,8 +3633,9 @@ sub SetLines {
 }
 
 
-
+#===============
 sub CrossCheck {
+#===============
 	my ($r1, $r2) = @_;
 	### bestimmt Groesse der Kreuzungs-Schleife                                                                                                                                                                          
 	my $f  = $self->{CROSS_LOOP} * $self->{ZOOM};
@@ -3679,31 +3796,36 @@ sub CanvasTrimYdim {
 	my $te = $self->{FONT1}{SIZE}*$z*$cc;
 
 	### Wenn es Haplotypen TEXT gibt so muss die GITTER_Y Variable angepasst werden
-	### fuer BARS wird der BAR auf die voreingestellte Y_SPACE Variable gepresst
-	if ( (keys %{$h->{PID}} && $self->{SHOW_HAPLO_TEXT})  ||
-	     ($h->{MAP}{MARKER} && @{$h->{MAP}{MARKER}} && $self->{SHOW_MARKER})  ||
-	     ($h->{MAP}{POS} 	&& @{$h->{MAP}{POS}} 	&& $self->{SHOW_POSITION}) ) {
+	### fuer BARS wird der BAR auf die voreingestellte Y_SPACE_DEFAULT Variable gepresst
+	if ( BarTextOk() ) {
 
 		my $c = 0; foreach ( @{ $h->{DRAW} } ) { $c++ if $_ }
 		my $td = ($self->{FONT_HAPLO}{SIZE}*$z) + ($lw*$self->{FONT_HAPLO}{SIZE}*$z);
-		my $ys = sprintf("%1.0f", (($c*$td)+$te)/($self->{GITTER_Y}*$z))+4.2+$es;
+		my $ys = sprintf("%1.0f", (($c*$td)+$te)/($self->{GITTER_Y}*$z))+3+$es;
 
-		if ($self->{Y_SPACE} != $ys) { TrimIt($ys) }
+		if ($self->{Y_SPACE} != $ys) {
+			 TrimIt($self->{Y_SPACE}- $ys);
+			 $self->{Y_SPACE} = $ys; 
+		}
 	}
 
 	else {
 		my $td = $self->{FONT1}{SIZE}*$z*$cc;
 		my $ys = sprintf("%1.0f", $td/($self->{GITTER_Y}*$z))+5;
-		if ( $self->{Y_SPACE} < $ys ) { TrimIt($ys)  }
-		else { TrimIt($self->{Y_SPACE_DEFAULT}) }
+		
+		#print "YS = $ys\nY_SPACE = $self->{Y_SPACE}, Y_SPACE_DEFAULT = $self->{Y_SPACE_DEFAULT}\n";
+		
+		if ( $self->{Y_SPACE_DEFAULT} != $self->{Y_SPACE} ) { 
+			TrimIt($self->{Y_SPACE}-$self->{Y_SPACE_DEFAULT});
+			$self->{Y_SPACE} = $self->{Y_SPACE_DEFAULT};  
+		}						
 	}
 }
 
 #===========
 sub TrimIt {
 #===========	
-	my $ys = shift;
-	my $diff = $self->{Y_SPACE}- $ys;
+	my $diff = shift;
 	my $m = $self->{MATRIX};
 	my %t;
 
@@ -3719,14 +3841,26 @@ sub TrimIt {
 		$m->{P2XY}{$p}{Y} = $y;
 		$m->{YX2P}{$y}{$x} = $p;
 	}
-	$self->{Y_SPACE} = $ys;
 }
+
+# BARS having additionally labels like marker and positions ?
+#==============
+sub BarTextOk {
+#==============
+	my $h = $self->{HAPLO};
+	if ( (keys %{$h->{PID}} && $self->{SHOW_HAPLO_TEXT})  ||
+	     ($h->{MAP}{MARKER} && @{$h->{MAP}{MARKER}} && $self->{SHOW_MARKER})  ||
+	     ($h->{MAP}{POS} 	&& @{$h->{MAP}{POS}} 	&& $self->{SHOW_POSITION}) ) {
+		return 1
+	} else { return 0 }	
+}
+
 
 #================
 sub ProgressBar {
 #================	
     (my $from, my $var) = @_;
-    my $w = MainWindow->new(-title => '');
+    my $w = $mw->Toplevel(-title => '');
     $w->grabGlobal;
     my $scr_x  = $mw->screenwidth;
     my $scr_y  = $mw->screenheight;
@@ -3738,8 +3872,8 @@ sub ProgressBar {
         -variable => $var,-cursor => 'watch',-resolution => 1,
     )->pack(-side => 'top');
     my $pb_b = $w->Label(-text => "Observed line crossings : $$var" )->pack(-side => 'left');
+    $pb->update();
     return ($w,$pb_b);
-    MainLoop;
 }
 
 
@@ -3748,7 +3882,7 @@ sub ProgressBar {
 #=============
 sub ShowHelp {
 #=============
-	my $help = MainWindow->new(-title => "HaploPainter Help");
+	my $help = $mw->Toplevel(-title => "HaploPainter Help");	
 	my $scr_x  = $mw->screenwidth;
 	my $scr_y  = $mw->screenheight;
 	my $mw_szx = 0.7;
@@ -3758,10 +3892,6 @@ sub ShowHelp {
 		int($scr_x*$mw_szx) . 'x' . int($scr_y * $mw_szy) .  '+' .
 		int($scr_x*(1-$mw_szx)/2) . '+' . int($scr_y * (1-$mw_szy)/3)
 	);
-	
-	my $icon = $help->Photo(-format => 'gif', -data => do { GetIconData() }  );
- 	$help->idletasks; 
- 	$help->iconimage($icon);
 	
 	my $t = $help->Scrolled('Text',
 		-scrollbars => 'osoe',
@@ -3773,19 +3903,83 @@ sub ShowHelp {
 	
 	$t->insert('end',$param->{HELP});
 	
-
-	MainLoop;
+	$help->idletasks; 
+ 	$help->iconimage($help->Photo(-format => 'gif', -data => GetIconData()));	
 }
 
+#================
 sub GetIconData {
-	my $bin = <<EOD;
-R0lGODdhIAAgACIAACwAAAAAIAAgAIK15fwvLy/9IyRGRv///wAAAAAAAAAAAAADkgi63P4wyvmE
-tWxoTd3Fy8Z1zCdkIll+6KYuZju+cZi+QK2IAxX8wKBwKHQQj8ifMbC6MAhQKEPZoCp0gKh0YeUy
-YayFljD9lpsgxfhcNefCai17/naK5d4l+nSP0hVdWGt5bXtPeIBuiYZ9W4ttSZFAS5KSFFg8OHVp
-AJk4mDc0cJ2hKqAun6OeonY7pZqwsRQJADs=
+#================
+<<EOD;
+	R0lGODdhIAAgACIAACwAAAAAIAAgAIK15fwvLy/9IyRGRv///wAAAAAAAAAAAAADkgi63P4wyvmE
+	tWxoTd3Fy8Z1zCdkIll+6KYuZju+cZi+QK2IAxX8wKBwKHQQj8ifMbC6MAhQKEPZoCp0gKh0YeUy
+	YayFljD9lpsgxfhcNefCai17/naK5d4l+nSP0hVdWGt5bXtPeIBuiYZ9W4ttSZFAS5KSFFg8OHVp
+	AJk4mDc0cJ2hKqAun6OeonY7pZqwsRQJADs=
 EOD
-	return($bin);
 } 
+
+
+#============
+sub Default {
+#============
+	my $arg = shift;
+	
+	### List of parameters, considered as default values
+	@_ = qw /
+	AFF_COLOR SHOW_QUEST LINE_COLOR BACKGROUND CROSS_FAKTOR1 CONSANG_DIST ALIVE_SPACE
+	GITTER_X GITTER_Y SYMBOL_SIZE FONT1 FONT_HAPLO FONT_HEAD SHOW_CASE  CASE_HEAD_ROW
+	ZOOM LINE_WIDTH X_SPACE Y_SPACE Y_SPACE_EXTRA Y_SPACE_DEFAULT CROSS_LOOP MARKER_SHIFT
+	POSITION_SHIFT ALLELES_SHIFT HAPLO_UNKNOWN HAPLO_UNKNOWN_COLOR HAPLO_TEXT_LW SHOW_HAPLO_TEXT
+	SHOW_HAPLO_BAR SHOW_HAPLO_NI_0 SHOW_HAPLO_NI_1 SHOW_HAPLO_NI_2 SHOW_HAPLO_NI_3 HAPLO_SEP_BL
+	FILL_HAPLO HAPLO_WIDTH HAPLO_WIDTH_NI HAPLO_SPACE HAPLO_LW SHOW_MARKER SHOW_POSITION 
+	SHOW_DATE SHOW_HEAD SHOW_HAPLO_BBOX BBOX_WIDTH TITLE_X TITLE_Y/;
+	
+	### updates defaults from $self
+	if ($arg eq 'update') {			
+		foreach (@_) {				
+			if (ref $self->{$_}) { $param->{DEFAULT}{$_} = dclone($self->{$_})	}
+			else { $param->{DEFAULT}{$_} = $self->{$_} }
+		}
+	}
+	
+	### restores $self from defaults
+	elsif ($arg eq 'restore') {			
+		foreach (@_) {				
+			if (ref $param->{DEFAULT}{$_}) { $self->{$_} = dclone($param->{DEFAULT}{$_})	}
+			else { $self->{$_} = $param->{DEFAULT}{$_} }
+		}
+	}
+	
+	### saving default file
+	elsif ($arg eq 'save') {			
+		$_ = $mw->getSaveFile(
+			-initialfile 	=> 'my_haplopainter_defaults.hpd',
+			-defaultextension	=> 'hpd',
+			-filetypes		=> [
+									[ 'All Files',	 '*' ],
+									[ 'HaploPainter Defaults', 'hpd' ]
+								]
+		) or return undef;		
+		store $param->{DEFAULT}, $_;
+	}
+	
+	### open default file
+	elsif ($arg eq 'open') {			
+		$_ = $mw->getOpenFile(
+			-filetypes		=> [
+									[ 'All Files',	 '*' ],
+									[ 'HaploPainter Defaults', 'hpd' ]
+								]
+		) or return undef;		
+		$param->{DEFAULT} = retrieve($_);
+		foreach (@_) {				
+			if (ref $param->{DEFAULT}{$_}) { $self->{$_} = dclone($param->{DEFAULT}{$_})	}
+			else { $self->{$_} = $param->{DEFAULT}{$_} }
+		}
+		RedrawPed();
+		AdjustView();
+	}
+}
 
 
 ##################################################################################
@@ -3794,7 +3988,7 @@ EOD
 
 __DATA__
 
-Last modification: 30.6.2004
+Last modification: 3.7.2004
 
 
 Usage
@@ -3834,8 +4028,13 @@ To draw pedigrees with haplotype and marker information:
 	   starting point.
 	2. The first marker showing differences is declared as the point of recombination and
 	   the color is changed to the recombinant haplotype until next recombination event occurs.
+	   Be carful - the 'real' point of recombination may be surrounded by uninformative markers.
+	   Colored bars are suggestive traps - region of interests should be checked and manually corrected !
+	   I have warned you !
 	3. Missing genotypes are interpreted as uninformative
 	4. Other uninformative genotypes are drawn in special thin blocks when set in options
+	
+	
 
 3. File->Import Map File
 
@@ -3864,8 +4063,13 @@ While moving the mouse pointer over uninformative alleles the color is changing.
 You can double click at the allele and manually change the phase (maternal/paternal/not-informative)
 From the configuration menu a check button, selective hiding user defined changes, is selectable.
 
-Saving pedigrees as HaploPainter specific format is recommended when a lot of pedigree modifications have been done.
-Use File->Save or File->Save as ... for this operation
+Saving pedigrees as HaploPainter specific format is recommended in case of lots of pedigree modifications
+use File->Save or File->Save as ... 
+
+Default parameters can be saved/restored.
+use File->Save Default as .../File->Open Defaults 
+
+A double click an symbols opens a dialog box wherefrom affection and vital status can be changed.
 
 You can export the drawing in postscript format from the File->Export ...->Postscript menu.
 What you may do with this file is ...
@@ -3875,6 +4079,10 @@ What you may do with this file is ...
 3. Send it to a printer with PrintFile
 4. Convert it to pdf with Adobe Acrobat Distiller
 
+Some drag and drop features are implemented like moving symbols and titel.
+
+For easy zooming also try shift/Contr + left mouse button.
+
 Direct printing from Windows systems is possible but demand installation of 'PrintFile'
 You find this program here: http://www.lerup.com/printfile/
 Just put a copy of the prfile32.exe file into the system folder WINNT or somewhere else inside
@@ -3882,13 +4090,11 @@ your PATH environment
 
 Printing from linux systems depends on installation of GtkLP (http://gtklp.sourceforge.net/)
 
-Further on line help is available here: http://haplopainter.sourceforge.net/html/ManualIndex.htm
+Further on line help is available: http://haplopainter.sourceforge.net/html/ManualIndex.htm
 
-HaploPainter is open source software. Anybody is invited to participate in the project !
+HaploPainter is open source software and anybody is invited to participate in the project !
 Please send any bugs and comments to : hthiele@users.sourceforge.net
 
 Good luck ...
 
 Holger Thiele
-
-
