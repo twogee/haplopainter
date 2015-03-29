@@ -1,0 +1,2419 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 11 (filtered)">
+<title>HaploPainter Version 1</title>
+
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 1 6 1 0 1 1 1 1 1;}
+@font-face
+	{font-family:"\@PMingLiU";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+h1
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:Arial;
+	font-weight:bold;}
+h2
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-weight:bold;
+	font-style:italic;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:Arial;
+	font-weight:bold;}
+h4
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+p.MsoToc1, li.MsoToc1, div.MsoToc1
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+p.MsoToc2, li.MsoToc2, div.MsoToc2
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:12.0pt;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+p.MsoToc3, li.MsoToc3, div.MsoToc3
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:24.0pt;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p
+	{margin-right:0cm;
+	margin-left:0cm;
+	font-size:12.0pt;
+	font-family:Arial;}
+p.stil1, li.stil1, div.stil1
+	{margin-right:0cm;
+	margin-left:0cm;
+	font-size:12.0pt;
+	font-family:"Courier New";}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0cm;}
+ul
+	{margin-bottom:0cm;}
+-->
+</style>
+
+</head>
+
+<body lang=DE link=blue vlink=purple>
+
+<div class=Section1>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span lang=EN-US
+style='font-size:28.0pt'>HaploPainter Online Manual</span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span lang=EN-US
+style='font-size:28.0pt'>Version 1.0</span></b></p>
+
+<p class=MsoNormal><b><span lang=EN-US style='font-size:18.0pt'>&nbsp;</span></b></p>
+
+<p class=MsoNormal><b><span lang=EN-US style='font-size:18.0pt'>Index</span></b></p>
+
+<p class=MsoNormal><b><span lang=EN-US style='font-size:16.0pt'>&nbsp;</span></b></p>
+
+<p class=MsoToc1><span
+class=MsoHyperlink><span style='font-size:11.0pt'><a href="#_Toc211847756"><span
+lang=EN-US>How to start</span><span style='color:windowtext;display:none;
+text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>3</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847757"><span lang=EN-US>Algorithms, best practice and
+limitations</span><span style='color:windowtext;display:none;text-decoration:
+none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>4</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847758"><span lang=EN-US>Installation</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>4</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847759"><span lang=EN-US>Execute from source files - Windows</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847760"><span lang=EN-US>Installing Perl</span><span
+style='color:windowtext;display:none;text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847761"><span lang=EN-US>Installing GTK+ runtime libraries</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847762"><span lang=EN-US>Installing compulsory missing Perl
+modules</span><span style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847763"><span lang=EN-US>Installing facultative missing Perl
+modules for database support</span><span style='color:windowtext;display:none;
+text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847764"><span lang=EN-US>Other Systems</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847765"><span lang=EN-US>Data Import</span><span
+style='color:windowtext;display:none;text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>5</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847766"><span lang=EN-US>Import Pedigrees</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>6</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847767"><span lang=EN-US>LINKAGE</span><span style='color:windowtext;
+display:none;text-decoration:none'>.. </span><span
+style='color:windowtext;display:none;text-decoration:none'>6</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847768"><span lang=EN-US>CSV</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>7</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847769"><span lang=EN-US>Database</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>9</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847770"><span lang=EN-US>Import Haplotypes</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>10</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847771"><span lang=EN-US>Some tips for interpreting haplotypes</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>10</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847772"><span lang=EN-US>Import marker maps</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>11</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847773"><span lang=EN-US>Data Export and Publishing Tips</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>11</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847774"><span lang=EN-US>Vector describing formats</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>12</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847775"><span lang=EN-US>SVG</span><span style='color:windowtext;
+display:none;text-decoration:none'>.. </span><span
+style='color:windowtext;display:none;text-decoration:none'>12</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847776"><span lang=EN-US>Postscript</span><span style='color:
+windowtext;display:none;text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>12</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847777"><span lang=EN-US>PDF</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>12</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847778"><span lang=EN-US>Pixel formats</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>12</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847779"><span lang=EN-US>PNG</span><span style='color:windowtext;
+display:none;text-decoration:none'>.. </span><span
+style='color:windowtext;display:none;text-decoration:none'>12</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847780"><span lang=EN-US>Flat file</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>13</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847781"><span lang=EN-US>CSV</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>13</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847782"><span lang=EN-US>Encoding and Unicode support</span><span
+style='color:windowtext;display:none;text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>13</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847783"><span lang=EN-US>Working with Pedigrees</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>13</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847784"><span lang=EN-US>Navigation</span><span style='color:
+windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>13</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847785"><span lang=EN-US>Building and extending pedigrees with
+the graphical user interface</span><span style='color:windowtext;display:none;
+text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>16</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847786"><span lang=EN-US>New Pedigrees</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>16</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847787"><span lang=EN-US>Delete Individuals</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>16</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847788"><span lang=EN-US>Add Siblings</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>16</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847789"><span lang=EN-US>Add Parents</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>16</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847790"><span lang=EN-US>Add Mate &amp; Offspring</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>17</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847791"><span lang=EN-US>Consanguinity Settings</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>17</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847792"><span lang=EN-US>Twin Setting</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>17</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847793"><span lang=EN-US>Loop breaking</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>18</span></a></span></span></p>
+
+<p class=MsoToc3><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847794"><span lang=EN-US>Clear families</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>19</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847795"><span lang=EN-US>The configuration menu</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>19</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847796"><span lang=EN-US>Hap Style</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>19</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847797"><span lang=EN-US>Hap Show</span><span style='color:windowtext;
+display:none;text-decoration:none'>.. </span><span
+style='color:windowtext;display:none;text-decoration:none'>20</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847798"><span lang=EN-US>Hap Color &amp; Font</span><span
+style='color:windowtext;display:none;text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>21</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847799"><span lang=EN-US>Hap Region</span><span style='color:
+windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>22</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847800"><span lang=EN-US>Ped Style</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>23</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847801"><span lang=EN-US>Ped Color</span><span style='color:windowtext;
+display:none;text-decoration:none'> </span><span
+style='color:windowtext;display:none;text-decoration:none'>25</span></a></span></span></p>
+
+<p class=MsoToc2><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847802"><span lang=EN-US>Ped &amp; Case Info</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>25</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847803"><span lang=EN-US>Page settings</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>26</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847804"><span lang=EN-US>Show Grid</span><span style='color:windowtext;
+display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>27</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847805"><span lang=EN-US>Storing and Restoring defaults</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>27</span></a></span></span></p>
+
+<p class=MsoToc1><span class=MsoHyperlink><span style='font-size:11.0pt'><a
+href="#_Toc211847806"><span lang=EN-US>Command line mode</span><span
+style='color:windowtext;display:none;text-decoration:none'>. </span><span
+style='color:windowtext;display:none;text-decoration:none'>27</span></a></span></span></p>
+
+<h1><a name="_Toc211847756"><span lang=EN-US>How to start</span></a><span
+lang=EN-US> </span></h1>
+
+<p style='text-align:justify'><span lang=EN-US>A good way to start is to
+prepare a pedigree file in linkage format. This format is very simple and can
+easily be generated by any text editor. Alternatively you may prepare data in a
+HaploPainter’s specific input format (CSV) or query a database. They allow you
+to import further individual specific details. After you imported one or more
+pedigrees, HaploPainter will draw them - coincidental placing individuals while
+minimizing line crosses. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>During the process of pedigree
+calculation HaploPainter not accepts key input. In the right part of the window
+some information about the current calculation status is displayed. The example
+figure below tells you that HaploPainter has finished the calculation No.12, found
+5 crosses there and that the best pedigree consists of 1 cross.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US><img width=224 height=32
+src=" HaploPainter_Version_1_files/image001.jpg"></span></p>
+
+<p style='text-align:justify'><span lang=EN-US>If you don't like the result,
+you always can HaploPainter let redraw the pedigree by pressing F5. The most
+changes at the pedigree will be retained until you press this button. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>In order to attach haplotype
+data from other linkage programs (Merlin, Simwalk2, Genehunter, Allegro) you
+can import those files after you have been loaded pedigree data. Again the
+haplotype file can consist of data of more then one family. The last step would
+be the import of mapping data - replacing marker names and coordinates.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>Since version 1.0l, HaploPainter
+changed the way how imported data are handled.  If you choose to import
+pedigree data, HaploPainter will attach new pedigrees to existing one and
+replace pedigrees with the same family identifier. Imported haplotype data are
+scanned for family identifiers and are only imported if they match existing
+pedigrees. Mapping data can be imported for specific families or for all
+families depending of the “Global map import” check button.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>HaploPainter will give you
+plenty of options to modify the drawing style. You can change it in the
+“Configuration” menu, available form the “Option” menu or context menu (right
+mouse bottom). One of the interesting options in respect of haplotype drawing
+is the ability to manually select which marker should be drawn or not. This is
+very useful for &quot;long&quot; haplotypes as obtained from genome scans with
+high-density marker panels of many thousands of single nucleotide polymorphisms
+(SNPs), which now can be sized to a human readable length. Any part of the
+haplotype can be surrounded at any individual by one ore more boxes, for
+instance if you wish to draw attention to regions of interest like
+recombination events. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>If you choose “Save” or “Save
+as” from the File menu, HaploPainter saves the complete current drawing status
+of all families and all modifications you made after import of data. You can
+restore this state by chose “Open” from the “File” Menu. The Save function
+overlaps with other export functions which produce ether images (PS, PDF, PNG,
+SVG) or LINKAGE like text files (CSV). </span></p>
+
+<h1><a name="_Toc211847757"><span lang=EN-US>Algorithms, best practice and
+limitations</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>The problem with cross free node
+placing is that even if you find an intelligent way to build on the pedigree de
+novo, the calculation time for all possible combinations increases rapidly with
+the number of nodes. HaploPainter is programmed in Perl – a computer language
+which is not known to be the fastest, but even if you would do it in other
+languages, big families would tax your patience rapidly.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>For this reason HaploPainter
+pursues a heuristic strategy. Instead of trying every possible combination, it
+places individuals of a sibling group by chance for a fixed number of times. The
+very first step is that HaploPainter looks for founder couples and the
+generation they occur. Those founder couples again are placed by chance between
+sibling groups of that generation.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>For the most common used
+pedigrees in the field of linkage this approach works well so far. While large
+but loop less pedigrees make no problems, big families with many loops will
+bring HaploPainter to its knees. Because of this limitation HaploPainter decides
+to break all loops during import of pedigrees - if your pedigree consists of
+more of three of them. You still can change this behavior later with the
+&quot;Breaking loop&quot; option allowing you to decide yourself which loop
+should be broken or not. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>How ever, for the majority of
+pedigrees HaploPainter can find cross free solutions or at least good starting
+points to correct them manually with the graphical user interface. The GUI has
+almost no limitations in the placement of individual nodes. Connecting lines
+are still drawn automatically, so you can do it in a short time. </span></p>
+
+<h1><a name="_Toc211847758"><span lang=EN-US>Installation</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>For some systems HaploPainter is
+available as perlapp generated executable. As HaploPainter depends of numerous libraries
+(GTK+, Cairo and Glib) and packing of all this libraries in one file would lead
+to significant increase in start time, they are outsourced and come together
+with HaploPainter. The only thing to consider is to keep the libraries and
+HaploPainter together or to put the libraries in the system PATH. If those executables
+are not available from the download page for your system, you still could start
+the program from the source code file. This is a file ending with “.pl” The
+program language Perl is available for nearby all computer systems and with a
+bit of knowledge, patience and expert help you can run HaploPainter from source
+code files on every computer system. The procedures distinguish between systems
+– here shown for Windows.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>In order to connect HaploPainter
+with an Oracle database you also must install the appropriate drivers or the
+oracle client. It also may be necessary to set the ORACLE_HOME and NLS_LANG
+environment variables.</span></p>
+
+<h2><a name="_Toc211847759"><span lang=EN-US>Execute from source files -
+Windows</span></a></h2>
+
+<h3><a name="_Toc211847760"><span lang=EN-US>Installing Perl</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Download and install the latest
+Perl Version for Windows from ActiveState <a href="www.activestate.com">www.activestate.com</a></span></p>
+
+<h3><a name="_Toc211847761"><span lang=EN-US>Installing GTK+ runtime libraries</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>HaploPainter uses Cairo and Pango for the creation of exported image formats. All of the precompiled
+libraries you will need are included in the GTK+ package. In order to use this
+libraries download and install the windows all-in-one-bundle from <a
+href="http://www.gtk.org/">http://www.gtk.org/</a> and don’t forget to set the
+system path variable at the bin folder from GTK+ or place the Perl program
+inside the bin order! </span></p>
+
+<h3><a name="_Toc211847762"><span lang=EN-US>Installing compulsory missing Perl
+modules</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Perl modules from ActiveState’s
+Perl are added via Perl Package Manager - ppm. Type the following commands into
+the command console.</span></p>
+
+<p class=MsoNormal style='margin-top:0cm;margin-right:-32.4pt;margin-bottom:
+0cm;margin-left:18.0pt;margin-bottom:.0001pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-size:10.0pt;font-family:Wingdings'>Ø<span
+style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=EN-US
+style='font-size:10.0pt'>ppm install Sort-Naturally</span></p>
+
+<p class=MsoNormal style='margin-top:0cm;margin-right:-32.4pt;margin-bottom:
+0cm;margin-left:18.0pt;margin-bottom:.0001pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-size:10.0pt;font-family:Wingdings'>Ø<span
+style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=EN-US
+style='font-size:10.0pt'>ppm install <a
+href="http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/Glib.ppd">http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/Glib.ppd</a></span></p>
+
+<p class=MsoNormal style='margin-top:0cm;margin-right:-32.4pt;margin-bottom:
+0cm;margin-left:18.0pt;margin-bottom:.0001pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-size:10.0pt;font-family:Wingdings'>Ø<span
+style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=EN-US
+style='font-size:10.0pt'>ppm install <a
+href="http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/ExtUtils-Depends.ppd">http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/ExtUtils-Depends.ppd</a></span></p>
+
+<p class=MsoNormal style='margin-top:0cm;margin-right:-32.4pt;margin-bottom:
+0cm;margin-left:18.0pt;margin-bottom:.0001pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-size:10.0pt;font-family:Wingdings'>Ø<span
+style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=EN-US
+style='font-size:10.0pt'>ppm install <a
+href="http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/ExtUtils-PkgConfig.ppd">http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/ExtUtils-PkgConfig.ppd</a></span></p>
+
+<p class=MsoNormal style='margin-top:0cm;margin-right:-32.4pt;margin-bottom:
+0cm;margin-left:18.0pt;margin-bottom:.0001pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-size:10.0pt;font-family:Wingdings'>Ø<span
+style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=EN-US
+style='font-size:10.0pt'>ppm install <a
+href="http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/Cairo.ppd">http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/Cairo.ppd</a></span></p>
+
+<p class=MsoNormal style='margin-top:0cm;margin-right:-32.4pt;margin-bottom:
+0cm;margin-left:18.0pt;margin-bottom:.0001pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-size:10.0pt;font-family:Wingdings'>Ø<span
+style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=EN-US
+style='font-size:10.0pt'>ppm install <a
+href="http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/Gtk2.ppd">http://www.lostmind.de/gtk2-perl/ppm/MSWin32-x86-multi-thread-5.8/Gtk2.ppd</a></span></p>
+
+<p style='text-align:justify'><span lang=EN-US>(The perl binding modules for
+the GTK stuff may be available for newer versions and be stored at other
+places!)</span></p>
+
+<h3><a name="_Toc211847763"><span lang=EN-US>Installing facultative missing
+Perl modules for database support</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>In order to use HaploPainter’s
+capabilities to query databases you must install some more modules. Without
+these modules HaploPainter will start anyway, but will produce warnings when
+you try to use this functionality. </span></p>
+
+<p class=MsoNormal style='margin-left:36.0pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Wingdings'>Ø<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>ppm install DBD-PgPP</span></p>
+
+<p class=MsoNormal style='margin-left:36.0pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Wingdings'>Ø<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>ppm install DBD-mysql</span></p>
+
+<p class=MsoNormal style='margin-left:36.0pt;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Wingdings'>Ø<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>ppm install DBD-Oracle</span></p>
+
+<h2><a name="_Toc211847764"><span lang=EN-US>Other Systems</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>For other systems it could be
+necessary to compile libraries yourself. Field reports are welcome!</span></p>
+
+<h1><a name="_Toc211847765"><span lang=EN-US>Data Import</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>For data import there are Import
+Pedigree …, Import Haplotypes … and Import Map File … options available from
+the File menu. It is the best to follow this order. Don’t be confused with the Open
+command! That’s for the HaploPainter specific data storage. Those files become
+the file extension ‘.hp’ by default and are not human readable.</span></p>
+
+<h2><a name="_Toc211847766"><span lang=EN-US>Import Pedigrees</span></a><span
+lang=EN-US>                            </span></h2>
+
+<p style='text-align:justify'><span lang=EN-US>There are two kinds of text
+input files that HaploPainter accepts to define pedigree structures – LINKAGE
+and CSV. The CSV format is designed in a way, that the first 6 columns have
+identical meaning comparing to LINKAGE format. If you start to collect pedigree
+data in a database table you must prepare a table or view with the same
+structure as used for CSV format. Per default HaploPainter handles text data encoded
+as UTF-8. You can change it via File </span><span lang=EN-US style='font-family:
+Wingdings'>à</span><span lang=EN-US> Encoding. HaploPainter deals with Unicode
+in a way that it looks for the byte-order mark (BOM) sequence ‘U+FEFF’ at the
+beginning of documents, and only if it did not found this sequence take care of
+the setting. In that way it is for instance possible to read Excel sheets which
+are saved as <i>Unicode Text format</i> (UTF-16LE) although the setting in
+HaploPainter is different. The encoding is much important for saving/exporting
+pedigrees in CSV format. In this case HaploPainter take care of it. (See also the
+chapter Encoding and Unicode support)</span></p>
+
+<h3><a name="_Toc211847767"><span lang=EN-US>LINKAGE</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Well, there are actually many
+different LINKAGE pedigree files used by statistical software. The format used
+here is also called pre-MAKEPED LINKAGE format. </span></p>
+
+<h4><i><u><span lang=EN-US style='font-size:12.0pt;font-family:Arial;
+font-weight:normal'>Example</span></u></i></h4>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=577 height=220
+src=" HaploPainter_Version_1_files/image002.gif"></span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=stil1 style='margin:0cm;margin-bottom:.0001pt'><span lang=EN-US
+style='font-size:10.0pt'>&nbsp;</span></p>
+
+<p class=stil1 style='margin:0cm;margin-bottom:.0001pt'><u><span lang=EN-US>#FAMILY 
+PERSON     FATHER     MOTHER     GENDER AFF_STATUS</span></u></p>
+
+<p class=MsoNormal><a name="OLE_LINK2"></a><a name="OLE_LINK1"><span
+lang=EN-US style='font-family:"Courier New"'>2002     1210708    1210710   
+1210711    0      0</span></a></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210701    1210710    1210711    2      1</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210700    1210710    1210711    1      2</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210709    1210710    1210711    1      3</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210706    1210710    1210711    2      4</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210705    1210710    1210711    1      5</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210704    1210710    1210711    2      6</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210703    1210710    1210711    2      7</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210710          0          0    1      8</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>2002    
+1210711          0          0    2      9</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>HaploPainter is tolerant in the
+definition of the exact format. Empty lines and those beginning with the signs
+‘#’, ‘!’ ‘*’ or ‘\’ are ignored and may be used to integrate comments. HaploPainter
+tries to find out the used column delimiter in a way that it first looks for
+semicolons, followed by tabulators and at least other white space. Only lines
+resulting in 6 or more not empty columns are further processed, and only
+columns 1-6 will be taken into account. White space at the beginning and end of
+all values is deleted.</span></p>
+
+<p class=MsoNormal><b><u><span lang=EN-US>LINKAGE format</span></u></b></p>
+
+<p class=MsoNormal><b><u><span lang=EN-US><span style='text-decoration:none'>&nbsp;</span></span></u></b></p>
+
+<p class=MsoNormal><b><span lang=EN-US>FAMILY</span></b><span lang=EN-US>                     not
+NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>PERSON</span></b><span lang=EN-US>                  not
+NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>FATHER</span></b><span lang=EN-US>                   not
+NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>MOTHER</span></b><span lang=EN-US>                  not
+NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>GENDER</span></b><span lang=EN-US>                  not
+NULL, 0 or x for unknown, 1 or m for male, 2 or f for female</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>AFFECTION</span></b><span lang=EN-US>             not
+NULL, 0 or x, 1, 2, 3, 4, 5, 6, 7, 8, 9     </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>As you can see, all columns must
+have defined values! The used signs x/m/f for gender and affection status also
+can be in upper case. The affection status field in the originally LINKAGE
+format only can hold the values 0, 1 and 2. This can be extended in
+HaploPainter by up to 10 possible values. Every affection status is assigned to
+a defined color with what symbols are filled later. </span></p>
+
+<h3><a name="_Toc211847768"><span lang=EN-US>CSV</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>The CSV format is influenced by
+the LINKAGE format but differs in the number of possible columns and the way it
+is parsed. As in LINKAGE format, empty lines and those beginning with the signs
+‘#’, ‘!’ ‘*’ or ‘\’ are ignored and may be used to integrate comments or header
+rows. Only a single tabulator sign is allowed as column separator! Columns 1-6
+apply the same rules like LINKAGE format (See also there). Field values again
+are case insensitive. The following figure shows the same pedigree from the
+sample above but extended by HaploPainter specific columns. It illustrates many
+of HaploPainters additionally features like Unicode support, twins, termination
+of pregnancy symbols, deceased individuals, adopted individuals or consanguineous
+individuals.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US><img border=0
+width=605 height=239 src=" HaploPainter_Version_1_files/image003.gif"></span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:8.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><b><u><span lang=EN-US>CSV format</span></u></b></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>FAMILY                                            </span></b><span
+lang=EN-US>not NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>PERSON                                          </span></b><span
+lang=EN-US>not NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>FATHER                                          </span></b><span
+lang=EN-US>not NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>MOTHER                                         </span></b><span
+lang=EN-US>not NULL</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>GENDER                                         </span></b><span
+lang=EN-US>not NULL, 0 or x, 1 or m, 2 or f</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>AFFECTION                                    </span></b><span
+lang=EN-US>not NULL, 0 or x, 1, 2, 3, 4, 5, 6, 7, 8, 9     </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>IS_DECEASED                              </span></b><span
+lang=EN-US>NULL or 0 or n, 1 or y  </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>IS_SAB_OR_TOP                          </span></b><span
+lang=EN-US>NULL or 0 or n, 1 or y  </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>IS_PROBAND                                </span></b><span
+lang=EN-US>NULL or 0 or n, 1 or y  </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>IS_ADOPTED                                 </span></b><span
+lang=EN-US>NULL or 0 or n, 1 or y  </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>ARE_TWINS                                               </span></b><span
+lang=EN-US>NULL, [m or d]_text       </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>ARE_CONSANGUINEOUS         </span></b><span
+lang=EN-US>NULL, text</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>TEXT_INSIDE_SYMBOL             </span></b><span
+lang=EN-US>NULL, char(3)</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>TEXT_BESIDE_SYMBOL                       </span></b><span
+lang=EN-US>NULL, text</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>TEXT1_BELOW_SYMBOL          </span></b><span
+lang=EN-US>NULL, text</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>TEXT2_BELOW_SYMBOL          </span></b><span
+lang=EN-US>NULL, text</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>TEXT3_BELOW_SYMBOL          </span></b><span
+lang=EN-US>NULL, text   </span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>TEXT4_BELOW_SYMBOL          </span></b><span
+lang=EN-US>NULL, text</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p style='text-align:justify'><b><i><span lang=EN-US>Meaning of additionally
+fields</span></i></b></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>IS_DECEASED</span></b><span
+lang=EN-US>: Set to 1, y or Y if the individual is deceased. In that case a
+diagonal line through the symbol representing that individual is drawn. This
+line is spitted into two lines if text in the center of the symbol is placed</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>IS_SAB_OR_TOP</span></b><span
+lang=EN-US>: Set to 1, y or Y if individual is the result of a spontaneous
+abortion or termination of pregnancy. The individual symbol is drawn as a
+triangle now.  Later you can define in configurations if the gender is placed
+as text below the symbol or not.</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>IS_PROBAND</span></b><span
+lang=EN-US>: Set to 1, y or Y if the individual is declared as proband. (The
+first affected family member coming to medical attention) This result in a ‘P’
+sign attached to an arrow pointing to that individual. </span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>IS_ADOPTED</span></b><span
+lang=EN-US>: Set to 1, y or Y if the individual has been adopted. This
+individual is drawn in brackets.</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>ARE_TWINS</span></b><span
+lang=EN-US>: Individuals sharing the same string in this column are recognized
+as twins. The first character in that string tells HaploPainter if the twins are
+monozygotic ‘m’ or dizygotic ‘d’ followed by an underscore followed by an
+unique identifier. Examples for allowed strings are: m_1, d_gruppe1. Twins are
+drawn according to Bennett et al. 1995. A twin group must contain two
+individuals or more.</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>ARE_ CONSANGUINEOUS</span></b><span
+lang=EN-US>: Individuals sharing the same string in this column are recognized
+as consanguineous (individuals are related to each other). This only makes
+sense if individuals have offspring. In that case a double line between couples
+is drawn. Although HaploPainter automatically detect consanguinities, for
+instance if it find loops, you additionally can define any couple as consanguineous.
+This is good for situations when the real degree of consanguinity is unknown or
+you want to draw more compact pedigrees. A consanguineous group must contain
+two individuals. In the consanguineous menu you also can define that.</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>TEXT_INSIDE_SYMBOLS</span></b><span
+lang=EN-US>: Place text inside symbols.</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>TEXT_BESIDE_SYMBOL</span></b><span
+lang=EN-US>: Place text left upper hand to symbols</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>TEXT&lt;n&gt;_BELOW_SYMBOL</span></b><span
+lang=EN-US>: HaploPainter gives you the opportunity to place text below
+symbols. Per default the individual identifier is one of those text lines, but
+you can attach up to four further text lines below. In the configuration menu
+you can arrange the combination of columns you want to show in your pedigree (See
+Ped &amp; Case Info).</span></p>
+
+<h3><a name="_Toc211847769"><span lang=EN-US>Database</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Import of pedigree data from
+data base tables is supported – to date for MySQL, PostgreSQL and Oracle. To
+use this feature the proper Perl modules must be installed (Only if you run
+HaploPainter from source file! HaploPainter will work without DBD modules
+because they are loaded at runtime but will result in warnings). For Oracle you
+also need the Oracle client, NLS_LANG and ORACLE_HOME environment variables and
+an entry in the tnsnames.ora file. You reach the data base connection window by
+pressing F4 or via File-&gt;Import Pedigrees … -&gt; Database. For databases
+that are located at your computer you also can say ‘localhost’ instead of using
+the host name. After you successfully are connected to the database a “Choose
+Pedigrees” menu will appear – here is an example:</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=329 height=214
+src=" HaploPainter_Version_1_files/image004.jpg">                                   <img
+border=0 width=133 height=216
+src=" HaploPainter_Version_1_files/image005.jpg"></span></p>
+
+<p style='text-align:justify'><span lang=EN-US>Inside this box all families are
+listed and can be marked by use of the left mouse bottom in combination with
+the shift and control keys. All marked pedigrees are imported after pressing
+‘Ok’.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>The Database Connection window
+has two other functions to save the connection data as default (Save default)
+and reload them (Load Default).</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<h2><a name="_Toc211847770"><span lang=EN-US>Import Haplotypes</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>A haplotype describes the linear
+sequence of alleles at multiple loci in the genome that are transmitted on the
+same chromosome. In diploid cells a genotype is composed at two alleles. Commonly
+used methods for measurement of genotypes are not able to distinguish which
+allele belongs to which chromosome, but in many cases likely haplotypes can be
+reconstructed through statistical methods. Haplotypes are nice instruments in
+the interpretation of linkage results. They are able to map a disease causing
+gene to a region in the genome. HaploPainter supports four statistical software
+packages that are usual in the calculation of haplotypes: Genehunter, Allegro,
+Simwalk2 and Merlin. Specific output files produced by this software can be imported
+and visualized together with pedigrees. Import haplotype files via File </span><span
+lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US> Import
+Haplotypes and choose the import format:</span></p>
+
+<ul style='margin-top:0cm' type=disc>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Genehunter    </span><span
+     lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US>     haplo.dump
+     </span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>SimWalk2      </span><span
+     lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US>     HAPLO.???
+     (horizontal orientation)</span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Merlin              </span><span
+     lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US>     merlin.chr
+     (vertical orientation)</span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Allegro            </span><span
+     lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US>     haplo.out,
+     ihaplo.out, founder.out</span></li>
+</ul>
+
+<p style='text-align:justify'><span lang=EN-US>SimWalk2 controls the way it
+outputs haplotype results through a batch file. In batch number #46 line 1 you
+can switch between default horizontal (N) or vertical (Y) output orientation. HaploPainter
+expects to keep the default value (N). Merlin also has two possible output
+modes. Per default Merlin produces files with haplotypes in vertical
+orientation – the format that HaploPainter supports. You control that in Merlin
+over the command console parameter ‘--horizontal’. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>Supplementary information enclosed
+with those output files such recombination events are ignored by HaploPainter.
+It uses the following rules for haplotype coloring.</span></p>
+
+<ul style='margin-top:0cm' type=disc>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Try to find
+     out the first marker beginning from p-telomere from which the phase can be
+     derived and then trace back the haplotype with the color from that phase up
+     to the chromosomal starting point.</span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>The first
+     marker showing differences is declared as the point of recombination and
+     the color is changed to the recombinant haplotype until the next
+     recombination event occurs. </span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Missing
+     genotypes are interpreted as uninformative.</span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Other
+     uninformative genotypes are drawn in special thin blocks when set in
+     options.</span></li>
+</ul>
+
+<p style='text-align:justify'><span lang=EN-US>After you have imported haplotypes,
+if you are not satisfied with the colors HaploPainter have been choosing for
+you, you can press F6 to mix all colors new. The configuration menu gives you
+the opportunity to manually modify colors of haplotypes or fix some colors so
+that pressing F6 has no effect for those. You also can prevent markers for being
+shown. </span></p>
+
+<h3><a name="_Toc211847771"><span lang=EN-US>Some tips for interpreting
+haplotypes</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Points of recombination are often
+surrounded by uninformative markers. Due to the way HaploPainter deals with
+analysis results it is possible that your region of interest is shown too small
+or shifted. That should be checked and manually corrected! To do this, just
+double click at alleles from those individuals. The menu which appears gives
+you an instrument to change the phase or declare markers as uninformative. You
+may find out uninformative markers if you move the mouse cursor over alleles
+which became flashing in red in that case. In general you should orientate at
+the results of your multipoint linkage. Also be distrustful if you see double
+recombinations (two neighbored recombinations). They mostly are hints for
+genotyping errors. Some software packages tend to complete haplotypes for not
+genotyped individuals. You never should thrust those haplotypes – see it at as
+a suggestion.</span></p>
+
+<h2><a name="_Toc211847772"><span lang=EN-US>Import marker maps</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>To replace dummy marker names which
+are automatically created after import of haplotype data you need to import a
+map file too. There are only two columns of interest: marker name and marker
+position. These columns are expected to be at positions 2 and 3 of the input
+files. The expected column separator is white space.  As in LINKAGE format,
+empty lines and those beginning with the signs ‘#’, ‘!’ ‘*’ or ‘\’ are ignored
+and may be used to integrate comments or header rows. There are two options for
+map files concerning the column positions:</span></p>
+
+<ul style='margin-top:0cm' type=disc>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Chromosome      Marker
+     Name      Marker Position      (CHR-POS-MARKER)</span></li>
+ <li class=MsoNormal style='text-align:justify'><span lang=EN-US>Chromosome      Marker
+     Position   Marker Name          (CHR-MARKER-POS)</span></li>
+</ul>
+
+<p style='text-align:justify'><span lang=EN-US>As you can see, the only
+difference is a switch between columns 2 and 3. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>A map file can be loaded
+specific for a family or for all families. This depends on the setting of the
+‘Global map import’ flag in the File menu. This flag is off per default, with
+other words in that case an imported map file only belongs to the current drawn
+family.</span></p>
+
+<h1><a name="_Toc211847773"><span lang=EN-US>Data Export and Publishing Tips</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>Since Version 1.0 HaploPainter uses
+internally Cairo, Pango and GTK+ for rendering exported graphics. If you use
+the stand alone versions you don’t need additionally programs to convert images
+into other formats. Only if you plan to run HaploPainter in your own Perl
+environment you have to take care about that (see installation part). Within
+HaploPainter there are different formats available in <b>vector describing languages</b>
+(Postscript, PDF, SVG), <b>pixel graphic</b> (to date just PNG) and <b>flat
+file</b> (CSV). Keep in mind, that images produced by HaploPainter will cover
+the RGB color space. If your plans are images produced for the web this doesn’t
+matter but if not you must take car of this. Some journals like to have graphic
+in CMYK colors, and probably you don’t have much experience with transformations
+from RGB to CMYK. Unfortunately this is not as easy as you might think, because
+you must choose the right color profile that should be used for transformation
+of color spaces. It is not possible to describe every RGB color in CMYK.
+Furthermore the end result and color impressions depend of the calibration of
+your monitor the used paper and other printing dependent stuff. So, whenever
+possible let the journal do this job for you or ask them which profiles give
+the best results. In the case that you want to do it yourself you should take a
+look at Adobe Acrobat and Adobe Photoshop. It also is helpfully to print the
+image on a CMYK color laser printer to have a rough idea about the color
+conversion effect. Many journals prefer TIFF images with embedded ICC profiles and
+color resolution greater 300 dpi. Sending of images in other vector graphic
+formats, which are accepted (like AI/Adobe Illustrator, EPS, PS, PDF,
+CoralDRAW/CDR, FreeHand/FH) would be of advantage (at least for you) as the
+layout and printer professionals could transform the drawing to the best
+resolution and colors herself. Those images send by you also are much smaller
+in size. </span></p>
+
+<h2 style='text-align:justify'><a name="_Toc211847774"><span lang=EN-US>Vector
+describing formats</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>Vector images describe drawing
+elements as mathematically formula. The main advantage is its scalability – you
+can create every possible image resolution you want! The other advantage is you
+can tailor images within common desktop publishing software.</span></p>
+
+<h3><a name="_Toc211847775"><span lang=EN-US>SVG</span></a></h3>
+
+<p style='text-align:justify'><b><span lang=EN-US>S</span></b><span lang=EN-US>calable
+<b>V</b>ector <b>G</b>raphics is based on XML and has been developed as open
+standard from the World Wide Web Consortium (W3C) since 1999. Since that time most
+modern web browsers integrated native support (Firefox, Opera, Safari, Chrome).
+It seems that Adobe and Microsoft try to subvert this standard, because Adobe as
+most known provider for SVG browser plug-ins loosed their interest to give further
+support after buying Macromedia and Microsoft itself interferes with its own
+proprietary vector format VML (which again is ignored by other browsers). How
+ever, SVG is a good choice if you plan to integrate images into web pages. Probably
+Microsoft’s internet explorer will support SVG sometimes if the SVG diffusion
+rate increases over the web. You can import SVG into a plenty of desktop
+publishing software like the free available <a href="http://www.inkscape.org/">Inkscape</a>.
+</span></p>
+
+<h3><a name="_Toc211847776"><span lang=EN-US>Postscript</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Adobes Postscript is something
+like a program language for printers. Most printers today are equipped with
+Postscript interpreters – so you may use Postscript to deal with high quality
+printer jobs. Programs like Ghostview/Ghostscript are able to view them or convert
+Postscript into PDF, EPS or other graphic formats. </span></p>
+
+<h3><a name="_Toc211847777"><span lang=EN-US>PDF</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Adobe’s PDF is the de facto
+standard for platform independent document exchange. The format is very compact
+and viewers for every platform are free available – so my recommendation is to
+take this format when ever possible.</span></p>
+
+<h2 style='text-align:justify'><a name="OLE_LINK4"></a><a name="OLE_LINK3"></a><a
+name="_Toc211847778"><span lang=EN-US>Pixel formats</span></a></h2>
+
+<h3><a name="_Toc211847779"><span lang=EN-US>PNG</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>PNG is a good choice for
+displaying pixel graphics particularly in web browsers. The format is free for
+use, has better performance then GIF and even Microsoft’s Internet Explorer
+will show it …</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<h2 style='text-align:justify'><a name="_Toc211847780"><span lang=EN-US>Flat
+file</span></a></h2>
+
+<h3><a name="_Toc211847781"><span lang=EN-US>CSV</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Exported CSV format is identical
+with the imported counterpart. So you may import files in LINKAGE format, make
+your modifications within the GUI and export it as extended CSV/tab delimited
+version. This also would be an easy way to produce templates for other
+pedigrees. </span></p>
+
+<h1><a name="_Toc211847782"><span lang=EN-US>Encoding and Unicode support</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>Since HaploPainter Version 1.0
+reading and writing files in Unicode is supported. There are a lot of Unicode
+coding types, but UTF-8 and UTF-16LE seem to be the most relevant do date.
+UTF-8 is the most common type and going to be the web standard. So why
+UTF-16LE? The answer is Microsoft Excel. Using Excel to create CSV files ready
+for import into HaploPainter is a good idea! Although most text editors would
+do their job well, the handling with tables in Excel is quite comfortable. If
+you plan to work with strange characters (for you they are surely not strange) you
+must save data in Excels Unicode Text format and this is in fact UTF-16LE. The
+encoding type setting is located inside the file menu. There are three kinds
+available: ASCII, UTF-8 and UTF-16LE – the default being UTF-8. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>May be you wondered about the
+check button “Write BOM” available from the File menu. This is the special
+Unicode character ‘U+FEFF’ (byte-order mark) represented by a series of 2-4
+bytes and is used as marker to indicate the encoding type. I don’t want to
+comment the actual discussion if this is good or not! HaploPainter’s default is
+to write a BOM sequence for Unicode files – and you can switch it off, if you
+want! HaploPainter is able to read Unicode files which are encoded in ASCII,
+UTF-8, UTF-16LE, UTF-16BE, UTF-32LE and UTF-32BE. If a BOM sequence is found
+HaploPainter take care of it – whatever encoding type is preset.</span></p>
+
+<h1><a name="_Toc211847783"><span lang=EN-US>Working with Pedigrees</span></a></h1>
+
+<h2><a name="_Toc211847784"><span lang=EN-US>Navigation</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>Once you imported the pedigrees,
+haplotypes and mapping data some functions to navigate through the pedigrees
+are available for instance the navigation menu. </span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US><img border=0
+width=177 height=32 src=" HaploPainter_Version_1_files/image006.jpg"><br>
+</span><b><span lang=EN-US style='font-size:10.0pt'>The navigation menu</span></b></p>
+
+<p style='text-align:justify'><span lang=EN-US>The arrow symbol is activated by
+default. In this mode you can activate symbols ether by clicking single symbols
+or clicking the mouse button while moving. This force HaploPainter to draw a
+rectangle with dashed line. Every symbol inside this rectangle is activated –
+indicated by a change to red. Now you can move symbols around by drag and drop.
+Note that you must place symbols at positions that are not occupied by other
+symbols. Those symbols will not be moved! Zooming in or out the drawing is
+available in different ways – via plus/minus navigation menu symbol, plus/minus
+keys, Edit menu and Context menu. Use the hand symbol to shift the drawing by
+clicking the mouse button to have a fix point while moving the mouse. In case
+of many imported pedigrees you can change the current pedigree by clicking the
+green left/right arrows (resulting in a shift of +/- next one pedigree) or
+alternatively use the View </span><span lang=EN-US style='font-family:Wingdings'>à</span><span
+lang=EN-US> Draw Pedigree menu. This menu also is able to separate from the
+main menu to easy navigate through the pedigrees. Two other useful functions to
+center or fit the pedigree into the current window – Center View/Fit View are
+accessible from the Edit and Context menu.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><b><i><span lang=EN-US
+style='font-size:14.0pt'>Redrawing Pedigrees</span></i></b></p>
+
+<p style='text-align:justify'><span lang=EN-US>Most modifications you made
+during a pedigree live will be conserved until you do some of the following
+things:</span></p>
+
+<p style='margin-left:36.0pt;text-align:justify;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>carry out the Redraw Ped (F5) function</span></p>
+
+<p style='margin-left:36.0pt;text-align:justify;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>make changes in the way how loops are broken</span></p>
+
+<p style='margin-left:36.0pt;text-align:justify;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>make changes in the Inter symbol distance value
+from the Configuration/Ped Style menu</span></p>
+
+<p style='margin-left:36.0pt;text-align:justify;text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>extending pedigrees with the GUI functions</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>Redrawing a pedigree will force
+HaploPainter to draw the pedigree according to the settings of the Options </span><span
+lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US> <i>Sort by
+SID</i> and <i>Sort couples by gender</i> flag. If the <i>Sort couples by
+gender </i>flag is not set, the individuals belonging to a couple group are
+assembled by chance. If the flag is set, the <b>male individuals are placed
+first</b>! That’s the only difference. The second modifier in respect of
+drawing order - <i>Sort by SID</i> reflects the handling of sibling groups. By
+default the order of siblings is chosen by chance. If the flag <i>Sort by SID</i>
+is set HaploPainter will change the drawing order of the members of a sibling
+group and applies a special name sorting mechanism (nsort from the module
+Sort::Naturally). The algorithm works in a way human normally would think about
+sort and is an intelligent combination of numerically and lexically sort. By using
+both flags you can HaploPainter force to draw pedigrees in a predetermined way
+taking individual naming into account.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><b><i><span lang=EN-US
+style='font-size:14.0pt'>How to change individual settings</span></i></b></p>
+
+<p style='text-align:justify'><span lang=EN-US>If you <i>double click at a
+symbol</i> the following menu will appear that allows you to change individual
+settings and displays some useful information.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=296 height=376
+src=" HaploPainter_Version_1_files/image007.jpg">        <img border=0
+width=271 height=335 src=" HaploPainter_Version_1_files/image008.jpg"></span></p>
+
+<p class=MsoNormal><b><span lang=EN-US style='font-size:10.0pt'>Change individual
+settings by double click                          Examples for symbols<br>
+at symbols<br>
+<br>
+</span></b></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=631
+ style='width:473.4pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Affection</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>A numerical value ranging from 0-9.
+  Dependent of the settings in Options menu </span><span lang=EN-US
+  style='font-family:Wingdings'>à</span><span lang=EN-US> Ped Color the symbol
+  is filled with that color</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Male</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Males are drawn as squares</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Female</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Females are drawn as circles</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Unknown</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Individuals with unknown gender are drawn
+  as rotated squares</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Adopted</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Adopted individuals are drawn with
+  brackets around the symbol</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Deceases</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Deceased individuals are drawn with a
+  diagonal line through the individual. The line is divided in case of text
+  inside symbols</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>TOP</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><b><span lang=EN-US>T</span></b><span lang=EN-US>ermination
+  <b>o</b>f <b>p</b>regnancy and aborts are drawn as triangle symbol. The
+  gender is drawn as one letter (m/f) below the symbol</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Proband</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Attaches an arrow with the letter P left
+  to symbols and is used to indicate persons that primarily came to medical
+  attention</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Text inside symbol</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Place text in the middle of symbols</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Text beside symbol</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>To put some text to the left upper corner
+  of symbols</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Case Info #1</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>This is the
+  individual identifier which is placed below symbols. It is not allowed to
+  duplicate this name. The show check button left to this field controls the
+  display for all individuals</span></p>
+  <p class=MsoNormal><b><span lang=EN-US style='font-size:10.0pt'>&nbsp;</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=151 valign=top style='width:4.0cm;border:solid windowtext 1.0pt;
+  border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><i><span lang=EN-US>Case Info #2-5</span></i></p>
+  </td>
+  <td width=480 valign=top style='width:360.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>You may put further information text
+  lines below symbols by using these fields. The show check button left to this
+  field again controls the display for all individuals. You can fine tune the
+  settings for Case Info from the Options menu </span><span lang=EN-US
+  style='font-family:Wingdings'>à</span><span lang=EN-US> Ped &amp; Case Info</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<h2><a name="_Toc211847785"><span lang=EN-US>Building and extending pedigrees
+with the graphical user interface</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>The functions to create new or
+modify existing pedigrees are available from the Edit menu or from the mouse
+Context menu (here exemplary shown).</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=199 height=298
+src=" HaploPainter_Version_1_files/image009.jpg"><br>
+</span><b><span lang=EN-US style='font-size:10.0pt'>The Context menu</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<h3><a name="_Toc211847786"><span lang=EN-US>New Pedigrees</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>To create a new pedigree you
+also can press the key combination “Contr+N”. A window will appear that asks
+for a pedigree name. After saying “Ok” HaploPainter draws a core family
+consisting of a couple and one offspring with preformed individual identifiers.
+To change the identifiers, gender or other individual settings double click at
+the respective symbol.</span></p>
+
+<h3><a name="_Toc211847787"><span lang=EN-US>Delete Individuals</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>To delete individuals mark one
+or more symbols and chose the “Delete Individuals” function. You also can do
+this by pressing the keys “Contr+D” or “Del”. Remaining childless founders will
+be automatically deleted too! </span></p>
+
+<h3><a name="_Toc211847788"><span lang=EN-US>Add Siblings</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>To add one or up to 8 siblings
+to another one mark one individual and execute the “Add Sibling” function.  A window
+will appear that asks for sibling identifiers and gender. After saying “Ok”
+HaploPainter attaches all siblings for which you entered a valid identifier to
+the pedigree. To change the identifiers, gender or other individual settings
+double click at the respective symbol.</span></p>
+
+<h3><a name="_Toc211847789"><span lang=EN-US>Add Parents</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Parents can be added only to
+founder individuals. Mark the founder and execute the “Add Parents” function. 
+A window will appear that asks for the mother and father identifiers. After
+saying “Ok” HaploPainter attaches a new founder couple to the pedigree. To
+change the identifiers or other individual settings double click at the
+respective symbol.</span></p>
+
+<h3><a name="_Toc211847790"><span lang=EN-US>Add Mate &amp; Offspring</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>You can attach a new mate and
+offspring to any individual. Mark one individual and execute the “Add Mate
+&amp; Offspring” function.  A window will appear that asks for the mate and
+offspring identifiers. After saying “Ok” HaploPainter attaches a new founder (only
+if that mate not already exists) and a new offspring with unknown gender to the
+pedigree. To change the identifiers, gender or other individual settings double
+click at the respective symbol.</span></p>
+
+<h3><a name="_Toc211847791"><span lang=EN-US>Consanguinity Settings</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>Consanguineous individuals are
+automatically detected if the pedigree consists of the according loop
+structure. How ever, you can declare any couple as consanguineous too. The function
+to change consanguineous for all couples at once can be achieved from the
+Options and Context menu </span><span lang=EN-US style='font-family:Wingdings'>à</span><span
+lang=EN-US> Consanguinity Settings. A new window displaying all couples will
+appear. Here you can mark any combination of entries, preview the changes and
+permanently change the new setting by pressing “Ok”.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=299 height=344
+src=" HaploPainter_Version_1_files/image010.jpg"></span></p>
+
+<p class=MsoNormal><b><span lang=EN-US style='font-size:10.0pt'>Consanguinity
+Setting menu </span></b></p>
+
+<p style='text-align:justify'><span lang=EN-US>The other way to quickly change
+the setting is to mark the two symbols of one couple and choose “Set/Unset Consanguinity”
+from the context menu or Edit menu.</span></p>
+
+<h3><a name="_Toc211847792"><span lang=EN-US>Twin Setting</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>To declare/undeclare two or more
+individuals as twins mark the symbols of a sibling group and choose “Set/Unset
+Twins” from the context menu or Edit menu. A new submenu gives you the
+opportunity to mark twins either to be monozygotic or dizygotic. The
+differences are shown in the following figure where the individuals 3+4 and
+5+6+7 are declared as monozygotic twins and the other twin groups as dizygotic.
+</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US><img border=0
+width=604 height=150 src=" HaploPainter_Version_1_files/image011.gif"></span></p>
+
+<p style='text-align:justify'><span lang=EN-US>In the example above the “<b>Inter
+siblings Y distance</b>” parameter from the Configuration </span><span
+lang=EN-US style='font-family:Wingdings'>à</span><span lang=EN-US> Ped Style
+menu was increased to a value of 45 to better separate the twin groups from the
+horizontal sibling connecting line. This value is set per default to a lower
+value to have more space for haplotypes and case information.</span></p>
+
+<h3><a name="_Toc211847793"></a><span lang=EN-US>Loop</span><span lang=EN-US>
+breaking</span></h3>
+
+<p style='text-align:justify'><span lang=EN-US>In respect of finding a good
+drawing solution, loops are the major challenge! Breaking a loop can be the only
+way to draw the pedigree without line crosses. Loops are broken by a
+duplication of an individual that is located and the “end” node of a loop. </span></p>
+
+<p class=MsoNormal style='text-align:justify'><img width=192 height=190
+src=" HaploPainter_Version_1_files/image012.gif" align=left hspace=12><span
+lang=EN-US>Due to HaploPainter’s internal algorithms some loops are always
+broken, for instance the pedigree on the left that belongs to the category parent-offspring
+mate situation.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><img width=136 height=186
+src=" HaploPainter_Version_1_files/image013.gif" align=left hspace=12><span
+lang=EN-US>On the other hand there are situations when breaking of loops makes
+no sense - like the offspring mating situation shown on the left. Those
+unproblematic loops would not lead to line crosses and therefore will never be broken
+or selectable for breaking.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>As more loops a pedigree
+consists as more time it takes to find a good drawing solution. For this reason
+HaploPainter breaks loops automatically when it finds more then 3 of them.
+Later you can decide which loops should be broken or not. To select them there
+is a “Breaking loops …” window, available from the Options or Context menu. The
+following figures show the test pedigree hp_19 which consists of 3 loops. After
+you followed the “Breaking loops …” function a new window appears that gives
+you the possibilities to choose either select breaking no loops, all loops or
+to manually select loops for breaking. Here it was selected to manually break
+the loop ending with the individuals 8==9.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=349 height=257
+src=" HaploPainter_Version_1_files/image014.jpg">       <img border=0
+width=222 height=245 src=" HaploPainter_Version_1_files/image015.gif"></span></p>
+
+<p class=MsoNormal><b><span lang=EN-US style='font-size:10.0pt'>Loop</span></b><b><span
+lang=EN-US style='font-size:10.0pt'> breaking selection window                                            Result
+of breaking the loop: 8==9</span></b></p>
+
+<h3><span lang=EN-US>&nbsp;</span></h3>
+
+<h3><a name="_Toc211847794"><span lang=EN-US>Clear families</span></a></h3>
+
+<p style='text-align:justify'><span lang=EN-US>There are two functions to completely
+remove the current drawn (‘Clear current’) and all families (‘Clear all’) from
+HaploPainter. They are available from the File menu.</span></p>
+
+<h1><a name="_Toc211847795"><span lang=EN-US>The configuration menu</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>The configuration menu is the
+most important place to modify the way haplotypes are drawn and the drawing
+style of pedigrees. To illustrate the effects of all parameters would be a hard
+job! A practicable way to find out what a parameter really does would be to
+change one parameter and <b>press the preview button to see what happens!</b> You
+start the menu either from the Options or Context menu. The configuration menu
+consists of 7 tabs.</span></p>
+
+<p style='text-align:justify'><b><span lang=EN-US>IMPORTANT</span></b><span
+lang=EN-US>: any changes in the settings will only affect the currently drawn
+pedigree!</span></p>
+
+<h2><a name="_Toc211847796"><span lang=EN-US>Hap Style</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>The settings in this menu will
+mainly affect the haplotype drawing style. Parameters collected there have
+quantitative values and are changed via scroll bars.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=534 height=433
+src=" HaploPainter_Version_1_files/image016.jpg"></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<table class=MsoTableList3 border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Bar width</span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Size of haplotype bars in X- dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Bar width uninformative</span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Size of bars from uninformative alleles
+  in X - dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Space between bars</span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Space between maternal and paternal
+  haplotype from one person</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Line width</span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Bar border line width, makes sense
+  without 'fill out bars' option</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Legend distance left </span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Distance between left marker legend and
+  pedigree </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Allele distance</span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Space between alleles in Y - dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Marker position distance</span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Distance between left marker legend and
+  pedigree</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Allele position distance </span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Distance between alleles and bars in X-
+  dimension </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Width of bounding box </span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Effects bounding boxes of marked
+  haplotype blocks </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=199 valign=top style='width:149.4pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Legend distance right </span></p>
+  </td>
+  <td width=420 valign=top style='width:315.0pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Distance between right marker legend and
+  pedigree </span></p>
+  </td>
+ </tr>
+</table>
+
+<h2><a name="_Toc211847797"><span lang=EN-US>Hap Show</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>The settings in this menu also
+will mainly affect the haplotype and legend drawing style. Parameters collected
+here have qualitative aspects and are changed via check buttons.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=534 height=433
+src=" HaploPainter_Version_1_files/image017.jpg"></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<table class=MsoTableList3 border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td valign=top style='border-top:solid black 1.5pt;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show alleles</span></p>
+  </td>
+  <td valign=top style='border-top:solid black 1.5pt;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:none;padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Set if allele numbers are shown</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show Bars</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Set if haplotype bars are shown</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show marker positions</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show marker coordinates on the left side
+  of each generation</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show marker names</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show marker names on the left side of
+  each generation</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show question mark</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show question mark inside person symbols
+  for unknown affection status</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Fill out bars</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Fill out bars at given color</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show completely lost Haplotypes</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Mark haplotypes without information</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show other lost genotypes</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Mark unique lost genotypes </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show user defined non-informative</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Mark manually, as not informative
+  declared genotypes</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show other non-informative </span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Mark genotyped but uninformative
+  genotypes</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Draw each allele as separate bar</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Good idea only when 'Fill out bars'
+  option is not set</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show legend left </span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.0pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show the left haplotype marker legend </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td valign=top style='border:none;border-bottom:solid black 1.5pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show legend right</span></p>
+  </td>
+  <td valign=top style='border:none;border-bottom:solid black 1.5pt;padding:
+  0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Show the right haplotype marker legend </span></p>
+  </td>
+ </tr>
+</table>
+
+<h2><a name="_Toc211847798"><span lang=EN-US>Hap Color &amp; Font</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>In this menu you can change the
+colors and font attributes of different types of information content like
+alleles from haplotypes, case information, pedigree header or phase unknown
+color. If you want to show all haplotypes, except of one in a unique color,
+press the 'Color of all haplotypes' button. Before you do so, you should anchor
+one or more haplotypes of course! To do that chose the founder from where the
+haplotype derives in the browse entry box and activate 'Anchor
+paternal/maternal haplotype' in the check button. You also can fade out haplotypes
+by activation of 'Hide paternal/maternal' check buttons.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US><img border=0
+width=408 height=331 src=" HaploPainter_Version_1_files/image018.jpg"> <img
+border=0 width=176 height=159
+src=" HaploPainter_Version_1_files/image019.jpg"></span></p>
+
+<h2><a name="_Toc211847799"><span lang=EN-US>Hap Region</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>The list box on the left side
+shows marker positions and names. Only red marked markers will be shown. To
+select/unselect multiple markers keep Control key pressed while clicking with
+the left mouse button over rows. Press “control-a” to select all markers.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>The list box on the right side
+allows drawing of black unfilled boxes around markers. You can define as many
+boxes as you want for any individual which has to be selected with the browse
+entry field above. </span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=534 height=433
+src=" HaploPainter_Version_1_files/image020.jpg"></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<h2><a name="_Toc211847800"><span lang=EN-US>Ped Style</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>The settings in this menu will
+mainly affect the pedigree drawing style. Parameters collected there have
+quantitative values and are changed via scroll bars.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=534 height=433
+src=" HaploPainter_Version_1_files/image021.jpg"></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<table class=MsoTableList3 border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Cross factor</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Affects the lines connecting parents with
+  their offspring group</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Deceased line length</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Size of the diagonal line indicating that
+  individual is deceased</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Grid X space</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Width of grid raster in X - dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Grid Y space</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Width of grid raster in Y - dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Consanguinity line distance</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Distance between the two lines indicating
+  that individuals are consanguineous</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Intersib Y distance</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Affects the lines connecting members of a
+  offspring group with each other</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Symbol size</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Symbol size</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Symbol outer line width</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Width of the outer line of symbols if it
+  is shown</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Line width</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Width of symbols connecting lines</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Inter symbol distance</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Number of grid units that are placed
+  between symbols in X - dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Inter generation distance</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Number of grid units that are placed
+  between symbols in Y - dimension</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=187 valign=top style='width:140.4pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Haplo extra space</span></p>
+  </td>
+  <td width=427 valign=top style='width:320.2pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal><span lang=EN-US>Fine tune the length of haplotype bars.
+  It only works for haplotypes that are drawn without alleles and legends when
+  bars are compressed/elongated to the available space according to the inter
+  generation distance</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<h2><a name="_Toc211847801"><span lang=EN-US>Ped Color</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>The Ped Color submenu allows
+changes for the most color relevant parameters. </span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=534 height=433
+src=" HaploPainter_Version_1_files/image022.jpg"></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<table class=MsoTableList3 border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=163 valign=top style='width:122.4pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Affection
+  colors #0-9</span></p>
+  </td>
+  <td width=451 valign=top style='width:338.2pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Symbols are
+  filled with colors according to their affection status value ranging from 0-9</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=163 valign=top style='width:122.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Line color</span></p>
+  </td>
+  <td width=451 valign=top style='width:338.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>The color of
+  lines that connect symbols with each other</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=163 valign=top style='width:122.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Symbol line color</span></p>
+  </td>
+  <td width=451 valign=top style='width:338.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>The color of
+  outer lines of symbols. The check box “Set for affected” right hand of the
+  button controls if this line is visible for individuals with affection status
+  other then 1</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=163 valign=top style='width:122.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Proband arrow
+  color</span></p>
+  </td>
+  <td width=451 valign=top style='width:338.2pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>The color of
+  the proband arrow</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=163 valign=top style='width:122.4pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Background
+  color</span></p>
+  </td>
+  <td width=451 valign=top style='width:338.2pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p class=MsoNormal style='text-align:justify'><span lang=EN-US>Set the
+  background color. It is only exported into other graphic formats if the
+  Export background checkbox flag is switched on.</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+<h2><a name="_Toc211847802"><span lang=EN-US>Ped &amp; Case Info</span></a></h2>
+
+<p style='text-align:justify'><span lang=EN-US>In this menu there are settings
+for the title and case information. The rows from case 1-5 are shown below
+symbols if the check button is switched on. Furthermore you can choose in which
+order the fields are drawn. </span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=534 height=433
+src=" HaploPainter_Version_1_files/image023.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<h1><a name="_Toc211847803"><span lang=EN-US>Page settings</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>The page settings are mostly
+relevant for exporting pedigrees as images. The graphic resolution is very
+important for the pixel formats PNG. For vector graphic formats this parameter
+is handled in different ways. SVG graphics uses it to define the scaling factor
+to which the graphic should be expanded. Postscript has a default resolution of
+72dpi.  HaploPainter tries to extend the pedigrees according to the Margin,
+Paper Size and Paper Orientation settings. This may not be what you want and
+cutting the image with other software is necessary.</span></p>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=307 height=265
+src=" HaploPainter_Version_1_files/image024.jpg"></span></p>
+
+<h1><a name="_Toc211847804"><span lang=EN-US>Show Grid</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>The grid is visible only in the
+graphical user interface. It never is exported into images! The grid (visible
+or not) is internally used as an anchor point for the positioning of symbols.
+The configuration parameters Grid X space and Grid Y space affect the size of
+it. </span></p>
+
+<p style='text-align:justify'><span lang=EN-US>You can switch it on/off by the
+check button from the File menu or Context menu.</span></p>
+
+<h1><a name="_Toc211847805"><span lang=EN-US>Storing and Restoring defaults</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>There is no special file format
+for storing of your favorite default parameters - instead HaploPainter is able
+to extract drawing style features from every regularly stored file in
+HAPLOPAINTER format! One way to go is to prepare a HAPLOPAINTER file with some
+small families and modify/store them. Now you can attach the default parameters
+from a certain family from that file to others by choosing the Open default …
+function from the File menu.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US><img border=0 width=338
+height=98 src=" HaploPainter_Version_1_files/image025.jpg"></span></p>
+
+<p style='text-align:justify'><span lang=EN-US>A window will appear asking you
+for a family and if you want to import the parameters from that family only to
+the current drawn family or to all families.</span></p>
+
+<h1><a name="_Toc211847806"><span lang=EN-US>Command line mode</span></a></h1>
+
+<p style='text-align:justify'><span lang=EN-US>HaploPainter can be executed in
+a command line mode without usage of the graphical interface. The first argument
+must be <b>–b </b>to tell HaploPainter being in command line (<b>b</b>atch) mode
+or <b>–h</b> to output a list of supported parameters.</span></p>
+
+<p style='text-align:justify'><span lang=EN-US>All following parameters have to
+be in a key – value manner. Allowed keys, their meaning and allowed values
+illustrates the following table.</span></p>
+
+<table class=MsoTableList3 border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-pedfile</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border-top:solid black 1.5pt;
+  border-left:none;border-bottom:solid black 1.0pt;border-right:none;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Name of the imported pedigree file in ASCII or UTF-8
+  format</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-pedformat</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Format of the imported pedigree file <b>[linkage, csv]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-outfile</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Name of the exported file</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-outformat</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Format of the exported file <b>[ps, pdf, svg, png]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-hapfile</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Name of the imported haplotype file</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-hapformat</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Format of the imported haplotype file <br>
+  <b>[allegro, Genehunter, merlin, simwalk ]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-mapfile</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Name of the imported map file</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-mapformat</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Format of the imported map file <b>[1, 2]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-family</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Name of one family identifier from the pedigree file</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-resolution</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p>Image resolution in pixels (max 4800 )</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-paper</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Paper format <b>[ A0-A5,B4,B5,Letter,Ledger,Legal,11x17]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-orientation</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Paper orientation <b>[landscape, portrait]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-border</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Margin around the image in pixels (max 999)</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-bgcolor</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Background color in hex notation (e.g. #ffcc00)</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbtype</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database type<b> [oracle, postgresql, mysql]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbport</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database port</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbsid</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database Name/SID</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbhost</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database server host name (localhost is valid)</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbtable</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database Table/Relation Name</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbuname</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database user/login name</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-dbpasswd</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Database password</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-breakloop</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Controls loop breaking <b>[0=No loop break, 2=Break all
+  loops]</b></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-sortbyid</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Drawing order of individuals is sorted by ID</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-sortbygender</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.0pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Drawing order of couples is sorted by gender</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=127 valign=top style='width:95.4pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><b><span lang=EN-US>-h</span></b></p>
+  </td>
+  <td width=488 valign=top style='width:366.3pt;border:none;border-bottom:solid black 1.5pt;
+  padding:0cm 5.4pt 0cm 5.4pt'>
+  <p><span lang=EN-US>Displaying a list of supported parameters</span></p>
+  </td>
+ </tr>
+</table>
+
+<p style='text-align:justify'><span lang=EN-US>&nbsp;</span></p>
+
+</div>
+
+</body>
+
+</html>
