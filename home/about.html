@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+		PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html"/>
+		<meta name="Description" content="HaploPainter Home Page"/>
+		<meta name="Keywords" content="HaploPainter, Pedigree drawing, Haplotypes drawing, Allegro, Simwalk2, Merlin, Genehunter"/>
+		<meta name="allow-search" content="yes"/>
+		<link href="hp.css" rel="stylesheet" type="text/css"/>
+		<link href="hp.ico" rel="icon" type="image/x-icon"/>
+		<title>HaploPainter (about)</title>
+	</head>
+	<body>
+		<div id="container">
+			<div id="header"><a href="index.html"><img src="hp-logo.png" alt="haplopainter-logo"/></a></div>
+			<div id="menu">
+				<table>
+					<tr>
+						<td><a href="index.html">Home</a></td>
+						<td><a href="about.html" class="current">About</a></td>
+						<td><a href="../manual/HaploPainter_Version_1.html">Manual</a></td>
+						<td><a href="../screenshots/screenshots.html">Screenshots</a></td>
+						<td><a href="../examples/pedigrees.html">Pedigrees</a></td>
+						<td><a href="links.html">Links</a></td>
+					</tr>
+				</table>
+			</div>
+			<div id="content">
+				<h2>Introduction</h2>
+				<p align="justify">
+					Drawing pedigrees by hand is exhausting and time-consuming.
+					That’s one reason why software like HaploPainter is being developed.
+					It fact to date there is no software that meets the demands of all users.
+					Why is that so? First of all, drawing pedigrees automatically from family describing
+					flat files is not easy – i think that every programmer would agree with me at this point.
+					The difficulties for finding a cross free or minimized and human nice looking drawing solution
+					in a moderate time are enormous! Second, the development of pedigree drawing software is mostly
+					motivated to fit into a primary target audience such as genealogists, genetic counselors, scientists
+					or breeders, and all of them have other feature requests. HaploPainter is basically aimed at bioinformation scientists and genetic counselors.
+				</p>
+				<p align="justify">One challange of the last time was and is the integration of very long haplotypes
+					(they describe the inheritance of chromosomes). Haplotypes are products of linkage analysis –
+					formerly often based on a couple of polymorphic microsatellite (STR) markers.
+					If you do not belong to the category genetic counselor or bioinformatics you probably
+					don’t know from what I speak. In that case feel free to think of HaploPainter as a common
+					pedigree drawing software. For all others: you probably were not really satisfied with
+					the ability of existing software to draw <strong>nice</strong> looking pedigrees together with
+					<strong>nice looking</strong> haplotypes - especially when you dealt with SNP's derived from whole genome scans.
+				</p>
+				<p align="justify">HaploPainter’s main concern was and is to overcome this situation and to provide an applicable and simple to use solution for drawing pedigrees with long haplotypes.
+					As linkage proven scientist you can think of HaploPainter as a tool to combine pedigree
+					data with haplotype and mapping data to produce high quality graphics ready for publish.
+					Typically you would point to Mendelian diseases in terms of reliable definition of the smallest
+					critical interval harboring the underlying gene defect.
+				</p>
+				<h2>Features</h2>
+				<ul>
+					<li>Import of pedigree data from common linkage format, HaploPainter format or MySQL, PostgreSQL or Oracle data tables</li>
+					<li>Support Unicode encoded pedigree files</li>
+					<li>Import of haplotype data from Merlin, Simwalk2, Genehunter and Allegro</li>
+					<li>Symbol nomenclature based on the Pedigree Standardization Task Force</li>
+					<li>Full drag and drop for symbols</li>
+					<li>Manually and automatic selection of loop breaking</li>
+					<li>Export high quality graphic to SVG, PostScript, PDF, PNG</li>
+					<li>Plenty of drawing style features</li>
+					<li>Command line mode for creating graphics in a shell environment</li>
+					<li>Modify your pedigree within the graphical user interface</li>
+					<li>Written platform independent in Perl</li>
+				</ul>
+				<h2>Citation</h2>
+				<p>Holger Thiele and Peter Nürnberg (2004) HaploPainter: a tool for drawing pedigrees with complex
+					haplotypes Bioinformatics. 2005 Apr 15;21(8):1730-2. Epub 2004 Sep 17.
+					(<img src="pdf.png" alt="pdf sheet"/> <a href="http://bioinformatics.oxfordjournals.org/cgi/reprint/21/8/1730" target="_blank">download</a>)
+					</p>
+				<h2>Contact</h2>
+				<p>
+					<ul>
+						<li><a href="mailto:hthiele@users.sourceforge.net?subject=HaploPainter request"><img src="mail.png" alt=""/> Email to the developer</a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer">
+				<table>
+					<tr>
+						<td></td>
+						<td>September 2008 &copy;</td>
+						<td><div align="right"><a href="http://sourceforge.net" target="_blank"><img src="http://sourceforge.net/sflogo.php?group_id=111945&amp;type=3" width="95" height="20"/></a></div></td>
+					</tr>
+				</table>
+			</div>
+	</body>
+</html>

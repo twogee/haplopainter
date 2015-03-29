@@ -1,0 +1,46 @@
+
+body {color : black;background : #d0d0cb;width : 46em;margin : 0 auto;font-family : sans-serif;}
+
+a {text-decoration: none; color: #4682b4;}
+a:hover {text-decoration: underline; }
+a img,  img {border : 0 none;}
+
+img {vertical-align: middle;}
+img.imgcenter {margin-top: 3em; margin-left:auto; margin-right:auto; display:block; text-align:center;} 
+
+h2 {color : #cf0000; margin-top: 1em; margin-bottom: 0.5em;}
+
+#header {	background : #b5e5fc;}
+#header img {width: 750px; height: 110px}
+
+#screenshots { width : 100%;}
+#screenshots tr {vertical-align : bottom;text-align : center;font-size : 80%;}
+#screenshots tr td {padding : 0.5em;}
+
+#container {background : #fff;}
+
+#menu {padding: 0.0em; background : #000000; text-align: center; font-size: 75%;}
+#menu a { text-decoration : none; color : #d0d0d0; }
+#menu a:hover {text-decoration: underline;  color: #ffffff} 
+#menu table { margin-left : auto; margin-right : auto; }
+#menu td { padding-left : 1.5em; padding-right : 1.5em; }
+
+.current { font-weight : bold; }
+
+#content { padding : 1em 3em 3em 3em; line-height : 145%; }
+#content a { font-weight : bold;  line-height : 165%;}
+
+#content2 { padding : 1em 0em 2em 1em; line-height : 145%; }
+#content2 a { font-weight : bold; font-size: 90%; line-height : 165%;}
+
+#pedigrees table {margin-left: auto; margin-right: auto;}
+#pedigrees tr {vertical-align: bottom; text-align: center; font-size: 80%;}
+#pedigrees tr td { padding-bottom: 3em;}
+
+#pedigrees2 table {margin-left: auto; margin-right: auto;}
+#pedigrees2 tr {vertical-align: bottom; text-align: center; font-size: 110%;}
+#pedigrees2 tr td { padding: 0em 2em 2em 2em;}
+
+#footer { padding : 0.0em; background: #000000; color: #d0d0d0; text-align: center; font-size: 75%;font-weight : bold;}
+#footer td { width: 250px; }
+
