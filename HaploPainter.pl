@@ -3164,13 +3164,9 @@ sub CheckPedigreesForErrors {
 	}
 
 	if (@er && scalar @er < 20) {
-		$er .= $_ foreach @er;
-		$er = "There are errors in this pedigree file!\n\n$er";
+		$er = "There are errors in this pedigree file!\n\n" . join("", @er);
 	} elsif (@er && scalar @er > 20) {
-		for (0 .. 19) {
-			$er .= $er[$_];
-		}
-		$er = "There are too many errors in this pedigree file - only some of them are shown!\n\n$er";
+		$er = "There are too many errors in this pedigree file - only some of them are shown!\n\n" . join("", @er[0 .. 19]);
 	}
 
 	return $er;
@@ -4472,7 +4468,7 @@ sub ImportMapfile {
 #=========
 sub Zoom {
 #=========
-	shift @_ if Exists ($_[0]);
+	shift @_ if exists($_[0]);
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
 	my ($ori, $flag, $x_screen, $y_screen) = @_;
 
@@ -5732,18 +5728,10 @@ sub DrawOrExportCanvas {
 		### any text
 		foreach my $e (qw/SAB_GENDER MARK_TEXT HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT TITLE CASE_INFO INNER_SYMBOL_TEXT PROBAND_TEXT/) {
 			foreach my $r (@{$de->{$e}}) {
+				my $pango_layout = GetPangoLayout($cairo, $r);
+				my ($width, $height) = $pango_layout->get_pixel_size();
 				my $x = $r->[0];
 				my $y = $r->[1];
-				my $weight = '';
-				$weight = 'Bold' if $r->[7][2] eq 'bold';
-				my $style = '';
-				$style = 'Italic' if $r->[7][3] eq 'italic';
-				my $font_descr_str = join " ", ($r->[7][0], $weight, $style, $r->[7][1] / (96 / 72));
-				my $pango_layout = Gtk2::Pango::Cairo::create_layout($cairo);
-				my $font_desc = Gtk2::Pango::FontDescription->from_string($font_descr_str);
-				$pango_layout->set_font_description($font_desc);
-				$pango_layout->set_markup ($r->[5]);
-				my ($width, $height) = $pango_layout->get_pixel_size();
 				$x{$x - ($width / 2)} = 1;
 				$x{$x + ($width / 2)} = 1;
 				$y{$y - ($height / 2)} = 1;
@@ -5979,23 +5967,12 @@ sub DrawOrExportCanvas {
 		### any text
 		foreach my $e (qw/SAB_GENDER MARK_TEXT HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT TITLE CASE_INFO INNER_SYMBOL_TEXT PROBAND_TEXT/) {
 			foreach my $r (@{$de->{$e}}) {
+				my $pango_layout = GetPangoLayout($cairo, $r);
+				my ($width, $height) = $pango_layout->get_pixel_size();
 				my $x = $r->[0] - $x1_bb;
 				my $y = $r->[1] - $y1_bb;
+
 				#print "ALIGN=$r->[3]\n";
-				### 96dpi/72dpi is empirical found to right scale the panda font size
-				### may be this code has to be adopted to current display resolution?
-				my $weight = '';
-				$weight = 'Bold' if $r->[7][2] eq 'bold';
-				my $style = '';
-				$style = 'Italic' if $r->[7][3] eq 'italic';
-				my $font_descr_str = join " ", ($r->[7][0], $weight, $style, $r->[7][1] / (96 / 72));
-				my $pango_layout = Gtk2::Pango::Cairo::create_layout($cairo);
-				my $font_desc = Gtk2::Pango::FontDescription->from_string($font_descr_str);
-				$pango_layout->set_font_description($font_desc);
-				$pango_layout->set_markup ($r->[5]);
-
-				my ($width, $height) = $pango_layout->get_pixel_size();
-
 				### pango set_alignment does not work!?!?!
 				### workaround
 				if ($r->[3] eq 'w') {
@@ -6063,6 +6040,25 @@ sub DrawOrExportCanvas {
 		undef $cairo;
 	}
 	1;
+}
+
+#================
+sub GetPangoLayout {
+#================
+	my $cairo = shift;
+	my $r = shift;
+	### 96dpi/72dpi is empirical found to right scale the panda font size
+	### maybe this code has to be adopted to current display resolution?
+	my $weight = '';
+	$weight = 'Bold' if $r->[7][2] eq 'bold';
+	my $style = '';
+	$style = 'Italic' if $r->[7][3] eq 'italic';
+	my $font_descr_str = join " ", ($r->[7][0], $weight, $style, $r->[7][1] / ($self->{GLOB}{RESOLUTION_DPI} / 72));
+	my $pango_layout = Gtk2::Pango::Cairo::create_layout($cairo);
+	my $font_desc = Gtk2::Pango::FontDescription->from_string($font_descr_str);
+	$pango_layout->set_font_description($font_desc);
+	$pango_layout->set_markup($r->[5]);
+	return $pango_layout;
 }
 
 #================
