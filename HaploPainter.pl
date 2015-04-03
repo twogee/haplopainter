@@ -74,7 +74,7 @@ my $param = {
 				  do { map { $_ => 1 } qw/linkage csv/ }
 				 },
 	     SHOW_GRID => 1,
-	     SORT_BY_PEDID => 1,
+	     SORT_BY_PEDID => 0,
 	     SORT_COUPLE_BY_GENDER => 0,
 	     WRITE_BOM => 1
 	    };
@@ -2119,8 +2119,7 @@ sub FindLoops {
 #==============
 	my $fam = shift @_ || $self->{GLOB}{CURR_FAM};
 	my $s = $self->{FAM}{LOOP}{$fam} = {};
-	my (%path, %P, %N, %D, %D1, %D2, %K, %L, %B);
-	my $node_cc = 1;
+	my %N;
 
 	### network for loop detection
 	### couples as nodes
@@ -2166,6 +2165,8 @@ sub FindLoops {
 		}
 	}
 
+	my %path;
+	my $node_cc = 1;
 	### prepare start tree including root and one further level
 	for my $node1 (keys %N) {
 		for my $node2 (keys %{$N{$node1}}) {
@@ -2184,13 +2185,13 @@ sub FindLoops {
 			my @plist = @$r;
 			next if $r->[-1] eq 'LOOP';
 
-			### delete this path and substitute it by child pathes next in code
-			### If there is no path to subsitute it is removed by the way
+			### delete this path and substitute it by children paths next in code
+			### If there is no path to substitute it is removed by the way
 			delete $path{$p};
 
-			### spacial case inter sibling mate
+			### special case inter-sibling mate
 			my ($pid1, $pid2) = split '==', $r->[-1];
-			### both sibling and halfsibling mates (may be better handle as separate cases)
+			### both sibling and half-sibling mates (may be better handle as separate cases)
 			if (defined $self->{FAM}{SID2FATHER}{$fam}{$pid1} && defined $self->{FAM}{SID2FATHER}{$fam}{$pid2}
 			    && defined $self->{FAM}{SID2MOTHER}{$fam}{$pid1} && defined $self->{FAM}{SID2MOTHER}{$fam}{$pid2}) {
 				if (($self->{FAM}{SID2FATHER}{$fam}{$pid1} eq $self->{FAM}{SID2FATHER}{$fam}{$pid2})
@@ -2211,7 +2212,7 @@ sub FindLoops {
 				### don't go back inside the path!
 				next if $node eq $plist[-2];
 				### imperfect LOOP --> no further processing
-				next if grep { $_ eq $node } @plist;
+				next if ($node ne $plist[0] && grep { $_ eq $node } @plist);
 
 				if ($node eq $plist[0]) {
 					### perfect LOOP (start = end)
@@ -2227,24 +2228,26 @@ sub FindLoops {
 		}
 	}
 
+	my (%D, %D1);
 	### processing paths to find duplicates
 	for my $node (keys %path) {
-		@_ = ();
+		my @loops;
 		for (@{$path{$node}}) {
 			### remove LOOP-end tag and pseudonodes
 			next if /LOOP|PSNODE/;
-			push @_, $_;
+			push @loops, $_;
 		}
-		$_ = join '___', nsort(@_);
-		$D{$_} = [ @_ ];
-		for my $e (@_) {
-			$D1{$_}{$e} = 1;
+		my $key = join '___', nsort(@loops);
+		$D{$key} = [ @loops ];
+		for my $e (@loops) {
+			$D1{$key}{$e} = 1;
 		}
 	}
 
 	### return if no loops there
 	return unless keys %D;
 
+	my %D2;
 	## if a small loop is part of a bigger loop store this information
 	for my $loop1 (keys %D1) {
 		for my $loop2 (keys %D1) {
@@ -2256,11 +2259,11 @@ sub FindLoops {
 				($lp1, $lp2) = ($loop2, $loop1);
 			}
 			if ($lp1) {
-				my $flag = 0;
+				my $lflag = 0;
 				for my $k (keys %{$D1{$lp1}}) {
-					$flag = 1 if ! $D1{$lp2}{$k};
+					$lflag = 1 if ! $D1{$lp2}{$k};
 				}
-				$D2{$lp2} = 1 if ! $flag;
+				$D2{$lp2} = 1 if ! $lflag;
 			}
 		}
 	}
@@ -2271,6 +2274,7 @@ sub FindLoops {
 	### middle nodes have start and end nodes
 	### end nodes have no children but parent nodes
 	my $countl = 0;
+	my %B;
 	for my $loop (keys %D) {
 		my %start_nodes;
 		$countl++;
@@ -2294,14 +2298,14 @@ sub FindLoops {
 
 			### getting all connected mates of this node which are part of the loop
 			my %P = ($p1, 1, $p2, 1);
-			my $flag = 1;
-			while ($flag) {
-				$flag = 0;
+			my $lflag = 1;
+			while ($lflag) {
+				$lflag = 0;
 				for my $p (keys %P) {
 					for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 						if (! $P{$c} && $E{$c}) {
 							$P{$c} = 1;
-							$flag = 1;
+							$lflag = 1;
 						}
 					}
 				}
@@ -2398,7 +2402,7 @@ sub FindLoops {
 				}
 			}
 
-			### store those nodes including individuals occuring more then one time in all nodes from the loop
+			### store those nodes including individuals occurring more then one time in all nodes from the loop
 			### such individuals are candidates for breaking a loop
 			for my $p1 (keys %R) {
 				if ($R{$p1} > 1) {
@@ -2413,9 +2417,9 @@ sub FindLoops {
 			}
 		}
 
-		### detection of "asymetric" loops
+		### detection of "asymmetric" loops
 		### When loops are not in balance - that means that there are more middle nodes on the one side
-		### then the other, the end note person which belongs to the side with lower middle notes
+		### then the other, the end node person which belongs to the side with lower middle nodes
 		### must be prevented to draw in the middle part.
 		### It also has to be explored, if middle nodes belong to a multiple mate group (they count as one node together)
 
@@ -2424,13 +2428,13 @@ sub FindLoops {
 		my $cll = scalar @loop_list;
 		my $cc1 = 0;
 		my $i1;
-		$flag = 0;
+		$flag = 1;
 		for my $i (-$cll .. $cll - 1) {
 			if ($node_types[$i] =~ /S./) {
-				$flag = 1;
+				$flag = 0;
 				next;
 			}
-			next unless $flag;
+			next if $flag;
 
 			if ($node_types[$i] =~ /E./) {
 				$i1 = $i;
@@ -2445,13 +2449,13 @@ sub FindLoops {
 		### exploring number of middle nodes from END --> START
 		my $cc2 = 0;
 		my $i2;
-		$flag = 0;
+		$flag = 1;
 		for my $i (-$cll .. $cll - 1) {
 			if ($node_types[$i] =~ /E./) {
-				$flag = 1;
+				$flag = 0;
 				next;
 			}
-			next unless $flag;
+			next if $flag;
 			if ($node_types[$i] =~ /S./) {
 				$i2 = $i;
 				last;
@@ -2462,7 +2466,7 @@ sub FindLoops {
 			}
 		}
 
-		##### asymetric loop !!!
+		##### asymmetric loop !!!
 		if (($cc1 != $cc2) && ! $D2{$loop}) {
 			my ($n1, $n2);
 			for my $i (1 - $cll .. $cll - 1) {
@@ -2506,16 +2510,16 @@ sub FindLoops {
 	if (keys %B) {
 		for my $p (keys %{$B{PID}}) {
 			my @nodes;
-			my $flag = 0;
+			my $lflag = 0;
 			for my $node (keys %{$B{PID}{$p}}) {
 				if ($B{NODE}{$node} == 1) {
 					push @nodes, $node;
 				} else {
-					$flag = 1;
+					$lflag = 1;
 				}
 			}
 			ChangeOrder(\@nodes);
-			shift @nodes if ! $flag;
+			shift @nodes if ! $lflag;
 
 			for (@nodes) {
 				my ($p1, $p2) = split '==', $_;
