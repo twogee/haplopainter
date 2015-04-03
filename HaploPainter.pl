@@ -578,17 +578,17 @@ sub NewPedigree {
 sub OpenDefaults {
 #=================
 	return unless $self->{GLOB}{CURR_FAM};
-	my $file = $mw->getOpenFile(-filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', 'hp' ] ]) or return undef;
+	my $file = $mw->getOpenFile(-filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', 'hp' ] ]) or return;
 	my $test;
 	eval { $test = retrieve($file) };
 	if ($@) {
 		ShowInfo("Error reading file $file!\n$@", 'warning');
-		return undef;
+		return;
 	}
 	my @list = nsort keys %{$test->{FAM}{PED_ORG}};
 	if (!@list) {
 		ShowInfo("The file seems not to contain valid data!\n$@", 'warning');
-		return undef;
+		return;
 	}
 
 	my $family = $list[0];
@@ -1013,7 +1013,7 @@ sub SetAsTwins {
 			my $sib_old = $ci->{PID}{$sib}{Case_Info_1};
 			if (! $self->{FAM}{SID2FATHER}{$fam}{$sib}) {
 				ShowInfo("The twin individual $sib_old must not be a founder.", 'warning');
-				return undef;
+				return;
 			}
 			$par = $self->{FAM}{SID2FATHER}{$fam}{$sib} . '==' . $self->{FAM}{SID2MOTHER}{$fam}{$sib} if ! $par;
 			$gender = $self->{FAM}{SID2SEX}{$fam}{$sib} if ! $gender;
@@ -1021,12 +1021,12 @@ sub SetAsTwins {
 			### twins should be siblings
 			if (! $self->{FAM}{SIBS}{$fam}{$par}{$sib}) {
 				ShowInfo("The twin individual $sib_old is not a member of the sibling group.", 'warning');
-				return undef;
+				return;
 			}
 			### monozygotic twins schould have same gender
 			if (($tt eq 'm') && $self->{FAM}{SID2SEX}{$fam}{$sib} != $gender) {
 				ShowInfo("The twin individual $sib_old is declared as monozygotic but differs in gender of other twins.", 'warning');
-				return undef;
+				return;
 			}
 		}
 
@@ -1114,13 +1114,13 @@ sub AddParents {
 
 	if ($m eq $f) {
 		ShowInfo("Mates must not have identical names!", 'warning');
-		return undef;
+		return;
 	}
 
 	for ($m, $f) {
 		unless ($_) {
 			ShowInfo("Empty fields are not allowed!", 'warning');
-			return undef;
+			return;
 		}
 	}
 
@@ -1151,7 +1151,7 @@ sub AddMateAndOffspring {
 	my $sex_p = $self->{FAM}{SID2SEX}{$fam}{$p};
 	if (($sex_p ne 1) && ($sex_p ne 2)) {
 		ShowInfo("Individuals with unknown gender are not accepted!", 'warning');
-		return undef;
+		return;
 	}
 
 	my $d = $mw->DialogBox(-title => 'Add mate and offspring', -buttons => [ qw/Ok Cancel/ ]);
@@ -1169,19 +1169,19 @@ sub AddMateAndOffspring {
 
 	if ($mate eq $child) {
 		ShowInfo("Mate and offspring must not have identical names!", 'warning');
-		return undef;
+		return;
 	}
 
 	for ($mate, $child) {
 		unless ($_) {
 			ShowInfo("Empty fields are not allowed!", 'warning');
-			return undef;
+			return;
 		}
 	}
 
 	if ($self->{FAM}{PID2PIDNEW}{$fam}{$child}) {
 		ShowInfo("You already used the child ID in this pedigree!", 'warning');
-		return undef;
+		return;
 	}
 
 	if ($self->{FAM}{PID2PIDNEW}{$fam}{$mate}) {
@@ -1195,7 +1195,7 @@ sub AddMateAndOffspring {
 		my $sex_mate = $self->{FAM}{SID2SEX}{$fam}{$pid_mate_new};
 		if (!$sex_mate or ($sex_mate == $sex_p)) {
 			ShowInfo("Gender of mate does not match necessary criteria!", 'warning');
-			return undef;
+			return;
 		}
 	}
 
@@ -1923,7 +1923,7 @@ sub RedrawPedForce {
 #=================
 sub DrawOrRedraw {
 #=================
-	my $fam = shift @_ or return undef;
+	my $fam = shift @_ or return;
 	$self->{GLOB}{CURR_FAM} = $fam;
 	undef $self->{GLOB}{ACTIVE_SYMBOLS};
 	if (! $self->{FAM}{MATRIX}{$fam}) {
@@ -2053,11 +2053,11 @@ sub SaveSelf {
 				      -initialfile => basename($self->{GLOB}{FILENAME}),
 				      -defaultextension => 'hp',
 				      -filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', 'hp' ] ]
-				     ) or return undef;
+				     ) or return;
 		$self->{GLOB}{FILENAME} = $_;
 		$self->{GLOB}{FILENAME_SAVE} = 1;
 	} else {
-		$_ = $self->{GLOB}{FILENAME} or return undef;
+		$_ = $self->{GLOB}{FILENAME} or return;
 	}
 	$canvas->configure(-cursor => 'watch');
 	store $self, $_;
@@ -2067,7 +2067,7 @@ sub SaveSelf {
 #====================
 sub RestoreSelfGUI {
 #====================
-	my $file = $mw->getOpenFile() or return undef;
+	my $file = $mw->getOpenFile() or return;
 	RestoreSelf($file,1);
 	$self->{GLOB}{FILENAME} = $file;
 	$self->{GLOB}{FILENAME_SAVE} = 1;
@@ -2078,15 +2078,15 @@ sub RestoreSelfGUI {
 sub RestoreSelf {
 #================
 	our $menubar;
-	my ($file, $flag) = @_ or return undef;
+	my ($file, $flag) = @_ or return;
 	my $test;
 	eval { $test = retrieve($file) };
 	if ($@ && $flag) {
 		ShowInfo "File reading error!\n$@", 'warning';
-		return undef;
+		return;
 	}
 	if ($@ && ! $flag) {
-		return undef;
+		return;
 	}
 
 	### check for compatability --> old Versions do not have this variable
@@ -2591,7 +2591,7 @@ sub ReadHaplo {
 
 	unless (@file) {
 		ShowInfo("$arg{-file} has no data !", 'warning');
-		return undef;
+		return;
 	}
 	my $h1;
 	my %haplo;
@@ -2624,7 +2624,7 @@ sub ReadHaplo {
 						s/\@/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ for @{$h1->{"$pid"}{M}{TEXT}};
 					} else {
 						ShowInfo("Having problems in finding maternal haplotype in line\n$M", 'error');
-						return undef;
+						return;
 					}
 					if (($pid, $haplo) = $P =~ /^P (\S+).+\s{7}([0-9@].+[0-9@])\s+$/) {
 						$pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid} or next;
@@ -2632,7 +2632,7 @@ sub ReadHaplo {
 						s/\@/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ for @{$h1->{"$pid"}{P}{TEXT}};
 					} else {
 						ShowInfo("Having problems in finding paternal haplotype in line\n$P", 'error');
-						return undef;
+						return;
 					}
 				}
 			}
@@ -2743,7 +2743,7 @@ sub ReadHaplo {
 			}
 		} else {
 			ShowInfo ("Unknown haplotype file format $arg{-format} !", 'info');
-			return undef;
+			return;
 		}
 	}
 
@@ -2804,7 +2804,7 @@ sub ReadMap {
 	}
 	unless ($arg{-data}) {
 		ShowInfo("No data to read !", 'warning');
-		return undef;
+		return;
 	}
 
 	### for which families the map should be imported
@@ -2848,7 +2848,7 @@ sub ReadMap {
 		s/,/\./g;
 		if (/[^-+.0-9]/) {
 			ShowInfo("One ore more marker positions are corrupted!\n$_", 'warning');
-			return undef;
+			return;
 		}
 	}
 
@@ -2863,7 +2863,7 @@ sub ReadMap {
 			if ($param->{GLOBAL_MAP_IMPORT}) {
 				if (scalar @fam == 1) {
 					ShowInfo("This map file contains more or fewer markers ($sm) than loaded from the haplotype file ($sc) for family $fam!", 'warning');
-					return undef;
+					return;
 				} else {
 					ShowInfo("This map file contains more or fewer markers ($sm) than loaded from the haplotype file ($sc) for family $fam!\n" .
 					"You should switch off the 'Global map import' flag if your map file is not valid for every family.", 'warning');
@@ -2871,7 +2871,7 @@ sub ReadMap {
 				}
 			} else {
 				ShowInfo("This map file contains more or fewer markers ($sm) than loaded from the haplotype file ($sc) for family $fam!", 'warning');
-				return undef;
+				return;
 			}
 		}
 		undef $self->{FAM}{MAP}{$fam}{POS};
@@ -2898,7 +2898,7 @@ sub ReadPed {
 
 	### read in first 4 bytes to check for BOM sequence
 	my ($bom, $file, $bflag);
-	open(IN, "<", $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return undef);
+	open(IN, "<", $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return);
 	binmode IN;
 	read(IN, $bom, 4);
 	close IN;
@@ -2935,7 +2935,7 @@ sub ReadPed {
 		$encoding = $e{$param->{ENCODING}}
 	}
 
-	open(FH, $encoding, $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return undef);
+	open(FH, $encoding, $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return);
 		### removing BOM if there
 		if ($bflag) {
 			if (defined ($_ = <FH>)) {
@@ -2943,7 +2943,7 @@ sub ReadPed {
 				$file .= $_;
 			} else {
 				ShowInfo("Read error", 'warning');
-				return undef;
+				return;
 			}
 		}
 
@@ -3057,12 +3057,12 @@ sub ReadPed {
 
 	unless (%ped_org) {
 		ShowInfo("There are no data to read !", 'warning');
-		return undef;
+		return;
 	}
 	my $er = CheckPedigreesForErrors(\%ped_org, $arg{-format});
 	if ($er) {
 		ShowInfo($er);
-		return undef;
+		return;
 	}
 
 	### make a copy of $self to restore it in case of family processing errors
@@ -3094,7 +3094,6 @@ sub ReadPed {
 sub CheckPedigreesForErrors {
 #============================
 	my ($pedref, $format) = @_;
-	my (@er, $er);
 
 	### define regex match for every column
 	my %check = (
@@ -3119,6 +3118,7 @@ sub CheckPedigreesForErrors {
 			    }
 		    );
 
+	my @er;
 	for my $fam (keys %$pedref) {
 		for my $l (@{$pedref->{$fam}}) {
 			@_ = ($fam, @$l);
@@ -3158,12 +3158,12 @@ sub CheckPedigreesForErrors {
 		}
 	}
 
+	my $er;
 	if (@er && scalar @er < 20) {
 		$er = "There are errors in this pedigree file!\n\n" . join("", @er);
 	} elsif (@er && scalar @er > 20) {
 		$er = "There are too many errors in this pedigree file - only some of them are shown!\n\n" . join("", @er[0 .. 19]);
 	}
-
 	return $er;
 }
 
@@ -3175,13 +3175,13 @@ sub ProcessFamily {
 		ShowInfo("Achtung : Argumentfehler in Funktion ProcessFamily ", 'error');
 		return;
 	}
-	my (@er, $er, %save, %twins, %consang);
+	my (@er, %save, %twins, %consang);
 	### translate gender values
 	my %tgender = (qw/0 0 1 1 2 2 x 0 X 0 m 1 M 1 f 2 F 2/);
 	my $ci = $self->{FAM}{CASE_INFO}{$fam} = {};
 	unless ($self->{FAM}{PED_ORG}{$fam}) {
 		ShowInfo("There is no family $fam!", 'error');
-		return undef;
+		return;
 	}
 
 	my $id_counter = 1;
@@ -3436,16 +3436,11 @@ sub ProcessFamily {
 		$self = thaw($param->{SELF_BACKUP}) if $param->{SELF_BACKUP};
 		undef $param->{SELF_BACKUP};
 		if (scalar @er < 20) {
-			$er .= $_ for @er;
-			ShowInfo("There are errors in family $fam!\n\n$er", 'error');
-			return undef;
+			ShowInfo("There are errors in family $fam!\n\n" . join("", @er), 'error');
 		} else {
-			for (0 .. 19) {
-				$er .= $er[$_];
-			}
-			ShowInfo("There are too many errors in family $fam - only some of them are shown!\n\n$er", 'error');
-			return undef;
+			ShowInfo("There are too many errors in family $fam - only some of them are shown!\n\n" . join("", @er[0 .. 19]), 'error');
 		}
+		return;
 	}
 
 	### temporary
@@ -3516,7 +3511,7 @@ sub ShuffleFounderColors {
 	my $un = $self->{FAM}{HAPLO_UNKNOWN}{$fam};
 	my $huc = $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
 
-	my @founder = keys %{$self->{FAM}{FOUNDER}{$fam}} or return undef;
+	my @founder = keys %{$self->{FAM}{FOUNDER}{$fam}} or return;
 
 	### clear all color information of founder bars
 	for my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
@@ -3616,7 +3611,7 @@ sub ProcessHaplotypes {
 					ShowInfo("The file seems to be corrupted - missing haplotype for $pid ?\n", 'error');
 					delete $self->{FAM}{HAPLO}{$fam};
 					delete $self->{FAM}{HAPLO}{$fam};
-					return undef;
+					return;
 				}
 
 				if ($h->{$m}{P}{TEXT} && $h->{$m}{M}{TEXT}) {
@@ -3632,7 +3627,7 @@ sub ProcessHaplotypes {
 				} else {
 					ShowInfo("The file seems to be corrupted - missing haplotype for $m ?\n", 'error');
 					delete $self->{FAM}{HAPLO}{$fam};
-					return undef;
+					return;
 				}
 			}
 		}
@@ -3644,7 +3639,7 @@ sub ProcessHaplotypes {
 sub CompleteBar {
 #================
 	my ($fam, $a, $aa1, $ba1, $aa2, $ba2) = @_;
-	return undef if ! $ba1 || ! $ba2 || ! @$ba1 || ! @$ba2;
+	return if ! $ba1 || ! $ba2 || ! @$ba1 || ! @$ba2;
 
 	my ($phase, @bar);
 	my $un = $self->{FAM}{HAPLO_UNKNOWN}{$fam};
@@ -3753,7 +3748,7 @@ sub FindTop {
 	@_ = keys %Top;
 	if (! @_) {
 		 ShowInfo("There is no founder couple in this family !\nFurther drawing aborted.", 'error');
-		 return undef;
+		 return;
 	}
 
 	### Which founder belong to which generation ??
@@ -3848,7 +3843,7 @@ sub FindTop {
 		### Sollte eigentlich nicht mehr vorkommen ...
 		unless ($self->{FAM}{FOUNDER_COUPLE}{$fam}{0}) {
 			ShowInfo("There is no founder couple in generation 1 !", 'error');
-			return undef;
+			return;
 		}
 
 		### multiple mates can be cleared ... see method SetCouple()
@@ -4113,14 +4108,14 @@ sub ImportPedigreeDBI {
 
 		unless ($dbh) {
 			$canvas->Subwidget("canvas")->Tk::focus;
-			return undef;
+			return;
 		}
 
 		my $ped_ref = $dbh->selectcol_arrayref("select distinct($colnames->[0]) from $self->{GLOB}{DB_RELATION} order by $colnames->[0]");
 		if ($DBI::errstr) {
 			ShowInfo($DBI::errstr);
 			$dbh->disconnect;
-			return undef;
+			return;
 		}
 
 		### No pedigrees found, something is bad
@@ -4163,7 +4158,7 @@ sub ImportPedigreeDBI {
 		if ($DBI::errstr) {
 			ShowInfo($DBI::errstr);
 			$dbh->disconnect;
-			return undef;
+			return;
 		}
 		$dbh->disconnect();
 		return unless @$aref;
@@ -4177,7 +4172,7 @@ sub ImportPedigreeDBI {
 		my $er = CheckPedigreesForErrors(\%ped_org, 'CSV');
 		if ($er) {
 			ShowInfo($er);
-			return undef;
+			return;
 		}
 
 		### make a copy of $self to restore it in case of family processing errors
@@ -4294,7 +4289,7 @@ sub MakeDBConnection {
 	for (qw/DB_TYPE DB_HOST DB_PORT DB_RELATION DB_UNAME DB_PASSWD/) {
 		if (! $self->{GLOB}{$_}) {
 			ShowInfo("There are missing values which are needed to establish a data base connection: $_");
-			return undef;
+			return;
 		}
 	}
 
@@ -4308,7 +4303,7 @@ sub MakeDBConnection {
 		$dns = "dbi:mysql:dbname=$self->{GLOB}{DB_SID};host=$self->{GLOB}{DB_HOST};port=$self->{GLOB}{DB_PORT}";
 	} else {
 		ShowInfo("Unknown data base type $self->{GLOB}{DB_TYPE} - must be (oracle, postgresql, mysql)");
-		return undef;
+		return;
 	}
 	### connect to database and capture error messages
 	eval {
@@ -4316,26 +4311,26 @@ sub MakeDBConnection {
 	};
 	if ($@) {
 		ShowInfo($@);
-		return undef;
+		return;
 	}
 	if ($DBI::errstr) {
 		ShowInfo($DBI::errstr);
-		return undef;
+		return;
 	}
 
 	### first statement handle only to get column names
-	my $sth = $dbh->prepare("select * from $self->{GLOB}{DB_RELATION}") or (ShowInfo($DBI::errstr), $dbh->disconnect, return undef);
+	my $sth = $dbh->prepare("select * from $self->{GLOB}{DB_RELATION}") or (ShowInfo($DBI::errstr), $dbh->disconnect, return);
 	if ($DBI::errstr) {
 		ShowInfo($DBI::errstr);
 		$dbh->disconnect;
-		return undef;
+		return;
 	}
 
 	$sth->execute;
 	if ($DBI::errstr) {
 		ShowInfo($DBI::errstr);
 		$dbh->disconnect;
-		return undef;
+		return;
 	}
 
 	my @names = @{$sth->{NAME}};
@@ -4354,8 +4349,8 @@ sub MakeDBConnection {
 #==================
 sub ReadPedFromDB {
 #==================
-	my ($dbh, $fam, $col1) = @_ or return undef;
-	my $aref = $dbh->selectall_arrayref("select * from $self->{GLOB}{DB_RELATION} where $col1 = '$fam'") or (ShowInfo($DBI::errstr), $dbh->disconnect, return undef);
+	my ($dbh, $fam, $col1) = @_ or return;
+	my $aref = $dbh->selectall_arrayref("select * from $self->{GLOB}{DB_RELATION} where $col1 = '$fam'") or (ShowInfo($DBI::errstr), $dbh->disconnect, return);
 	$dbh->disconnect();
 	return unless @$aref;
 
@@ -4369,7 +4364,7 @@ sub ReadPedFromDB {
 	my $er = CheckPedigreesForErrors(\%ped_org, 'CSV');
 	if ($er) {
 		ShowInfo($er);
-		return undef;
+		return;
 	}
 
 	AddFamToSelf($fam);
@@ -4394,7 +4389,7 @@ sub ImportPedfile {
 	if (!$f) {
 		$f = $mw->getOpenFile() or return;
 	}
-	ReadPed(-file => $f, -format => $form) or return undef;
+	ReadPed(-file => $f, -format => $form) or return;
 	($f) = fileparse($f, qr/\.[^.]*/);
 
 	$self->{GLOB}{FILENAME} = "$f.hp";
@@ -4643,7 +4638,7 @@ sub OptionsLoopBreak {
 				    for my $k (keys %{$self->{FAM}}) {
 					    undef $self->{FAM}{$k}{$fam} if ! defined $def->{FAM}{$k};
 				    }
-				    ProcessFamily() or return undef;
+				    ProcessFamily() or return;
 				    FindLoops();
 				    DoIt();
 			    }
@@ -4661,7 +4656,7 @@ sub OptionsLoopBreak {
 			    for my $k (keys %{$self->{FAM}}) {
 				    undef $self->{FAM}{$k}{$fam} if ! defined $def->{FAM}{$k};
 			    }
-			    ProcessFamily($fam) or return undef;
+			    ProcessFamily($fam) or return;
 			    FindLoops($fam);
 			    DoIt($fam);
 			    $flag = 0;
@@ -5346,7 +5341,7 @@ sub ChooseFont {
 #================
 sub BatchExport {
 #==============
-	my $suffix = shift @_ or return undef;
+	my $suffix = shift @_ or return;
 	ShowInfo("Please select working directory and a basic file name without suffix.\nGraphic outputs will be extended by pedigree identifiers.\n\n");
 	my $file = $mw->getSaveFile(-initialfile => 'pedigree') or return;
 	my $curr_fam = $self->{GLOB}{CURR_FAM};
@@ -5617,7 +5612,7 @@ sub DrawOrExportCanvas {
 		$mw->configure(-title => "HaploPainter V.$self->{GLOB}{VERSION}  -[Family $fam]");
 		$param->{INFO_LABEL}->configure(-text => '');
 	} elsif ($arg{-modus} eq 'CSV') {
-		my $file_name = $arg{-file} or return undef;
+		my $file_name = $arg{-file} or return;
 		my %t = (
 			 ascii => '>',
 			 utf8 => '>:raw:encoding(UTF-8):crlf:utf8',
@@ -5667,7 +5662,7 @@ sub DrawOrExportCanvas {
 		### render graphic using cairo from the gtk2 environment
 		return unless $fam;
 		my ($surface, $cairo);
-		my $file_name = $arg{-file} or return undef;
+		my $file_name = $arg{-file} or return;
 
 		### get coordinates of all drawing elements to find out "bounding box"
 		my (%x, %y);
@@ -6883,7 +6878,7 @@ sub ShiftRow {
 	(my $XL) = sort { $a <=> $b } keys %Freeze;
 
 	if ($flag && $XL && ($NewPos >= $XL)) {
-		return undef;
+		return;
 	}
 
 	for my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
