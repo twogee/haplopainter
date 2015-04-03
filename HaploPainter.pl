@@ -4836,8 +4836,8 @@ sub Configuration {
 	###############################################################################
 	### page1
 	### place Scale Widgets
-	my $p1_f1 = $p1->LabFrame(-label => 'Haplotype Style')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand =>1);
-	foreach my $s (
+	my $p1_f1 = $p1->LabFrame(-label => 'Haplotype Style')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand => 1);
+	for my $s (
 		       [ 'HAPLO_WIDTH',        'Bar width',                    0, 0,    1,  50,   1 ],
 		       [ 'HAPLO_WIDTH_NI',     'Bar width uninformative',      1, 0,    1,  50,   1 ],
 		       [ 'HAPLO_SPACE',        'Space between bars',           2, 0,    1,  50,   1 ],
@@ -4858,8 +4858,8 @@ sub Configuration {
 	###############################################################################
 	### page2
 	### place Checkbuttons
-	my $p2_f1 = $p2->LabFrame(-label => 'Haplotype & Map')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand =>1);
-	foreach my $s (
+	my $p2_f1 = $p2->LabFrame(-label => 'Haplotype & Map')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand => 1);
+	for my $s (
 		       [ 'SHOW_HAPLO_TEXT',       'Show alleles',                      0, 0 ],
 		       [ 'SHOW_HAPLO_BAR',        'Show bars',                         1, 0 ],
 		       [ 'SHOW_POSITION',         'Show marker positions',             2, 0 ],
@@ -4884,23 +4884,23 @@ sub Configuration {
 	###############################################################################
 	### page3
 	### Fonts + Colors
-	my $p3_f1 = $p3->LabFrame(-label => 'Haplotype Color & Font')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand =>1);
+	my $p3_f1 = $p3->LabFrame(-label => 'Haplotype Color & Font')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand => 1);
 
 	my $hap_f = $p3_f1->Frame->grid(-row => 0, -column => 0, -sticky => 'w');	### Font Farbe
 	my $hap_l = $hap_f->Label(-width => 3, -bg => $self->{FAM}{FONT_HAPLO}{$fam}{COLOR})->pack(-side => 'left', -padx => 10);
-	my $hap_b = $hap_f->Button(-text => 'Haplotype Font', -width => 20,
+	my $hap_b = $hap_f->Button(-text => 'Haplotype font', -width => 20,
 				   -command => sub {
 					   ChooseFont($opt, $fam, 'FONT_HAPLO', $hap_l);
 				   })->pack(-side => 'left');
 	my $inf_f = $p3_f1->Frame->grid(-row => 1, -column => 0, -sticky => 'w');	### Font Farbe
 	my $inf_l = $inf_f->Label(-width => 3, -bg => $self->{FAM}{FONT1}{$fam}{COLOR})->pack(-side => 'left', -padx => 10);
-	my $inf_b = $inf_f->Button(-text => 'Symbol information Font', -width => 20,
+	my $inf_b = $inf_f->Button(-text => 'Symbol information font', -width => 20,
 				   -command => sub {
 					   ChooseFont($opt, $fam, 'FONT1', $inf_l);
 				   })->pack(-side => 'left');
 	my $head_f = $p3_f1->Frame->grid(-row => 2, -column => 0, -sticky => 'w');	### Font Farbe
 	my $head_l = $head_f->Label(-width => 3, -bg => $self->{FAM}{FONT_HEAD}{$fam}{COLOR})->pack(-side => 'left', -padx => 10);
-	my $head_b = $head_f->Button(-text => 'Title Font', -width => 20,
+	my $head_b = $head_f->Button(-text => 'Title font', -width => 20,
 				     -command => sub {
 					     ChooseFont($opt, $fam, 'FONT_HEAD', $head_l);
 				     })->pack(-side => 'left');
@@ -4910,7 +4910,7 @@ sub Configuration {
 	my $lb2 = $fc2->Label(-width => 3, -bg => $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam})->pack(-side => 'left', -padx => 10);
 	my $ub = $fc2->Button(-text => 'Phase unknown color', -width => 20, -height => 1,
 			      -command => sub {
-				      my $col = $mw->chooseColor() or return;
+				      my $col = $n->chooseColor() or return;
 				      $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam} = $col;
 				      $lb2->configure(-bg => $col);
 			      })->pack(-side => 'left');
@@ -4918,9 +4918,9 @@ sub Configuration {
 	### Farbe fuer ALLE HAPLOTYPEN
 	my $fc5 = $p3_f1->Frame->grid(-row => 4, -column => 0, -sticky => 'w');		### Font Farbe
 	my $lb5 = $fc5->Label(-width => 3, -bg => $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam})->pack(-side => 'left', -padx => 10);
-	$fc5->Button(-text => 'Color of all haplotypes ', -width => 20, -height => 1,
+	$fc5->Button(-text => 'Color of all haplotypes', -width => 20, -height => 1,
 		     -command => sub {
-			     my $col_new = $mw->chooseColor() or return;
+			     my $col_new = $n->chooseColor() or return;
 			     foreach my $p (keys %{$self->{FAM}{FOUNDER}{$fam}}) {
 				     next unless $self->{FAM}{HAPLO}{$fam}{PID}{$p};
 				     foreach my $mp ('M', 'P') {
@@ -4938,7 +4938,7 @@ sub Configuration {
 	my $fc3 = $p3_f1->Frame->grid(-row => 1, -column => 2, -sticky => 'w');		### Font Farbe
 	my $lb3 = $fc3->Label(-width => 3)->pack(-side => 'left', -padx => 10);
 	my ($pb, $pid, $pid_old);
-	$pb = $fc3->Button(-text => 'Color of paternal Haplotype', -width => 25, -height => 1,
+	$pb = $fc3->Button(-text => 'Color of paternal haplotype', -width => 25, -height => 1,
 			   -command => sub {
 				   if ($pid && $self->{FAM}{HAPLO}{$fam}{PID}{$pid} && $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}[0]) {
 					   my $col_new = $n->chooseColor() or return;
@@ -5042,7 +5042,7 @@ sub Configuration {
 	### Markerauswahl
 	my $p4_f1 = $p4->LabFrame(-label => 'Haplotype region')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand =>1);
 	my $f5 = $p4_f1->Frame->grid(-row => 1, -column => 0, -sticky => 'w');
-	my $lab5 = $f5->Label(-text => 'Marker Selection', -width => 20)->pack(-side => 'top', -anchor => 'w');
+	my $lab5 = $f5->Label(-text => 'Marker Selection', -width => 16)->pack(-side => 'top', -anchor => 'w');
 	my $lb = $f5->Scrolled('Listbox', -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
 			       -height => 14, -width => 25, -exportselection => 0)->pack(-side => 'top', -fill => 'both', -expand => 1);
 	$p4->gridColumnconfigure(0, -pad => 10);
@@ -5118,7 +5118,7 @@ sub Configuration {
 	$p4->gridRowconfigure(1, -pad => 10);
 
 	my $f6 = $p4_f1->Frame->grid(-row => 1, -column => 1, -rowspan => 7, -sticky => 'w');
-	my $lab6 = $f6->Label(-text => 'Bounding Box Selection', -width => 20)->pack(-side => 'top', -anchor => 'w');
+	my $lab6 = $f6->Label(-text => 'Bounding Box Selection', -width => 22)->pack(-side => 'top', -anchor => 'w');
 	$lb6 = $f6->Scrolled('Listbox', -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
 			     -height => 14, -width => 25, -exportselection => 0)->pack(-side => 'top', -fill => 'both', -expand => 1);
 	$p4->gridColumnconfigure(1, -pad => 10);
@@ -5199,7 +5199,7 @@ sub Configuration {
 		my $lb = $f->Label(-width => 3, -bg => $self->{FAM}{AFF_COLOR}{$fam}{$nr})->pack(-side => 'left', -padx => 10);
 		my $cb = $f->Button(-text => $c{AFF_COLOR}{$nr}, -width => 20, -height => 1,
 				    -command => sub {
-					    my $NewCol = $mw->chooseColor() or return;
+					    my $NewCol = $n->chooseColor() or return;
 					    $self->{FAM}{AFF_COLOR}{$fam}{$nr} = $NewCol;
 					    $lb->configure(-bg => $NewCol);
 					    $opt->focusForce;
@@ -5211,7 +5211,7 @@ sub Configuration {
 		my $lb = $f->Label(-width => 3, -bg => $self->{FAM}{$c{LC}{$nr}[0]}{$fam})->pack(-side => 'left', -padx => 10);
 		my $cb = $f->Button(-text => $c{LC}{$nr}[1], -width => 20, -height => 1,
 				    -command => sub {
-					    my $NewCol = $mw->chooseColor() or return;
+					    my $NewCol = $n->chooseColor() or return;
 					    $self->{FAM}{$c{LC}{$nr}[0]}{$fam} = $NewCol;
 					    $lb->configure(-bg => $NewCol);
 					    $opt->focusForce;
@@ -5227,7 +5227,7 @@ sub Configuration {
 	my $lab = $f->Label(-width => 3, -bg => $self->{GLOB}{BACKGROUND})->pack(-side => 'left', -padx => 10);
 	my $cb7 = $f->Button(-text => 'Background color', -width => 20, -height => 1,
 			     -command => sub {
-				     my $NewCol = $mw->chooseColor() or return;
+				     my $NewCol = $n->chooseColor() or return;
 				     $self->{GLOB}{BACKGROUND} = $NewCol;
 				     $lab->configure(-bg => $NewCol);
 				     $canvas->configure(-bg => $self->{GLOB}{BACKGROUND});
@@ -5303,12 +5303,12 @@ sub ChooseFont {
 	my $fe2 = $f1->Frame->grid(-row => 1, -column => 1, -sticky => 'w');
 	my $lab2 = $fe2->Label(-text => 'Size:', -width => 6)->pack(-side => 'left', -anchor => 'w');
 	my $be2 = $fe2->BrowseEntry(-variable => \$fo->{SIZE}, -state => 'readonly',
-				    -choices => [ 5 .. 20, 22, 24, 26, 28, 36, 48, 72 ])->pack(-side => 'left');
+				    -choices => [ 5 .. 20, 22, 24, 26, 28, 30, 32, 36, 40, 44, 48, 56, 64, 72 ])->pack(-side => 'left');
 
 	### Font Weight
 	my $fe3 = $f1->Frame->grid(-row => 2, -column => 1, -sticky => 'w');
 	my $lab3 = $fe3->Label(-text => 'Weight:', -width => 6)->pack(-side => 'left', -anchor => 'w');
-	my $be3 = $fe3->BrowseEntry(-variable => \$fo->{WEIGHT}, -choices => [ 'bold', 'normal' ], -state => 'readonly',
+	my $be3 = $fe3->BrowseEntry(-variable => \$fo->{WEIGHT}, -choices => [ qw/bold normal/ ], -state => 'readonly',
 				    -command => sub {
 					    $cb1->configure(-font => [ $fo->{FAMILY}, 10, $fo->{WEIGHT}, $fo->{SLANT} ]);
 				    })->pack(-side => 'left');
@@ -5326,7 +5326,7 @@ sub ChooseFont {
 	my $lb1 = $fc1->Label(-width => 3, -bg => $fo->{COLOR})->pack(-side => 'left', -padx => 10);
 	$cb1 = $fc1->Button(-text => 'Choose Font Color', -font => [ $fo->{FAMILY}, 10, $fo->{WEIGHT}, $fo->{SLANT} ],
 			    -width => 24, -height => 1, -command => sub {
-				    my $NewCol = $mw->chooseColor() or return;
+				    my $NewCol = $f1->chooseColor() or return;
 				    $fo->{COLOR} = $NewCol;
 				    $lb1->configure(-bg => $NewCol);
 				    $lab->configure(-bg => $fo->{COLOR}) if $lab;
