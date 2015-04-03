@@ -45,20 +45,16 @@ $Data::Dumper::Sortkeys = 1;
 my $param = {
 	     ENCODING => 'utf8',
 	     EXPORT_FORMATS => {
-			   PS => 1,
-			   PDF => 1,
-			   SVG => 1,
-			   PNG => 1
-			  },
+				do { map { $_ => 1 } qw/PS PDF SVG PNG/ }
+			       },
 	     GLOBAL_MAP_IMPORT => 0,
 	     HAPLOTYPE_FORMATS => {
-				   allegro => 1,
-				   genehunter => 1,
-				   merlin => 1,
-				   simwalk => 1
+				   do { map { $_ => 1 } qw/allegro genehunter merlin simwalk/ }
 				  },
-	     LAST_CHANGE => '2015-03-29',
-	     MAP_FORMATS => { 1 => 1, 2 => 1 },
+	     LAST_CHANGE => '2015-04-03',
+	     MAP_FORMATS => {
+			     do { map { $_ => 1 } (1..2) }
+			    },
 	     MAX_COUNT => 120,
 	     PAPER_SIZE	=> {
 			    A0 => { X => 840, Y => 1189 },
@@ -74,7 +70,9 @@ my $param = {
 			    Legal => { X => 216, Y => 356 },
 			    '11x17' => { X => 279, Y => 432 }
 			   },
-	     PEDIGREE_FORMATS => { linkage => 1, csv => 1 },
+	     PEDIGREE_FORMATS => {
+				  do { map { $_ => 1 } qw/linkage csv/ }
+				 },
 	     SHOW_GRID => 1,
 	     SORT_BY_PEDID => 1,
 	     SORT_COUPLE_BY_GENDER => 0,
@@ -99,7 +97,7 @@ my $def = {
 		    RESOLUTION_DPI  => 96,
 		    STATUS => 0,
 		    STRUK_MODE => 0,
-		    VERSION => '1.05'
+		    VERSION => '1.06'
 		   },
 	   FAM => {
 		   ADOPTED_SPACE1 => 5,
@@ -271,7 +269,7 @@ sub Main {
 	$b1 = $f1->Button(-image => $mw->Photo(-format => 'gif', -data => &GetArrow), -relief => 'sunken',
 			  -command => sub {
 				  $b1->configure(-relief => 'sunken');
-				  foreach ($b2, $b3, $b4) {
+				  for ($b2, $b3, $b4) {
 					  $_->configure(-relief => 'flat');
 				  }
 				  $self->{GLOB}{CURSOR} = 'left_ptr';
@@ -280,7 +278,7 @@ sub Main {
 	$b2 = $f1->Button(-image => $mw->Photo(-format => 'gif', -data => &GetPlus), -relief => 'flat',
 			  -command => sub {
 				  $b2->configure(-relief => 'sunken');
-				  foreach ($b1, $b3, $b4) {
+				  for ($b1, $b3, $b4) {
 					  $_->configure(-relief => 'flat');
 				  }
 				  $self->{GLOB}{CURSOR} = 'plus';
@@ -289,7 +287,7 @@ sub Main {
 	$b3 = $f1->Button(-image => $mw->Photo(-format => 'gif', -data => &GetMinus), -relief => 'flat',
 			  -command => sub {
 				  $b3->configure(-relief => 'sunken');
-				  foreach ($b1, $b2, $b4) {
+				  for ($b1, $b2, $b4) {
 					  $_->configure(-relief => 'flat');
 				  }
 				  $self->{GLOB}{CURSOR} = 'circle';
@@ -298,7 +296,7 @@ sub Main {
 	$b4 = $f1->Button(-image => $mw->Photo(-format => 'gif', -data => &GetHand), -relief => 'flat',
 			  -command => sub {
 				  $b4->configure(-relief => 'sunken');
-				  foreach ($b1, $b2, $b3) {
+				  for ($b1, $b2, $b3) {
 					  $_->configure(-relief => 'flat');
 				  };
 				  $self->{GLOB}{CURSOR} = 'fleur';
@@ -331,10 +329,10 @@ sub Main {
 	$canvas->CanvasBind('<ButtonRelease-1>' => [ \&ButtonRelease ]);
 	$canvas->CanvasBind('<Enter>' => sub { $canvas->configure(-cursor => $self->{GLOB}{CURSOR}) });
 	$canvas->CanvasBind('<Configure>' => \&AdjustView);
-	$canvas->CanvasBind('<MouseWheel>' =>[ sub { $_[0]->yview('scroll', -($_[1]/120), 'units') }, Tk::Ev('D') ]);
+	$canvas->CanvasBind('<MouseWheel>' =>[ sub { $_[0]->yview('scroll', -($_[1] / 120), 'units') }, Tk::Ev('D') ]);
 	$canvas->CanvasBind('<B1-Motion>' => [ \&MouseB1Move, Ev('x'), Ev('y') ]);
 
-	$canvas->bind('SYMBOL','<ButtonRelease-1>', [ \&MouseB1Release, Ev('x'), Ev('y') ]);
+	$canvas->bind('SYMBOL', '<ButtonRelease-1>', [ \&MouseB1Release, Ev('x'), Ev('y') ]);
 	$canvas->bind('HEAD', '<ButtonRelease-1>', [ \&HeadB1Release, Ev('x'), Ev('y') ]);
 	$canvas->bind('HEAD', '<B1-Motion>' => [ \&MoveHead, Ev('x'), Ev('y') ]);
 	$canvas->bind('ALLEL', '<Leave>',
@@ -343,8 +341,8 @@ sub Main {
 			      delete $self->{GLOB}{ACTIVE_ITEM};
 		      });
 	$canvas->bind('ALLEL', '<Double-1>', \&KlickAllel);
-	$canvas->bind('SYMBOL','<Double-1>', \&KlickSymbol);
-	$canvas->bind('HEAD','<Double-1>', \&KlickHead);
+	$canvas->bind('SYMBOL', '<Double-1>', \&KlickSymbol);
+	$canvas->bind('HEAD', '<Double-1>', \&KlickHead);
 	$canvas->bind('ALLEL', '<Enter>', \&EnterAllel);
 
 	$mw->bind('<Control-Key-1>' => sub { ImportMapfile(1) });
@@ -515,7 +513,7 @@ sub _MainMenu {
 sub _ContextMenu {
 #=================
 	[
-		[ 'command', 'Zoom In', 	-command => [ \&Zoom, 1, 1 ], -accelerator => '+' ],
+		[ 'command', 'Zoom In', -command => [ \&Zoom, 1, 1 ], -accelerator => '+' ],
 		[ 'command', 'Zoom Out', -command => [ \&Zoom, -1, 1 ], -accelerator => '-' ],
 		,'-',
 		[ 'command', 'New Pedigree', -command => \&NewPedigree, -accelerator => 'Contr+N' ],
@@ -549,11 +547,11 @@ sub NewPedigree {
 #================
 	our $menubar;
 
-	my $d = $mw->DialogBox(-title => 'Add new family', -buttons => [ 'Ok', 'Cancel' ]);
+	my $d = $mw->DialogBox(-title => 'Add new family', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 	my $fam_new;
 	$f1->Label(-text => 'Family ID')->grid(-row => 0, -column => 0, -sticky => 'e');
-	$f1->Entry(-textvariable => \$fam_new, -width => 20)->grid(-row => 0, -column =>1, -sticky => 'w');
+	$f1->Entry(-textvariable => \$fam_new, -width => 20)->grid(-row => 0, -column => 1, -sticky => 'w');
 
 	$d->Show eq 'Ok' || return;
 	return if ! $fam_new;
@@ -587,21 +585,21 @@ sub OpenDefaults {
 		ShowInfo("Error reading file $file!\n$@", 'warning');
 		return undef;
 	}
-	@_ = nsort keys %{$test->{FAM}{PED_ORG}};
-	if (!@_) {
+	my @list = nsort keys %{$test->{FAM}{PED_ORG}};
+	if (!@list) {
 		ShowInfo("The file seems not to contain valid data!\n$@", 'warning');
 		return undef;
 	}
 
-	my $family = $_[0];
+	my $family = $list[0];
 	my $var;
-	if (scalar @_ > 1) {
-		my $d = $mw->DialogBox(-title => 'Choose family', -buttons => [ 'Ok', 'Cancel' ]);
+	if (scalar @list > 1) {
+		my $d = $mw->DialogBox(-title => 'Choose family', -buttons => [ qw/Ok Cancel/ ]);
 		my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 
 		$f1->Label(-text => 'Family')->grid(-row => 0, -column => 0, -sticky => 'e');
-		$f1->BrowseEntry(-textvariable => \$family, -width => 20, -choices => [ @_ ])->grid(-row => 0, -column =>1, -sticky => 'w');
-		$f1->Checkbutton(-text => 'Import for all families', -variable => \$var)->grid(-row => 0, -column =>2, -padx => 5, -sticky => 'w');
+		$f1->BrowseEntry(-textvariable => \$family, -width => 20, -choices => [ @list ])->grid(-row => 0, -column => 1, -sticky => 'w');
+		$f1->Checkbutton(-text => 'Import for all families', -variable => \$var)->grid(-row => 0, -column => 2, -padx => 5, -sticky => 'w');
 
 		$d->Show eq 'Ok' || return;
 	}
@@ -610,10 +608,10 @@ sub OpenDefaults {
 	if ($var) {
 		@fam = keys %{$self->{FAM}{PED_ORG}};
 	}
-	foreach my $fam (@fam) {
-		foreach my $k (keys %{$def->{FAM}}) {
+	for my $fam (@fam) {
+		for my $k (keys %{$def->{FAM}}) {
 			if (ref $def->{FAM}{$k}) {
-				foreach my $k2 (keys %{$def->{FAM}{$k}}) {
+				for my $k2 (keys %{$def->{FAM}{$k}}) {
 					$self->{FAM}{$k}{$fam}{$k2} = $test->{FAM}{$k}{$family}{$k2};
 				}
 			} else {
@@ -632,15 +630,15 @@ sub ExecuteBatchMode {
 	my %pok = map { $_ => 1 } qw/-pedfile -pedformat -outfile -outformat -hapfile -hapformat -mapfile -mapformat
 				     -family -resolution -paper -orientation -border -bgcolor -dbtype -dbport -dbsid
 				     -dbhost -dbtable -dbuname -dbpasswd -breakloop -sortbyid -sortbygender/;
-	@_ = nsort keys %pok;
+	my @opts = nsort keys %pok;
 
 	if ($ARGV[0] && $ARGV[0] eq '-h') {
-		print "Valid parameters are: @_\n";
+		print "Valid parameters are: " . join(", ", @opts) . "\n";
 		exit;
 	}
 
 	if (!@ARGV || $ARGV[0] ne '-b' || scalar @ARGV < 2) {
-		return undef;
+		return;
 	}
 
 	### set batch mode
@@ -658,9 +656,9 @@ sub ExecuteBatchMode {
 
 	### validate parameters
 
-	foreach (keys %arg) {
-		if (!$pok{$_}) {
-			print "Unknown parameter $_\nValid parameters are: @_";
+	for my $opt (keys %arg) {
+		if (!$pok{$opt}) {
+			print "Unknown parameter $opt\nValid parameters are:" . join(", ", @opts) . "\n";
 			exit;
 		}
 	}
@@ -673,7 +671,7 @@ sub ExecuteBatchMode {
 	### resolution
 	if ($arg{-resolution}) {
 		if (($arg{-resolution} !~ /^\d{2,4}$/) || ($arg{-resolution} > 4800)) {
-			print "Invalid resolution value (10-4800)";
+			print "Invalid resolution value (10-4800)\n";
 			exit;
 		}
 		$self->{GLOB}{RESOLUTION_DPI} = $arg{-resolution};
@@ -681,9 +679,8 @@ sub ExecuteBatchMode {
 
 	### paper
 	if ($arg{-paper}) {
-		@_ = nsort keys %{$param->{PAPER_SIZE}};
 		if (! $param->{PAPER_SIZE}{$arg{-paper}}) {
-			print "Unknown paper size $arg{-paper} - must be (@_)";
+			print "Unknown paper size $arg{-paper} - must be (" . join(", ", nsort keys %{$param->{PAPER_SIZE}}) . ")\n";
 			exit;
 		}
 		$self->{GLOB}{PAPER} = $arg{-paper};
@@ -692,7 +689,7 @@ sub ExecuteBatchMode {
 	### orientation
 	if ($arg{-orientation}) {
 		if (($arg{-orientation} !~ /^landscape$/i) && ($arg{-orientation} !~ /^portrait$/i)) {
-			print "Unknown orientation $arg{-orientation} - must be landscape or portrait";
+			print "Unknown orientation $arg{-orientation} - must be landscape or portrait\n";
 			exit;
 		}
 		$self->{GLOB}{ORIENTATION} = $arg{-orientation};
@@ -701,7 +698,7 @@ sub ExecuteBatchMode {
 	### border
 	if ($arg{-border}) {
 		if (($arg{-border} !~ /^\d{1,3}$/)) {
-			print "Invalid border values (1-999)";
+			print "Invalid border values (1-999)\n";
 			exit;
 		}
 		$self->{GLOB}{BORDER} = $arg{-border};
@@ -744,37 +741,37 @@ sub ExecuteBatchMode {
 		$self->{GLOB}{DB_TYPE} = $arg{-dbtype};
 
 		if (! $arg{-dbport} || $arg{-dbport} !~ /^\d{3,5}$/) {
-			print "Missing/invalid database port (-dbport)";
+			print "Missing/invalid database port (-dbport)\n";
 			exit;
 		}
 		$self->{GLOB}{DB_PORT} = $arg{-dbport};
 
 		if (! $arg{-dbsid}) {
-			print "Missing database name or SID (-dbsid)";
+			print "Missing database name or SID (-dbsid)\n";
 			exit;
 		}
 		$self->{GLOB}{DB_SID} = $arg{-dbsid};
 
 		if (! $arg{-dbhost}) {
-			print "Missing database host name/address (-dbhost)";
+			print "Missing database host name/address (-dbhost)\n";
 			exit;
 		}
 		$self->{GLOB}{DB_HOST} = $arg{-dbhost};
 
 		if (! $arg{-dbtable}) {
-			print "Missing database table name (-dbtable)";
+			print "Missing database table name (-dbtable)\n";
 			exit;
 		}
 		$self->{GLOB}{DB_RELATION} = $arg{-dbtable};
 
 		if (! $arg{-dbuname}) {
-			print "Missing database user/login name (-dbuname)";
+			print "Missing database user/login name (-dbuname)\n";
 			exit;
 		}
 		$self->{GLOB}{DB_UNAME} = $arg{-dbuname};
 
 		if (! $arg{-dbpasswd}) {
-			print "Missing database password (-dbpasswd)";
+			print "Missing database password (-dbpasswd)\n";
 			exit;
 		}
 		$self->{GLOB}{DB_PASSWD} = $arg{-dbpasswd};
@@ -795,7 +792,7 @@ sub ExecuteBatchMode {
 	### background color
 	if ($arg{-bgcolor}) {
 		if (($arg{-bgcolor} !~ /^\#[0-9a-f]{6}$/)) {
-			print "Invalid color format - example is '#ffc000'";
+			print "Invalid color format - example is '#ffc000'\n";
 			exit;
 		}
 		$self->{GLOB}{BACKGROUND} = $arg{-bgcolor};
@@ -856,7 +853,7 @@ sub EvalOpenFile {
 	$_ = shift @_ or return;
 	if (! RestoreSelf($_)) {
 		$mw->update();
-		ImportPedfile ('CSV', $_);
+		ImportPedfile('CSV', $_);
 	}
 }
 
@@ -867,16 +864,16 @@ sub Clear {
 	$_ = shift @_;
 	my $fileref = $menubar->entrycget('View', -menu);
 	my $drawref = $fileref->entrycget('Draw Pedigree ...', -menu);
-	$drawref->delete(0,'end');
+	$drawref->delete(0, 'end');
 	$canvas->delete('all');
 	if ($_ eq 'all') {
 		undef $self->{FAM};
-		foreach (qw/CURR_FAM FILENAME FILENAME_SAVE/) {
+		for (qw/CURR_FAM FILENAME FILENAME_SAVE/) {
 			undef $self->{GLOB}{$_};
 		}
 	} elsif ($_ eq 'curr') {
 		my $fam = $self->{GLOB}{CURR_FAM} or return;
-		foreach (keys %{$self->{FAM}}) {
+		for (keys %{$self->{FAM}}) {
 			delete $self->{FAM}{$_}{$fam};
 		}
 		for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
@@ -899,19 +896,19 @@ sub DeleteSID {
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
 	my @act_sym = keys %{$self->{GLOB}{ACTIVE_SYMBOLS}} or return;
 	my $flag;
-	foreach my $sym (@act_sym) {
+	for my $sym (@act_sym) {
 		(my $p) = $sym =~ /^SYM-(.+)$/ or next;
 		my $p_old = $self->{FAM}{CASE_INFO}{$fam}{PID}{$p}{Case_Info_1} or next;
 
-		foreach my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
+		for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
 			if ($r && $r->[0] eq $p_old) {
 				$flag = 1;
 				undef $r;
 
 				### mark children as founder
-				foreach my $child_id (keys %{$self->{FAM}{CHILDREN}{$fam}{$p}}) {
+				for my $child_id (keys %{$self->{FAM}{CHILDREN}{$fam}{$p}}) {
 					my $child_old = $self->{FAM}{CASE_INFO}{$fam}{PID}{$child_id}{Case_Info_1} or next;
-					foreach my $r2 (@{$self->{FAM}{PED_ORG}{$fam}}) {
+					for my $r2 (@{$self->{FAM}{PED_ORG}{$fam}}) {
 						if ($r2 && $r2->[0] eq $child_old) {
 							$r2->[1] = 0;
 							$r2->[2] = 0;
@@ -928,16 +925,16 @@ sub DeleteSID {
 		my %z;
 		my $c = 0;
 		my $c2 = 0;
-		foreach my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
+		for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
 			next unless $r;
 			$z{P}{$r->[0]} = 1;
 			$z{R}{$r->[1]}++ if $r->[1];
 			$z{R}{$r->[2]}++ if $r->[2];
 		}
-		foreach my $p (keys %{$z{P}}) {
+		for my $p (keys %{$z{P}}) {
 			my $sid = $self->{FAM}{PID2PIDNEW}{$fam}{$p};
 			if (! $z{R}{$p} && $self->{FAM}{FOUNDER}{$fam}{$sid}) {
-				foreach my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
+				for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
 					if ($r && $r->[0] eq $p) {
 						undef $r;
 					}
@@ -945,7 +942,7 @@ sub DeleteSID {
 			}
 		}
 		### count individuals and left non-founder
-		foreach my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
+		for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
 			next unless $r;
 			$c++;
 			$c2++ if $r->[1];
@@ -987,7 +984,7 @@ sub SetAsTwins {
 	return if scalar @act_sym == 1;
 
 	### are sibs already in twingroups?
-	foreach (@act_sym) {
+	for (@act_sym) {
 		(my $sib) = $_ =~ /^SYM-(.+)$/ or return;
 		push @sibs, $sib;
 		if ($self->{FAM}{SID2TWIN_GROUP}{$fam}{$sib}) {
@@ -997,14 +994,14 @@ sub SetAsTwins {
 
 	if (keys %t) {
 		### unset twin groups
-		foreach my $twin_group (keys %t) {
+		for my $twin_group (keys %t) {
 			@_ = keys %{$self->{FAM}{TWIN_GROUP2SID}{$fam}{$twin_group}};
-			foreach my $sib (@_) {
+			for my $sib (@_) {
 				delete $self->{FAM}{SID2TWIN_GROUP}{$fam}{$sib};
 				delete $self->{FAM}{SID2TWIN_TYPE}{$fam}{$sib};
 				my $sib_old = $ci->{PID}{$sib}{Case_Info_1};
-				foreach (@{$self->{FAM}{PED_ORG}{$fam}}) {
-					undef @$_[9] if @$_[0] eq $sib_old;
+				for (@{$self->{FAM}{PED_ORG}{$fam}}) {
+					undef $_->[9] if $_->[0] eq $sib_old;
 				}
 			}
 			delete $self->{FAM}{TWIN_GROUP2SID}{$fam}{$twin_group};
@@ -1012,7 +1009,7 @@ sub SetAsTwins {
 	} else {
 		### set twin group
 		my ($par, $gender);
-		foreach my $sib (@sibs) {
+		for my $sib (@sibs) {
 			my $sib_old = $ci->{PID}{$sib}{Case_Info_1};
 			if (! $self->{FAM}{SID2FATHER}{$fam}{$sib}) {
 				ShowInfo("The twin individual $sib_old must not be a founder.", 'warning');
@@ -1035,13 +1032,13 @@ sub SetAsTwins {
 
 		### create sib group ID
 		my $tg = $tt . '_' . time;
-		foreach my $sib (@sibs) {
+		for my $sib (@sibs) {
 			my $sib_old = $ci->{PID}{$sib}{Case_Info_1};
 			$self->{FAM}{SID2TWIN_GROUP}{$fam}{$sib} = $tg;
 			$self->{FAM}{SID2TWIN_TYPE}{$fam}{$sib} = $tt;
 			$self->{FAM}{TWIN_GROUP2SID}{$fam}{$tg}{$sib} = 1;
-			foreach (@{$self->{FAM}{PED_ORG}{$fam}}) {
-				@$_[9] = $tg if @$_[0] eq $sib_old;
+			for (@{$self->{FAM}{PED_ORG}{$fam}}) {
+				$_->[9] = $tg if $_->[0] eq $sib_old;
 			}
 		}
 	}
@@ -1071,18 +1068,18 @@ sub SetAsConsanguine {
 	if ($self->{FAM}{CONSANGUINE_MAN}{$fam}{$p1}{$p2}) {
 		delete $self->{FAM}{CONSANGUINE_MAN}{$fam}{$p1}{$p2};
 		delete $self->{FAM}{CONSANGUINE_MAN}{$fam}{$p2}{$p1};
-		foreach (@{$self->{FAM}{PED_ORG}{$fam}}) {
-			if ((@$_[0] eq $p1_old) || (@$_[0] eq $p2_old)) {
-				undef @$_[10];
+		for (@{$self->{FAM}{PED_ORG}{$fam}}) {
+			if (($_->[0] eq $p1_old) || ($_->[0] eq $p2_old)) {
+				undef $_->[10];
 			}
 		}
 	} else {
 		my $tg = time;
 		$self->{FAM}{CONSANGUINE_MAN}{$fam}{$p1}{$p2} = 1;
 		$self->{FAM}{CONSANGUINE_MAN}{$fam}{$p2}{$p1} = 1;
-		foreach (@{$self->{FAM}{PED_ORG}{$fam}}) {
-			if ((@$_[0] eq $p1_old) || (@$_[0] eq $p2_old)) {
-				@$_[10] = $tg;
+		for (@{$self->{FAM}{PED_ORG}{$fam}}) {
+			if (($_->[0] eq $p1_old) || ($_->[0] eq $p2_old)) {
+				$_->[10] = $tg;
 			}
 		}
 	}
@@ -1104,25 +1101,25 @@ sub AddParents {
 
 	my ($f, $m);
 
-	my $d = $mw->DialogBox(-title => 'Add parents', -buttons => [ 'Ok', 'Cancel' ]);
+	my $d = $mw->DialogBox(-title => 'Add parents', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 
 	$f1->Label(-text => 'Name of father')->grid(-row => 0, -column => 0, -sticky => 'e');
-	$f1->Entry(-textvariable => \$f, -width => 20)->grid(-row => 0, -column =>1, -sticky => 'w');
+	$f1->Entry(-textvariable => \$f, -width => 20)->grid(-row => 0, -column => 1, -sticky => 'w');
 
 	$f1->Label(-text => 'Name of mother')->grid(-row => 1, -column => 0, -sticky => 'e');
-	$f1->Entry(-textvariable => \$m, -width => 20)->grid(-row => 1, -column =>1, -sticky => 'w');
+	$f1->Entry(-textvariable => \$m, -width => 20)->grid(-row => 1, -column => 1, -sticky => 'w');
 
 	$d->Show eq 'Ok' || return;
 
 	if ($m eq $f) {
-		ShowInfo("Mates must not have identical names!",'warning');
+		ShowInfo("Mates must not have identical names!", 'warning');
 		return undef;
 	}
 
 	for ($m, $f) {
 		unless ($_) {
-			ShowInfo("Empty fields are not allowed!",'warning');
+			ShowInfo("Empty fields are not allowed!", 'warning');
 			return undef;
 		}
 	}
@@ -1130,8 +1127,8 @@ sub AddParents {
 	push @{$self->{FAM}{PED_ORG}{$fam}}, [ $f, 0, 0, 1, 1 ] if ! $self->{FAM}{PID2PIDNEW}{$fam}{$f};
 	push @{$self->{FAM}{PED_ORG}{$fam}}, [ $m, 0, 0, 2, 1 ] if ! $self->{FAM}{PID2PIDNEW}{$fam}{$m};
 
-	foreach my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
-		if (@$l[0] eq $p_old) {
+	for my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
+		if ($l->[0] eq $p_old) {
 			$l->[1] = $f;
 			$l->[2] = $m;
 		}
@@ -1157,13 +1154,13 @@ sub AddMateAndOffspring {
 		return undef;
 	}
 
-	my $d = $mw->DialogBox(-title => 'Add mate and offspring', -buttons => [ 'Ok', 'Cancel' ]);
+	my $d = $mw->DialogBox(-title => 'Add mate and offspring', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 
 	my ($mate, $child, $gender) = ('', '', 0);
 
 	$f1->Label(-text => 'Name of mate')->grid(-row => 0, -column => 0, -sticky => 'e');
-	$f1->Entry(-textvariable => \$mate, -width => 20)->grid(-row => 0, -column =>1, -sticky => 'w');
+	$f1->Entry(-textvariable => \$mate, -width => 20)->grid(-row => 0, -column => 1, -sticky => 'w');
 
 	$f1->Label(-text => 'Name of offspring')->grid(-row => 1, -column => 0, -sticky => 'e');
 	$f1->Entry(-textvariable => \$child, -width => 20)->grid(-row => 1, -column => 1, -sticky => 'w');
@@ -1171,19 +1168,19 @@ sub AddMateAndOffspring {
 	$d->Show eq 'Ok' || return;
 
 	if ($mate eq $child) {
-		ShowInfo("Mate and offspring must not have identical names!",'warning');
+		ShowInfo("Mate and offspring must not have identical names!", 'warning');
 		return undef;
 	}
 
 	for ($mate, $child) {
 		unless ($_) {
-			ShowInfo("Empty fields are not allowed!",'warning');
+			ShowInfo("Empty fields are not allowed!", 'warning');
 			return undef;
 		}
 	}
 
 	if ($self->{FAM}{PID2PIDNEW}{$fam}{$child}) {
-		ShowInfo("You already used the child ID in this pedigree!",'warning');
+		ShowInfo("You already used the child ID in this pedigree!", 'warning');
 		return undef;
 	}
 
@@ -1197,7 +1194,7 @@ sub AddMateAndOffspring {
 
 		my $sex_mate = $self->{FAM}{SID2SEX}{$fam}{$pid_mate_new};
 		if (!$sex_mate or ($sex_mate == $sex_p)) {
-			ShowInfo("Gender of mate does not match necessary criteria!",'warning');
+			ShowInfo("Gender of mate does not match necessary criteria!", 'warning');
 			return undef;
 		}
 	}
@@ -1234,14 +1231,14 @@ sub AddSiblings {
 
 	my $pid_new = {};
 
-	my $d = $mw->DialogBox(-title => 'Add siblings', -buttons => [ 'Ok', 'Cancel' ]);
+	my $d = $mw->DialogBox(-title => 'Add siblings', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 
 	my $gender;
 	for (1 .. 8) {
 		$pid_new->{$_}{GENDER} = 1;
 		$f1->Label(-text => "Name of sibling #$_")->grid(-row => $_ - 1, -column => 0, -sticky => 'e');
-		$f1->Entry(-textvariable => \$pid_new->{$_}{NAME}, -width => 20)->grid(-row => $_ - 1, -column =>2, -sticky => 'w');
+		$f1->Entry(-textvariable => \$pid_new->{$_}{NAME}, -width => 20)->grid(-row => $_ - 1, -column => 2, -sticky => 'w');
 
 		$f1->Radiobutton(-value => 1, -variable =>\$pid_new->{$_}{GENDER}, -text => 'male')->grid(-row => $_ - 1, -column => 3, -sticky => 'w');
 		$f1->Radiobutton(-value => 2, -variable =>\$pid_new->{$_}{GENDER}, -text => 'female')->grid(-row => $_ - 1, -column => 4, -sticky => 'w');
@@ -1273,11 +1270,11 @@ sub AddSiblings {
 sub MakeSelfGlobal {
 #===================
 	## copy up to three hash levels from $def to $self
-	foreach my $k1 (keys %{$def->{GLOB}}) {
+	for my $k1 (keys %{$def->{GLOB}}) {
 		if (ref $def->{GLOB}{$k1}) {
-			foreach my $k2 (keys %{$def->{GLOB}{$k1}}) {
+			for my $k2 (keys %{$def->{GLOB}{$k1}}) {
 				if (ref $def->{GLOB}{$k1}{$k2}) {
-					foreach my $k3 (keys %{$def->{GLOB}{$k1}{$k2}}) {
+					for my $k3 (keys %{$def->{GLOB}{$k1}{$k2}}) {
 						$self->{GLOB}{$k1}{$k2}{$k3} = $def->{GLOB}{$k1}{$k2}{$k3};
 					}
 				} else {
@@ -1300,11 +1297,11 @@ sub AddFamToSelf {
 		return;
 	}
 	## copy up to three hash levels from $def to $self
-	foreach my $k1 (keys %{$def->{FAM}}) {
+	for my $k1 (keys %{$def->{FAM}}) {
 		if (ref $def->{FAM}{$k1}) {
-			foreach my $k2 (keys %{$def->{FAM}{$k1}}) {
+			for my $k2 (keys %{$def->{FAM}{$k1}}) {
 				if (ref $def->{FAM}{$k1}{$k2}) {
-					foreach my $k3 (keys %{$def->{FAM}{$k1}{$k2}}) {
+					for my $k3 (keys %{$def->{FAM}{$k1}{$k2}}) {
 						$self->{FAM}{$k1}{$fam}{$k2}{$k3} = $def->{FAM}{$k1}{$k2}{$k3};
 					}
 				} else {
@@ -1339,10 +1336,9 @@ sub KlickAllel {
 	return if $self->{GLOB}{STATUS};
 	my $fam = $self->{GLOB}{CURR_FAM};
 	@_ = $self->{GLOB}{ACTIVE_ITEM};
-	foreach (@_) {
+	for (@_) {
 		next unless $_;
 		if (/ALLEL-(\w)-(\d+)-(.+)/) {
-
 			my $fa = $self->{FAM}{SID2FATHER}{$fam}{$3};
 			my $mo = $self->{FAM}{SID2MOTHER}{$fam}{$3};
 
@@ -1366,7 +1362,7 @@ sub KlickAllel {
 			$f->Label(-width => 2, -bg => $M)->grid(-row => 1, -column => 0, -sticky => 'e');
 			$f->Label(-width => 2, -bg => $un)->grid(-row => 2, -column => 0, -sticky => 'e');
 
-			foreach my $l ("Paternal", "Maternal", 'Not informative') {
+			for my $l ('Paternal', 'Maternal', 'Not informative') {
 				$f->Radiobutton(-text => $l, -variable => \$var, -value => $l, -command => sub {
 					if ($var eq 'Paternal') {
 						$flag = 1;
@@ -1374,7 +1370,7 @@ sub KlickAllel {
 						$self->{FAM}{HAPLO}{$fam}{PID}{$3}{$1}{BAR}[$2][0] = 'NI-3';
 
 						if ($self->{FAM}{DUPLICATED_PID}{$fam}{$3}) {
-							foreach my $dupl (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$3}}) {
+							for my $dupl (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$3}}) {
 								$self->{FAM}{HAPLO}{$fam}{PID}{$dupl}{$1}{BAR}[$2][1] = $P;
 								$flag = 1;
 								$self->{FAM}{HAPLO}{$fam}{PID}{$dupl}{$1}{BAR}[$2][0] = 'NI-3';
@@ -1387,7 +1383,7 @@ sub KlickAllel {
 						$self->{FAM}{HAPLO}{$fam}{PID}{$3}{$1}{BAR}[$2][0] = 'NI-3';
 
 						if ($self->{FAM}{DUPLICATED_PID}{$fam}{$3}) {
-							foreach my $dupl (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$3}}) {
+							for my $dupl (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$3}}) {
 								$flag = 1;
 								$self->{FAM}{HAPLO}{$fam}{PID}{$dupl}{$1}{BAR}[$2][1] = $M;
 								$self->{FAM}{HAPLO}{$fam}{PID}{$dupl}{$1}{BAR}[$2][0] = 'NI-3';
@@ -1398,7 +1394,7 @@ sub KlickAllel {
 						$flag = 1;
 						$self->{FAM}{HAPLO}{$fam}{PID}{$3}{$1}{BAR}[$2][0] = 'NI-2';
 						if ($self->{FAM}{DUPLICATED_PID}{$fam}{$3}) {
-							foreach my $dupl (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$3}}) {
+							for my $dupl (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$3}}) {
 								$self->{FAM}{HAPLO}{$fam}{PID}{$dupl}{$1}{BAR}[$2][0] = 'NI-2';
 							}
 						}
@@ -1416,10 +1412,10 @@ sub KlickAllel {
 sub KlickHead {
 #==============
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
-	my $d = $mw->DialogBox(-title => 'Change family title', -buttons => [ 'Ok', 'Cancel' ]);
+	my $d = $mw->DialogBox(-title => 'Change family title', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both');
 	$f1->Label(-text => 'Title')->grid(-row => 0, -column => 0, -sticky => 'e');
-	$f1->Entry(-textvariable => \$self->{FAM}{TITLE}{$fam}, -width => 20)->grid(-row => 0, -column =>1, -sticky => 'w');
+	$f1->Entry(-textvariable => \$self->{FAM}{TITLE}{$fam}, -width => 20)->grid(-row => 0, -column => 1, -sticky => 'w');
 	$d->Show eq 'Ok' || return;
 	RedrawPed();
 }
@@ -1434,14 +1430,14 @@ sub KlickSymbol {
 	my $ci = $self->{FAM}{CASE_INFO}{$fam}{PID};
 
 	@_ = $c->itemcget('current', -tags);
-	foreach my $tag (@_) {
+	for my $tag (@_) {
 		if ($tag =~ /SYM-(\S+)/) {
 			my $id = $1;
 			my $sid_old = $ci->{$id}{'Case_Info_1'};
 			my $sid_old_save = $sid_old;
 			my $gender = $self->{FAM}{SID2SEX}{$fam}{$id};
 
-			my $d = $mw->DialogBox(-title => 'Change individual settings', -buttons => [ 'Ok', 'Cancel' ]);
+			my $d = $mw->DialogBox(-title => 'Change individual settings', -buttons => [ qw/Ok Cancel/ ]);
 			my $f0 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both');
 			my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both');
 			my $f2 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both');
@@ -1454,7 +1450,6 @@ sub KlickSymbol {
 				$lt2 = "Father:unknown ";
 				$lt3 = "Mother:unknown ";
 			} else {
-
 				$lt2 = "Father:$ci->{$self->{FAM}{SID2FATHER}{$fam}{$id}}{'Case_Info_1'} ";
 				$lt3 = "Mother:$ci->{$self->{FAM}{SID2MOTHER}{$fam}{$id}}{'Case_Info_1'} ";
 			}
@@ -1477,19 +1472,19 @@ sub KlickSymbol {
 			$f1->Radiobutton(-value => 2, -variable =>\$gender, -text => 'female')->grid(-row => 1, -column => 1, -sticky => 'w');
 
 			$f2->Label(-text => 'Text inside symbol')->grid(-row => 0, -column => 0, -sticky => 'e');
-			$f2->Entry(-textvariable => \$self->{FAM}{INNER_SYMBOL_TEXT}{$fam}{$id}, -width => 20)->grid(-row => 0, -column =>1, -sticky => 'w');
+			$f2->Entry(-textvariable => \$self->{FAM}{INNER_SYMBOL_TEXT}{$fam}{$id}, -width => 20)->grid(-row => 0, -column => 1, -sticky => 'w');
 
 			$f2->Label(-text => 'Text beside symbol')->grid(-row => 1, -column => 0, -sticky => 'e');
-			$f2->Entry(-textvariable => \$self->{FAM}{SIDE_SYMBOL_TEXT}{$fam}{$id}, -width => 20)->grid(-row => 1, -column =>1, -sticky => 'w');
+			$f2->Entry(-textvariable => \$self->{FAM}{SIDE_SYMBOL_TEXT}{$fam}{$id}, -width => 20)->grid(-row => 1, -column => 1, -sticky => 'w');
 
 			$f3->Label(-text => 'Case Info #1')->grid(-row => 0, -column => 0, -sticky => 'e');
-			$f3->Entry(-textvariable => \$sid_old, -width => 25)->grid(-row => 0, -column =>1, -sticky => 'w');
+			$f3->Entry(-textvariable => \$sid_old, -width => 25)->grid(-row => 0, -column => 1, -sticky => 'w');
 			$f3->Checkbutton(-text => 'show', -variable => \$self->{FAM}{CASE_INFO_SHOW}{$fam}{1})->grid(-row => 0, -column => 2, -sticky => 'w');
 
 			for (1 .. 4) {
 				my $var = 'Case_Info_' . ($_ + 1);
 				$f4->Label(-text => 'Case Info #' . ($_ + 1))->grid(-row => $_ - 1, -column => 0, -sticky => 'e');
-				$f4->Entry(-textvariable => \$ci->{$id}{$var}, -width => 25)->grid(-row => $_ - 1, -column =>1, -sticky => 'w');
+				$f4->Entry(-textvariable => \$ci->{$id}{$var}, -width => 25)->grid(-row => $_ - 1, -column => 1, -sticky => 'w');
 				$f4->Checkbutton(-text => 'show', -variable => \$self->{FAM}{CASE_INFO_SHOW}{$fam}{$_ + 1})->grid(-row => $_ - 1, -column => 2, -sticky => 'w');
 			}
 
@@ -1517,7 +1512,7 @@ sub KlickSymbol {
 						return;
 					}
 					### change --> rename PID in PED_ORG
-					foreach my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
+					for my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
 						next unless $l;
 						for (0 .. 2) {
 							$l->[$_] = $sid_old if $l->[$_] eq $sid_old_save;
@@ -1530,7 +1525,7 @@ sub KlickSymbol {
 					$ci->{$id}{'Case_Info_1'} = $sid_old;
 				}
 
-				foreach my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
+				for my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
 					next unless $l;
 					next if $l->[0] ne $sid_old;
 					$l->[3] = $self->{FAM}{SID2SEX}{$fam}{$id};
@@ -1562,7 +1557,7 @@ sub EnterAllel {
 
 	@_ = $c->itemcget('current', -tags);
 
-	foreach my $tag (@_) {
+	for my $tag (@_) {
 		if ($tag =~ /ALLEL-(\w)-(\d+)-(.+)/) {
 			my $fa = $self->{FAM}{SID2FATHER}{$fam}{$3};
 			my $mo = $self->{FAM}{SID2MOTHER}{$fam}{$3};
@@ -1615,7 +1610,7 @@ sub MouseB1Release {
 	my $gy = $self->{FAM}{GITTER_Y}{$fam} * $z;
 
 	if (! $self->{GLOB}{STATUS}) {
-		foreach my $id (keys %$s) {
+		for my $id (keys %$s) {
 			my $p = $s->{$id}{PID};
 			my ($x1g, $y1g) = ($m->{P2XY}{$p}{X}, $m->{P2XY}{$p}{Y});
 
@@ -1643,7 +1638,7 @@ sub MouseB1Release {
 		}
 		RedrawPed();
 		### restore active symbols
-		foreach my $id (keys %$s) {
+		for my $id (keys %$s) {
 			$c->itemconfigure($id, -fill => 'red');
 		}
 	}
@@ -1669,25 +1664,23 @@ sub ButtonRelease {
 
 	### selection modus
 	if (! $self->{GLOB}{STATUS}) {
-
 		### box drawing modus
 		if (! keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
-
 			## find symbols inside the BOX area
 			my (%h, @i);
 			@_ = $c->coords('BOX') or return;
 			$c->delete('BOX');
-			my @list = $c->find('enclosed',@_) or return;
-			foreach ($c->find('withtag', 'SYMBOL')) {
+			my @list = $c->find('enclosed', @_) or return;
+			for ($c->find('withtag', 'SYMBOL')) {
 				$h{$_} = 1;
 			}
-			foreach (@list) {
+			for (@list) {
 				push @i, $_ if $h{$_};
 			}
 
-			foreach (@i) {
+			for (@i) {
 				my %t;
-				foreach my $tag ($c->gettags($_)) {
+				for my $tag ($c->gettags($_)) {
 					$t{$_} = $tag if $tag =~ /^SYM-/;
 				}
 				$t{$_} =~ /^SYM-(.+)$/ or return;
@@ -1697,7 +1690,7 @@ sub ButtonRelease {
 			}
 		} else {
 			### delete all active items
-			foreach (keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
+			for (keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
 				$c->delete($self->{GLOB}{ACTIVE_SYMBOLS}{$_}{ID_CLONE});
 				delete $self->{GLOB}{ACTIVE_SYMBOLS}{$_}{ID_CLONE};
 			}
@@ -1726,7 +1719,7 @@ sub MouseB1Move {
 	if (! $self->{GLOB}{STATUS}) {
 		### STATUS = 0 --> moving symbols
 		my $curr_tag;
-		foreach my $tag ($c->itemcget('current', -tags)) {
+		for my $tag ($c->itemcget('current', -tags)) {
 			$curr_tag = $tag if $tag =~ /^SYM-/;
 		}
 		if (! $curr_tag) {
@@ -1739,7 +1732,7 @@ sub MouseB1Move {
 			my $fam = $self->{GLOB}{CURR_FAM} or return;
 
 			### clone objects if necessary
-			foreach (@act_sym) {
+			for (@act_sym) {
 				if (! $self->{GLOB}{ACTIVE_SYMBOLS}{$_}{ID_CLONE}) {
 					my $pid = $self->{GLOB}{ACTIVE_SYMBOLS}{$_}{PID} or print "NO PID\n";
 					@_ = ($c->coords($_), -width => 1, -outline => 'white', -fill => 'grey85');
@@ -1755,7 +1748,7 @@ sub MouseB1Move {
 				}
 			}
 
-			foreach (@act_sym) {
+			for (@act_sym) {
 				$c->move($self->{GLOB}{ACTIVE_SYMBOLS}{$_}{ID_CLONE}, $x2 - $self->{GLOB}{X_CANVAS}, $y2 - $self->{GLOB}{Y_CANVAS});
 			}
 			$self->{GLOB}{X_CANVAS} = $x2;
@@ -1809,7 +1802,7 @@ sub MouseB1ControlKlick {
 	$self->{GLOB}{Y_CANVAS} = $c->canvasy($y);
 
 	my ($curr_tag, $pid);
-	foreach my $tag ($c->itemcget('current', -tags)) {
+	for my $tag ($c->itemcget('current', -tags)) {
 		if ($tag =~ /^SYM-(.+)$/) {
 			$curr_tag = $tag;
 			$pid = $1;
@@ -1850,7 +1843,7 @@ sub MouseB1Klick {
 
 	if (! $self->{GLOB}{STATUS}) {
 		my ($curr_tag, $pid);
-		foreach my $tag ($c->itemcget('current', -tags)) {
+		for my $tag ($c->itemcget('current', -tags)) {
 			if ($tag =~ /^SYM-(.+)$/) {
 				$curr_tag = $tag;
 				$pid = $1;
@@ -1858,7 +1851,7 @@ sub MouseB1Klick {
 		}
 
 		if (! $curr_tag) {
-			foreach (keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
+			for (keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
 				/^SYM-(.+)$/;
 				my $aff = $self->{FAM}{SID2AFF}{$fam}{$1};
 				my $col = $self->{FAM}{AFF_COLOR}{$fam}{$aff};
@@ -1866,7 +1859,7 @@ sub MouseB1Klick {
 			}
 			undef $self->{GLOB}{ACTIVE_SYMBOLS};
 		} elsif (! $self->{GLOB}{ACTIVE_SYMBOLS}{$curr_tag}) {
-			foreach (keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
+			for (keys %{$self->{GLOB}{ACTIVE_SYMBOLS}}) {
 				/^SYM-(.+)$/;
 				my $col = $self->{FAM}{AFF_COLOR}{$fam}{$self->{FAM}{SID2AFF}{$fam}{$1}};
 				$c->itemconfigure($_, -fill => $col);
@@ -1916,7 +1909,7 @@ sub RedrawPed {
 sub RedrawPedForce {
 #===================
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
-	foreach my $k (keys %{$self->{FAM}}) {
+	for my $k (keys %{$self->{FAM}}) {
 		next if $k eq 'MAP';
 		next if $k eq 'TITLE';
 		undef $self->{FAM}{$k}{$fam} if ! defined $def->{FAM}{$k};
@@ -2131,11 +2124,11 @@ sub FindLoops {
 
 	### network for loop detection
 	### couples as nodes
-	foreach my $node (keys %{$self->{FAM}{PARENT_NODE}{$fam}}) {
+	for my $node (keys %{$self->{FAM}{PARENT_NODE}{$fam}}) {
 		my ($fid, $mid) = @{$self->{FAM}{PARENT_NODE}{$fam}{$node}};
 
 		### check for parent nodes
-		foreach my $parent ($fid, $mid) {
+		for my $parent ($fid, $mid) {
 			if (defined $self->{FAM}{SID2FATHER}{$fam}{$parent} && defined $self->{FAM}{SID2MOTHER}{$fam}{$parent}) {
 				my ($fpar, $mpar) = ($self->{FAM}{SID2FATHER}{$fam}{$parent}, $self->{FAM}{SID2MOTHER}{$fam}{$parent});
 				my $parnode = join '==', nsort($fpar, $mpar);
@@ -2144,9 +2137,9 @@ sub FindLoops {
 		}
 
 		### check for child nodes
-		foreach my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$fid}{$mid}}) {
+		for my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$fid}{$mid}}) {
 			if (defined $self->{FAM}{CHILDREN_COUPLE}{$fam}{$child}) {
-				foreach my $mate (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$child}}) {
+				for my $mate (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$child}}) {
 					my $parnode = join '==', nsort($child, $mate);
 					$N{$node}{$parnode} = 1;
 				}
@@ -2154,7 +2147,7 @@ sub FindLoops {
 		}
 
 		### create joining parent node for multiple mates without shared parents
-		foreach my $parent (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}}) {
+		for my $parent (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}}) {
 			### is this a multiple mate situation?
 			if (scalar (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$parent}}) > 1) {
 				### there is no parent node for this set of multiple mate child nodes
@@ -2163,7 +2156,7 @@ sub FindLoops {
 					my @mates = nsort keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$parent}};
 					my $node = 'PSNODE_' . join ('==', (@mates, $parent)) . '_PSNODE';
 
-					foreach my $mate (@mates) {
+					for my $mate (@mates) {
 						my $parnode = join '==', nsort($parent, $mate);
 						$N{$node}{$parnode} = 1;
 						$N{$parnode}{$node} = 1;
@@ -2174,8 +2167,8 @@ sub FindLoops {
 	}
 
 	### prepare start tree including root and one further level
-	foreach my $node1 (keys %N) {
-		foreach my $node2 (keys %{$N{$node1}}) {
+	for my $node1 (keys %N) {
+		for my $node2 (keys %{$N{$node1}}) {
 			$path{$node_cc} = [ $node1, $node2 ];
 			$node_cc++;
 		}
@@ -2186,7 +2179,7 @@ sub FindLoops {
 	my $flag = 1;
 	while ($flag) {
 		$flag = 0;
-		foreach my $p (keys %path) {
+		for my $p (keys %path) {
 			my $r = $path{$p};
 			my @plist = @$r;
 			next if $r->[-1] eq 'LOOP';
@@ -2214,7 +2207,7 @@ sub FindLoops {
 			next if scalar @subnodes == 1;
 
 			### look for subnodes
-			foreach my $node (@subnodes) {
+			for my $node (@subnodes) {
 				### don't go back inside the path!
 				next if $node eq $plist[-2];
 				### imperfect LOOP --> no further processing
@@ -2235,16 +2228,16 @@ sub FindLoops {
 	}
 
 	### processing paths to find duplicates
-	foreach my $node (keys %path) {
+	for my $node (keys %path) {
 		@_ = ();
-		foreach (@{$path{$node}}) {
+		for (@{$path{$node}}) {
 			### remove LOOP-end tag and pseudonodes
 			next if /LOOP|PSNODE/;
 			push @_, $_;
 		}
 		$_ = join '___', nsort(@_);
 		$D{$_} = [ @_ ];
-		foreach my $e (@_) {
+		for my $e (@_) {
 			$D1{$_}{$e} = 1;
 		}
 	}
@@ -2253,8 +2246,8 @@ sub FindLoops {
 	return unless keys %D;
 
 	## if a small loop is part of a bigger loop store this information
-	foreach my $loop1 (keys %D1) {
-		foreach my $loop2 (keys %D1) {
+	for my $loop1 (keys %D1) {
+		for my $loop2 (keys %D1) {
 			next if $loop1 eq $loop2;
 			my ($lp1, $lp2);
 			if ((scalar keys %{$D1{$loop1}}) < (scalar keys %{$D1{$loop2}})) {
@@ -2264,7 +2257,7 @@ sub FindLoops {
 			}
 			if ($lp1) {
 				my $flag = 0;
-				foreach my $k (keys %{$D1{$lp1}}) {
+				for my $k (keys %{$D1{$lp1}}) {
 					$flag = 1 if ! $D1{$lp2}{$k};
 				}
 				$D2{$lp2} = 1 if ! $flag;
@@ -2278,22 +2271,22 @@ sub FindLoops {
 	### middle nodes have start and end nodes
 	### end nodes have no children but parent nodes
 	my $countl = 0;
-	foreach my $loop (keys %D) {
+	for my $loop (keys %D) {
 		my %start_nodes;
 		$countl++;
 		my @loop_list = @{$D{$loop}};
 		#print Dumper(\@loop_list);
 		my %E;
 		### build Hash for every individual inside the loop
-		foreach my $couple (@loop_list) {
-			foreach my $pid (split '==', $couple) {
+		for my $couple (@loop_list) {
+			for my $pid (split '==', $couple) {
 				$E{$pid} = 1;
 			}
 		}
 
 		### exploring loop
 		my @node_types;
-		foreach my $node (@loop_list) {
+		for my $node (@loop_list) {
 			my ($p1, $p2) = (split '==', $node);
 
 			### there is a chance that this is a multiple mate case and
@@ -2304,8 +2297,8 @@ sub FindLoops {
 			my $flag = 1;
 			while ($flag) {
 				$flag = 0;
-				foreach my $p (keys %P) {
-					foreach my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+				for my $p (keys %P) {
+					for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 						if (! $P{$c} && $E{$c}) {
 							$P{$c} = 1;
 							$flag = 1;
@@ -2315,7 +2308,7 @@ sub FindLoops {
 			}
 
 			my ($no_start_flag, $no_end_flag) = (0, 0);
-			foreach my $p (keys %P) {
+			for my $p (keys %P) {
 				### this cannot be a start node
 				if ($self->{FAM}{SID2FATHER}{$fam}{$p} && $E{$self->{FAM}{SID2FATHER}{$fam}{$p}}) {
 					$no_start_flag = 1;
@@ -2325,10 +2318,10 @@ sub FindLoops {
 				}
 
 				### this cannot be a end node
-				foreach my $p1 (keys %P) {
-					foreach my $p2 (keys %P) {
+				for my $p1 (keys %P) {
+					for my $p2 (keys %P) {
 						if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2}) {
-							foreach my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2}}) {
+							for my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2}}) {
 								if ($E{$child}) {
 									$no_end_flag = 1;
 								}
@@ -2384,10 +2377,10 @@ sub FindLoops {
 		### this is a hard to draw loop (found no end nodes in it) --> mark proper nodes as consanguine
 		if (! defined $s->{NR2END}{$countl}) {
 			my %R;
-			foreach my $node (@loop_list) {
-				foreach my $p (split '==', $node) {
+			for my $node (@loop_list) {
+				for my $p (split '==', $node) {
 					if ($R{$p}) {
-						foreach my $mate (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+						for my $mate (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 							if ($E{$mate}) {
 								if ($self->{FAM}{SID2MOTHER}{$fam}{$mate} && $E{$self->{FAM}{SID2MOTHER}{$fam}{$mate}}
 								    && $self->{FAM}{SID2FATHER}{$fam}{$mate} && $E{$self->{FAM}{SID2FATHER}{$fam}{$mate}}) {
@@ -2407,10 +2400,10 @@ sub FindLoops {
 
 			### store those nodes including individuals occuring more then one time in all nodes from the loop
 			### such individuals are candidates for breaking a loop
-			foreach my $p1 (keys %R) {
+			for my $p1 (keys %R) {
 				if ($R{$p1} > 1) {
-					foreach my $node (@loop_list) {
-						foreach my $p2 (split '==', $node) {
+					for my $node (@loop_list) {
+						for my $p2 (split '==', $node) {
 							if ($p1 eq $p2) {
 								$B{PID}{$p1}{$node} = 1;
 							}
@@ -2503,18 +2496,18 @@ sub FindLoops {
 
 	### some nodes could be common part of multiple loops
 	### such nodes should be get off from individual duplication to prevent trouble
-	foreach my $p (keys %{$B{PID}}) {
-		foreach my $node (keys %{$B{PID}{$p}}) {
+	for my $p (keys %{$B{PID}}) {
+		for my $node (keys %{$B{PID}{$p}}) {
 			$B{NODE}{$node}++;
 		}
 	}
 
 	#### mark indviduals for loop breaking in case of hard core loops
 	if (keys %B) {
-		foreach my $p (keys %{$B{PID}}) {
+		for my $p (keys %{$B{PID}}) {
 			my @nodes;
 			my $flag = 0;
-			foreach my $node (keys %{$B{PID}{$p}}) {
+			for my $node (keys %{$B{PID}{$p}}) {
 				if ($B{NODE}{$node} == 1) {
 					push @nodes, $node;
 				} else {
@@ -2524,7 +2517,7 @@ sub FindLoops {
 			ChangeOrder(\@nodes);
 			shift @nodes if ! $flag;
 
-			foreach (@nodes) {
+			for (@nodes) {
 				my ($p1, $p2) = split '==', $_;
 				if ($p eq $p1) {
 					$s->{BREAK}{$p}{$p2} = 1;
@@ -2540,28 +2533,28 @@ sub FindLoops {
 	### skip loops that end on same node
 	### make new data structur for this task
 	my %dupl;
-	foreach my $loop (keys %{$s->{NR2END}}) {
+	for my $loop (keys %{$s->{NR2END}}) {
 		@_ = nsort keys %{$s->{NR2END}{$loop}};
 		$_ = join '==', @_;
 		$dupl{$_} = [ $loop, @_ ];
 	}
-	foreach my $k (keys %dupl) {
+	for my $k (keys %dupl) {
 		my $nr = shift @{$dupl{$k}};
-		foreach (@{$dupl{$k}}) {
+		for (@{$dupl{$k}}) {
 			$s->{NR2END_UNIQUE}{$nr}{$_} = 1;
 		}
 	}
 
 	### find loops that are not part of other loops
 	my %skip;
-	foreach my $loop1 (keys %{$s->{NR2END_UNIQUE}}) {
+	for my $loop1 (keys %{$s->{NR2END_UNIQUE}}) {
 		my $c1 = scalar keys %{$s->{NR2END_UNIQUE}{$loop1}};
-		foreach my $loop2 (keys %{$s->{NR2END_UNIQUE}}) {
+		for my $loop2 (keys %{$s->{NR2END_UNIQUE}}) {
 			next if $loop1 == $loop2;
 			my $c2 = scalar keys %{$s->{NR2END_UNIQUE}{$loop2}};
 			if ($c1 > $c2) {
 				my $cc = 0;
-				foreach my $p (keys %{$s->{NR2END_UNIQUE}{$loop2}}) {
+				for my $p (keys %{$s->{NR2END_UNIQUE}{$loop2}}) {
 					$cc++ if $s->{NR2END_UNIQUE}{$loop1}{$p};
 				}
 				### make skip list
@@ -2571,7 +2564,7 @@ sub FindLoops {
 	}
 
 	### preformat the BREAK_LOOP_OK structure if LOOP_BREAK_STATUS is not 3 (manually selected loop breaks)
-	foreach my $loop (keys %{$s->{NR2END_UNIQUE}}) {
+	for my $loop (keys %{$s->{NR2END_UNIQUE}}) {
 		next if $skip{$loop};
 		my @p = nsort keys %{$s->{NR2END_UNIQUE}{$loop}};
 		$_ = join '==', @p;
@@ -2588,7 +2581,7 @@ sub FindLoops {
 sub ReadHaplo {
 #==============
 	my (%arg) = @_;
-	open (FH, "<", $arg{-file}) or (ShowInfo("$!: $arg{-file}", 'warning'), return);
+	open(FH, "<", $arg{-file}) or (ShowInfo("$!: $arg{-file}", 'warning'), return);
 		my @file = (<FH>);
 	close FH;
 
@@ -2605,7 +2598,7 @@ sub ReadHaplo {
 	### sample IDs are substituted during processing
 	### only haplotypes from those individuals inside pedigree files are imported
 	### and only if the sample name matches exact
-	foreach my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
+	for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
 		my $found_fam = 0;
 
 		if ($arg{-format} eq 'SIMWALK') {
@@ -2624,7 +2617,7 @@ sub ReadHaplo {
 					if (($pid, $haplo) = $M =~ /^M (\S+).+\s{7}([0-9@].+[0-9@])\s+$/) {
 						$pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid} or next;
 						$h1->{"$pid"}{M}{TEXT} = [ split ' ', $haplo ];
-						s/\@/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ foreach @{$h1->{"$pid"}{M}{TEXT}};
+						s/\@/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ for @{$h1->{"$pid"}{M}{TEXT}};
 					} else {
 						ShowInfo("Having problems in finding maternal haplotype in line\n$M", 'error');
 						return undef;
@@ -2632,7 +2625,7 @@ sub ReadHaplo {
 					if (($pid, $haplo) = $P =~ /^P (\S+).+\s{7}([0-9@].+[0-9@])\s+$/) {
 						$pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid} or next;
 						$h1->{"$pid"}{P}{TEXT} = [ split ' ', $haplo ];
-						s/\@/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ foreach @{$h1->{"$pid"}{P}{TEXT}};
+						s/\@/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ for @{$h1->{"$pid"}{P}{TEXT}};
 					} else {
 						ShowInfo("Having problems in finding paternal haplotype in line\n$P", 'error');
 						return undef;
@@ -2657,12 +2650,12 @@ sub ReadHaplo {
 				my ($pid, undef, undef, undef, $PH) = split "\t", $P;
 				$pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid} or next;
 				$h1->{$pid}{P}{TEXT} = [ split ' ', $PH ];
-				foreach (@{$h1->{$pid}{P}{TEXT}}) {
+				for (@{$h1->{$pid}{P}{TEXT}}) {
 					s/0/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ if $_ eq '0';
 				}
 				$M =~ s/\t//g;
 				$h1->{$pid}{M}{TEXT} = [ split ' ', $M ];
-				foreach (@{$h1->{$pid}{M}{TEXT}}) {
+				for (@{$h1->{$pid}{M}{TEXT}}) {
 					s/0/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ if $_ eq '0';
 				}
 			}
@@ -2670,7 +2663,7 @@ sub ReadHaplo {
 			### MERLIN
 			my ($fam, @p);
 
-			foreach (@file) {
+			for (@file) {
 				chomp;
 				next unless $_;
 
@@ -2690,7 +2683,6 @@ sub ReadHaplo {
 					@p = ();
 					my @pid = split ' ', $_;
 					for (my $k = 0; $k < $#pid; $k += 2) {
-
 						my $pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid[$k]} or next;
 						push @p, $pid;
 						$h1->{$pid}{M}{TEXT} = [];
@@ -2725,7 +2717,7 @@ sub ReadHaplo {
 			}
 		} elsif ($arg{-format} eq 'ALLEGRO') {
 			### ALLEGRO
-			foreach (@file) {
+			for (@file) {
 				@_ = split;
 				undef $haplo{$_[0]} if $_[0];
 			}
@@ -2755,7 +2747,7 @@ sub ReadHaplo {
 
 	### produce 'dummy map' when haplotype information are loaded
 	### this is replaced later when 'real' map files come in
-	foreach my $fam (keys %haplo) {
+	for my $fam (keys %haplo) {
 		$self->{FAM}{HAPLO}{$fam} = $haplo{$fam};
 		(my $pid) = keys %{$self->{FAM}{HAPLO}{$fam}{PID}} or next;
 		if ($self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{TEXT}) {
@@ -2781,10 +2773,10 @@ sub ReadHaplo {
 sub DuplicateHaplotypes {
 #========================
 	### in case of duplicated PIDs copy the haplotype information
-	foreach my $fam (keys %{$self->{FAM}{HAPLO}}) {
-		foreach my $pid (keys %{$self->{FAM}{HAPLO}{$fam}{PID}}) {
+	for my $fam (keys %{$self->{FAM}{HAPLO}}) {
+		for my $pid (keys %{$self->{FAM}{HAPLO}{$fam}{PID}}) {
 			if ($self->{FAM}{DUPLICATED_PID}{$fam}{$pid}) {
-				foreach my $pid_n (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$pid}}) {
+				for my $pid_n (keys %{$self->{FAM}{DUPLICATED_PID}{$fam}{$pid}}) {
 					$self->{FAM}{HAPLO}{$fam}{PID}{$pid_n}{P}{TEXT} = [ @{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{TEXT}} ];
 					$self->{FAM}{HAPLO}{$fam}{PID}{$pid_n}{M}{TEXT} = [ @{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{TEXT}} ];
 				}
@@ -2800,7 +2792,7 @@ sub ReadMap {
 #============
 	my (%arg) = @_;
 	if ($arg{-file}) {
-		open (FHM, "<", $arg{-file}) or ShowInfo("$! $arg{-file}", 'warning') && return;
+		open(FHM, "<", $arg{-file}) or ShowInfo("$! $arg{-file}", 'warning') && return;
 			while (<FHM>) {
 				${$arg{-data}} .= $_;
 			}
@@ -2822,7 +2814,7 @@ sub ReadMap {
 	if ($arg{-format} eq '1') {
 		### CHR-POS-MARKER Format
 		my $i = 0;
-		foreach (split "\n", ${$arg{-data}}) {
+		for (split "\n", ${$arg{-data}}) {
 			next unless $_;
 			s/\t/ /g;
 			next if /^[#!*\/]|CHR/i;
@@ -2835,7 +2827,7 @@ sub ReadMap {
 	} elsif ($arg{-format} eq '2') {
 		### CHR-MARKER-POS
 		my $i = 0;
-		foreach (split "\n", ${$arg{-data}}) {
+		for (split "\n", ${$arg{-data}}) {
 			next unless $_;
 			s/\t/ /g;
 			next if /^[#!*\/]|CHR/i;
@@ -2848,7 +2840,7 @@ sub ReadMap {
 	}
 
 	### catch wrong positions, converting of , --> .
-	foreach (@{$map{POS}}) {
+	for (@{$map{POS}}) {
 		s/,/\./g;
 		if (/[^-+.0-9]/) {
 			ShowInfo("One ore more marker positions are corrupted!\n$_", 'warning');
@@ -2858,15 +2850,14 @@ sub ReadMap {
 
 	### import map for every family
 	my $sm = scalar @{$map{MARKER}};
-	foreach my $fam (@fam) {
+	for my $fam (@fam) {
 		my $sc;
 		if ($self->{FAM}{MAP}{$fam}{MARKER} && @{$self->{FAM}{MAP}{$fam}{MARKER}}) {
 			$sc = scalar @{$self->{FAM}{MAP}{$fam}{MARKER}};
 		}
 		if ($sc && ($sc != $sm)) {
-
 			if ($param->{GLOBAL_MAP_IMPORT}) {
-				if (scalar @fam ==1) {
+				if (scalar @fam == 1) {
 					ShowInfo("This map file contains more or fewer markers ($sm) than loaded from the haplotype file ($sc) for family $fam!", 'warning');
 					return undef;
 				} else {
@@ -2881,10 +2872,10 @@ sub ReadMap {
 		}
 		undef $self->{FAM}{MAP}{$fam}{POS};
 		undef $self->{FAM}{MAP}{$fam}{MARKER};
-		foreach my $pos (@{$map{POS}}) {
+		for my $pos (@{$map{POS}}) {
 			push @{$self->{FAM}{MAP}{$fam}{POS}}, $pos;
 		}
-		foreach my $marker (@{$map{MARKER}}) {
+		for my $marker (@{$map{MARKER}}) {
 			push @{$self->{FAM}{MAP}{$fam}{MARKER}}, $marker;
 		}
 	}
@@ -2903,7 +2894,7 @@ sub ReadPed {
 
 	### read in first 4 bytes to check for BOM sequence
 	my ($bom, $file, $bflag);
-	open (IN, "<", $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return undef);
+	open(IN, "<", $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return undef);
 	binmode IN;
 	read(IN, $bom, 4);
 	close IN;
@@ -2979,7 +2970,7 @@ sub ReadPed {
 		###	           MOTHER                   [ text ]
 		###	           GENDER                   [ [0 or x], [1 or m] ,[2 or f] ]
 		###	           AFFECTION                [ [0 or x], 1,2,3,4,5,6,7,8,9 ]
-		foreach my $l (split "\n", $file) {
+		for my $l (split "\n", $file) {
 			next unless $l;
 			### signs '#' or '*' or '!' may be used to integrate comments or header rows into the file
 			next if $l =~ /^[#!*\/]/;
@@ -3004,7 +2995,7 @@ sub ReadPed {
 			}
 			next unless @_;
 			next if scalar @_ < 6;
-			foreach (@_) {
+			for (@_) {
 				s/^\s+//;
 				s/\s+$//;
 			}
@@ -3035,7 +3026,7 @@ sub ReadPed {
 		###	16    10    TEXT3_BELOW_SYMBOL       [ NULL, text ]
 		###	17    11    TEXT4_BELOW_SYMBOL       [ NULL, text ]
 		###	18    12    TEXT5_BELOW_SYMBOL       [ NULL, text ]
-		foreach my $l (split "\n", $file) {
+		for my $l (split "\n", $file) {
 			next unless $l;
 
 			### signs '#' or '*' or '!' may be used to integrate comments or header rows into the file
@@ -3046,7 +3037,7 @@ sub ReadPed {
 				@_ = split ' ', $l;
 				next if scalar @_ < 6;
 			}
-			foreach (@_) {
+			for (@_) {
 				s/^\s+//;
 				s/\s+$//;
 				undef $_ if $_ eq '';
@@ -3074,8 +3065,8 @@ sub ReadPed {
 	$param->{SELF_BACKUP} = freeze($self);
 
 	### families are attached to self if there are new or replaced if already there
-	foreach my $fam (nsort keys %ped_org) {
-		foreach (keys %{$self->{FAM}}) {
+	for my $fam (nsort keys %ped_org) {
+		for (keys %{$self->{FAM}}) {
 			delete $self->{FAM}{$_}{$fam} if defined $self->{FAM}{$_}{$fam};
 		}
 		AddFamToSelf($fam);
@@ -3086,7 +3077,7 @@ sub ReadPed {
 
 		if (scalar keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}} > 3) {
 			$self->{FAM}{LOOP_BREAK_STATUS}{$fam} = 2;
-			foreach (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
+			for (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
 				$self->{FAM}{BREAK_LOOP_OK}{$fam}{$_} = 1;
 			}
 		}
@@ -3124,15 +3115,15 @@ sub CheckPedigreesForErrors {
 			    }
 		    );
 
-	foreach my $fam (keys %$pedref) {
-		foreach my $l (@{$pedref->{$fam}}) {
+	for my $fam (keys %$pedref) {
+		for my $l (@{$pedref->{$fam}}) {
 			@_ = ($fam, @$l);
 
 			### obligatory check of first 6 columns
 			### they are the same for LINKAGE and CSV format
 			for (0 .. 5) {
 				if (! defined $_[$_] || $_[$_] !~ /^$check{LINKAGE}{$_}$/) {
-					foreach (@_[0 .. 5]) {
+					for (@_[0 .. 5]) {
 						$_ = '' unless defined $_;
 					}
 					push @er, "COLUMN= " . ($_ + 1) . "; WRONG_TERM= '$_[$_]'; LINE= '@_[0 .. 5]'\n";
@@ -3143,7 +3134,7 @@ sub CheckPedigreesForErrors {
 			if ($format eq 'CSV') {
 				for (6 .. 13) {
 					if (defined $_[$_] && $_[$_] !~ /^$check{CSV}{$_}$/) {
-						foreach (@_[0 .. 5]) {
+						for (@_[0 .. 5]) {
 							$_ = '' unless defined $_;
 						}
 						push @er, "COLUMN= " . ($_ + 1) . "; WRONG_TERM='$_[$_]'; LINE= '@_[0 .. 5]'\n";
@@ -3152,7 +3143,7 @@ sub CheckPedigreesForErrors {
 				if (scalar @_ > 14) {
 					for (14 .. scalar @_ - 1) {
 						if (defined $_[$_] && $_[$_] !~ /^$check{CSV}{14}$/) {
-							foreach (@_[0 .. 5]) {
+							for (@_[0 .. 5]) {
 								$_ = '' unless defined $_;
 							}
 							push @er, "COLUMN= " . ($_ + 1) . "; WRONG_TERM='$_[$_]'; LINE= '@_[0 .. 5]'\n";
@@ -3192,7 +3183,7 @@ sub ProcessFamily {
 	my $id_counter = 1;
 
 	### ids of individuals are internally recoded
-	foreach my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
+	for my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
 		next unless $l;
 		my ($old_sid, $old_fid, $old_mid, $sex, $aff, @sample_info) = @$l;
 		my ($sid, $fid, $mid);
@@ -3331,7 +3322,7 @@ sub ProcessFamily {
 
 	### some checks ...
 	### gender of parents
-	foreach my $sid (keys %{$self->{FAM}{SID2FATHER}{$fam}}) {
+	for my $sid (keys %{$self->{FAM}{SID2FATHER}{$fam}}) {
 		my $sid_old = $ci->{PID}{$sid}{Case_Info_1};
 		my $fid = $self->{FAM}{SID2FATHER}{$fam}{$sid};
 		if (!$self->{FAM}{PID}{$fam}{$fid}) {
@@ -3340,7 +3331,7 @@ sub ProcessFamily {
 		}
 	}
 
-	foreach my $sid (keys %{$self->{FAM}{SID2MOTHER}{$fam}}) {
+	for my $sid (keys %{$self->{FAM}{SID2MOTHER}{$fam}}) {
 		my $sid_old = $ci->{PID}{$sid}{Case_Info_1};
 		my $mid = $self->{FAM}{SID2MOTHER}{$fam}{$sid};
 		if (!$self->{FAM}{PID}{$fam}{$mid}) {
@@ -3349,14 +3340,14 @@ sub ProcessFamily {
 		}
 	}
 
-	foreach my $sid (keys %{$self->{FAM}{SID2FATHER}{$fam}}) {
+	for my $sid (keys %{$self->{FAM}{SID2FATHER}{$fam}}) {
 		my $sid_old = $ci->{PID}{$sid}{Case_Info_1};
 		my $fid = $self->{FAM}{SID2FATHER}{$fam}{$sid};
 		my $fid_old = $ci->{PID}{$fid}{Case_Info_1};
 		push @er, "Gender of individual $fid_old should be male, because it has been declarated as father of $sid_old.\n"
 		  if defined $self->{FAM}{SID2SEX}{$fam}{$fid} && $self->{FAM}{SID2SEX}{$fam}{$fid} ne '1';
 	}
-	foreach my $sid (keys %{$self->{FAM}{SID2MOTHER}{$fam}}) {
+	for my $sid (keys %{$self->{FAM}{SID2MOTHER}{$fam}}) {
 		my $sid_old = $ci->{PID}{$sid}{Case_Info_1};
 		my $mid = $self->{FAM}{SID2MOTHER}{$fam}{$sid};
 		my $mid_old = $ci->{PID}{$mid}{Case_Info_1};
@@ -3364,7 +3355,7 @@ sub ProcessFamily {
 		  if defined $self->{FAM}{SID2SEX}{$fam}{$mid} && $self->{FAM}{SID2SEX}{$fam}{$mid} ne '2';
 	}
 	### founder without children
-	foreach my $founder (keys %{$self->{FAM}{FOUNDER}{$fam}}) {
+	for my $founder (keys %{$self->{FAM}{FOUNDER}{$fam}}) {
 		my $founder_old = $ci->{PID}{$founder}{Case_Info_1};
 		push @er, "Founder individual $founder_old has no children.\n" unless keys %{$self->{FAM}{CHILDREN}{$fam}{$founder}};
 	}
@@ -3372,7 +3363,7 @@ sub ProcessFamily {
 	### twins check and storage
 	if (%twins) {
 		N1:
-		foreach my $k (keys %twins) {
+		for my $k (keys %twins) {
 			my @twins = keys %{$twins{$k}} or next;
 			if (scalar @twins == 1) {
 				my $sib_old = $ci->{PID}{$twins[0]}{Case_Info_1};
@@ -3385,7 +3376,7 @@ sub ProcessFamily {
 
 			### are twins truly siblings?
 			my ($par, $gender);
-			foreach my $sib (@twins) {
+			for my $sib (@twins) {
 				my $sib_old = $ci->{PID}{$sib}{Case_Info_1};
 				### twins should not be declared as founder
 				if (! $self->{FAM}{SID2FATHER}{$fam}{$sib}) {
@@ -3415,10 +3406,10 @@ sub ProcessFamily {
 
 	### consanguine check and storage
 	if (%consang) {
-		foreach my $k (keys %consang) {
+		for my $k (keys %consang) {
 			my @cons = keys %{$consang{$k}} or next;
 			@_ = ();
-			foreach (@cons) {
+			for (@cons) {
 				push @_, $ci->{PID}{$_}{Case_Info_1}
 			}
 			$_ = join ',', @_;
@@ -3441,7 +3432,7 @@ sub ProcessFamily {
 		$self = thaw($param->{SELF_BACKUP}) if $param->{SELF_BACKUP};
 		undef $param->{SELF_BACKUP};
 		if (scalar @er < 20) {
-			$er .= $_ foreach @er;
+			$er .= $_ for @er;
 			ShowInfo("There are errors in family $fam!\n\n$er", 'error');
 			return undef;
 		} else {
@@ -3454,7 +3445,7 @@ sub ProcessFamily {
 	}
 
 	### temporary
-	#foreach my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
+	#for my $l (@{$self->{FAM}{PED_ORG}{$fam}}) {
 	#	next unless $l;
 	#	$l->[13] = $self->{FAM}{PID2PIDNEW}{$fam}{$l->[0]};
 	#	$ci->{PID}{$l->[13]}{'Case_Info_2'} = $l->[13];
@@ -3474,29 +3465,29 @@ sub ShuffleColors {
 	my %t;
 	my %s = ($self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam} => 1, 'NI-0' => 1, 'NI-1' => 1, 'NI-2' => 1, 'NI-3' => 1);
 	### which colors are there ?
-	foreach my $p (keys %{$self->{FAM}{PID}{$fam}}) {
+	for my $p (keys %{$self->{FAM}{PID}{$fam}}) {
 		next unless $self->{FAM}{HAPLO}{$fam}{PID}{$p};
-		foreach my $mp ('M', 'P') {
-			foreach (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
-				$s{@$_[1]} = 1 if $self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{SAVE};
-				$t{@$_[1]} = @$_[1];
+		for my $mp (qw/M P/) {
+			for (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
+				$s{$_->[1]} = 1 if $self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{SAVE};
+				$t{$_->[1]} = $_->[1];
 			}
 		}
 	}
 
 	### make new haplotype colors
-	foreach (keys %t) {
+	for (keys %t) {
 		if (! $s{$_}) {
 			$t{$_} = sprintf("#%02x%02x%02x", int(rand(256)),int(rand(256)),int(rand(256)));
 		}
 	}
 
 	### write back colors
-	foreach my $p (keys %{$self->{FAM}{PID}{$fam}}) {
+	for my $p (keys %{$self->{FAM}{PID}{$fam}}) {
 		next unless $self->{FAM}{HAPLO}{$fam}{PID}{$p};
-		foreach my $mp ('M', 'P') {
-			foreach (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
-				@$_[1] = $t{@$_[1]};
+		for my $mp (qw/M P/) {
+			for (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
+				$_->[1] = $t{$_->[1]};
 			}
 		}
 	}
@@ -3524,7 +3515,7 @@ sub ShuffleFounderColors {
 	my @founder = keys %{$self->{FAM}{FOUNDER}{$fam}} or return undef;
 
 	### clear all color information of founder bars
-	foreach my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
+	for my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
 		next unless defined $h->{$pid};
 		undef $h->{$pid}{M}{BAR} unless $h->{$pid}{M}{SAVE};
 		undef $h->{$pid}{P}{BAR} unless $h->{$pid}{P}{SAVE};
@@ -3532,9 +3523,9 @@ sub ShuffleFounderColors {
 
 	### declare founder
 	my $c = scalar @{$self->{FAM}{MAP}{$fam}{MARKER}};
-	foreach my $p (@founder) {
+	for my $p (@founder) {
 		if ($h->{"$p"}) {
-			foreach my $m ('M', 'P') {
+			for my $m (qw/M P/) {
 				next unless $h->{$p}{$m};
 				next if $h->{$p}{$m}{SAVE};
 				$h->{$p}{$m}{HIDE} = 0;
@@ -3550,8 +3541,8 @@ sub ShuffleFounderColors {
 					}
 				}
 				unless ($flag) {
-					foreach (@{$h->{"$p"}{$m}{BAR}}) {
-						@$_[0] = 'NI-0';
+					for (@{$h->{"$p"}{$m}{BAR}}) {
+						$_->[0] = 'NI-0';
 					}
 				}
 			}
@@ -3574,7 +3565,7 @@ sub ProcessHaplotypes {
 	my $s = $self->{FAM}{STRUK}{$fam};
 
 	### delete everything instaed of founder
-	foreach my $pid (keys %{$self->{FAM}{PID}{$fam} }) {
+	for my $pid (keys %{$self->{FAM}{PID}{$fam} }) {
 		next if $self->{FAM}{FOUNDER}{$fam}{$pid};
 		next unless defined $h->{$pid};
 		undef $h->{$pid}{P}{BAR};
@@ -3585,7 +3576,7 @@ sub ProcessHaplotypes {
 	my $flag = 1;
 	while ($flag) {
 		$flag = 0;
-		foreach my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
+		for my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
 			next if $self->{FAM}{FOUNDER}{$fam}{$pid};
 			next unless $h->{$pid};
 			### still no haplotype derived
@@ -3596,10 +3587,10 @@ sub ProcessHaplotypes {
 				if ($self->{FAM}{DUPLICATED_PID_ORIG}{$fam}{$pid}) {
 					my $orig_pid = $self->{FAM}{DUPLICATED_PID_ORIG}{$fam}{$pid};
 					if ($h->{$orig_pid}{P}{BAR} && $h->{$orig_pid}{M}{BAR}) {
-						foreach (@{$h->{$orig_pid}{P}{BAR}}) {
+						for (@{$h->{$orig_pid}{P}{BAR}}) {
 							push @{$h->{$pid}{P}{BAR}}, [ @$_ ];
 						}
-						foreach (@{$h->{$orig_pid}{M}{BAR}}) {
+						for (@{$h->{$orig_pid}{M}{BAR}}) {
 							push @{$h->{$pid}{M}{BAR}}, [ @$_ ];
 						}
 					}
@@ -3668,7 +3659,7 @@ sub CompleteBar {
 	}
 	### wenn das fehlschlaegt ist der Ganze Haplotyp fuer die Katz
 	unless ($phase) {
-		push @bar, [ 'NI-0', $unc ] foreach @$a;
+		push @bar, [ 'NI-0', $unc ] for @$a;
 		return \@bar;
 	}
 
@@ -3677,22 +3668,22 @@ sub CompleteBar {
 		### oder, wenn voreingestellt als uninformativ deklarieren
 		if (@$a[$i] eq $un) {
 			if ($phase == 1) {
-				push @bar, [ 'NI-1', $$ba1[$i][1] ];
+				push @bar, [ 'NI-1', $ba1->[$i][1] ];
 			} elsif ($phase == 2) {
-				push @bar, [ 'NI-1', $$ba2[$i][1] ];
+				push @bar, [ 'NI-1', $ba2->[$i][1] ];
 			}
 		} elsif ((@$aa1[$i] eq @$aa2[$i])) {
 			if ($phase == 1) {
-				push @bar, [ 'NI-3', $$ba1[$i][1] ];
+				push @bar, [ 'NI-3', $ba1->[$i][1] ];
 			} elsif ($phase == 2) {
-				push @bar, [ 'NI-3', $$ba2[$i][1] ];
+				push @bar, [ 'NI-3', $ba2->[$i][1] ];
 			}
 		} else {
 			if (@$a[$i] eq @$aa1[$i]) {
-				push @bar, [ 'I', $$ba1[$i][1] ];
+				push @bar, [ 'I', $ba1->[$i][1] ];
 				$phase = 1;
 			} else {
-				push @bar, [ 'I', $$ba2[$i][1] ];
+				push @bar, [ 'I', $ba2->[$i][1] ];
 				$phase = 2;
 			}
 		}
@@ -3707,7 +3698,7 @@ sub FindTop {
 	my $fam = shift @_ || $self->{GLOB}{CURR_FAM};
 	my %Top;
 	P:
-	foreach my $partner (keys %{$self->{FAM}{SIBS}{$fam}}) {
+	for my $partner (keys %{$self->{FAM}{SIBS}{$fam}}) {
 		my ($f, $m) = split '==', $partner;
 
 		## find everybody joined in couple group
@@ -3715,8 +3706,8 @@ sub FindTop {
 		my $flag = 1;
 		while ($flag) {
 			$flag = 0;
-			foreach my $p (keys %P) {
-				foreach my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+			for my $p (keys %P) {
+				for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 					if (! $P{$c}) {
 						$P{$c} = 1;
 						$flag = 1;
@@ -3725,7 +3716,7 @@ sub FindTop {
 			}
 		}
 
-		foreach my $s (keys %P) {
+		for my $s (keys %P) {
 			foreach	(keys %{$self->{FAM}{COUPLE}{$fam}{$s}}) {
 				if ((! $self->{FAM}{FOUNDER}{$fam}{$_}) && (! $self->{FAM}{CHILDREN}{$fam}{$s}{$_}) && ! $self->{FAM}{DUPLICATED_PID_ORIG}{$fam}{$_}) {
 					next P;
@@ -3767,7 +3758,7 @@ sub FindTop {
 	### In some situations this has been shown to fail, future work !
 	if ($#_) {
 		my %G2P;
-		foreach my $c (sort keys %Top) {
+		for my $c (sort keys %Top) {
 			$self->{FAM}{STRUK}{$fam} = [
 						     [
 						      [
@@ -3786,11 +3777,11 @@ sub FindTop {
 			my $s = $self->{FAM}{STRUK}{$fam};
 			### extract persons for each generation
 			my $g = 0;
-			foreach my $G (@$s) {
-				foreach my $S (@$G) {
-					foreach my $P (@$S) {
+			for my $G (@$s) {
+				for my $S (@$G) {
+					for my $P (@$S) {
 						if (ref $P) {
-							foreach my $p (@{$P->[0]}) {
+							for my $p (@{$P->[0]}) {
 								$p = $self->{FAM}{DUPLICATED_PID_ORIG}{$fam}{$p} if $self->{FAM}{DUPLICATED_PID_ORIG}{$fam}{$p};
 								$G2P{$c}{$g}{$p} = 1;
 							}
@@ -3806,20 +3797,20 @@ sub FindTop {
 
 		### find individual intersection and generation relationship
 		my %calc;
-		foreach my $c1 (keys %G2P) {
-			foreach my $G1 (keys %{$G2P{$c1} }) {
-				foreach my $p1 (keys %{$G2P{$c1}{$G1} }) {
+		for my $c1 (keys %G2P) {
+			for my $G1 (keys %{$G2P{$c1} }) {
+				for my $p1 (keys %{$G2P{$c1}{$G1} }) {
 				      C2:
-					foreach my $c2 (keys %G2P) {
+					for my $c2 (keys %G2P) {
 						next if $c2 eq $c1;
-						foreach my $G2 (keys %{$G2P{$c2} }) {
-							foreach my $p2 (keys %{$G2P{$c2}{$G2} }) {
+						for my $G2 (keys %{$G2P{$c2} }) {
+							for my $p2 (keys %{$G2P{$c2}{$G2} }) {
 								if ($p1 eq $p2) {
 									if (! %calc) {
 										$calc{$G1}{$c1} = 1;
 										$calc{$G2}{$c2} = 1;
 									} else {
-										foreach my $g (keys %calc) {
+										for my $g (keys %calc) {
 											if ($calc{$g}{$c1}) {
 												my $diff = $g - $G1;
 												$calc{$G2 + $diff}{$c2} = 1;
@@ -3842,8 +3833,8 @@ sub FindTop {
 		### declaration of founder/generation
 		my %save2;
 		my ($max) = sort { $b <=> $a } keys %calc;
-		foreach my $g (sort { $b <=> $a } keys %calc) {
-			foreach my $c (keys %{$calc{$g}}) {
+		for my $g (sort { $b <=> $a } keys %calc) {
+			for my $c (keys %{$calc{$g}}) {
 				if (! $save2{$c}) {
 					$self->{FAM}{FOUNDER_COUPLE}{$fam}{$max - $g}{$c} = 1;
 					$save2{$c} = 1
@@ -3858,15 +3849,15 @@ sub FindTop {
 
 		### multiple mates can be cleared ... see method SetCouple()
 		my %save;
-		foreach my $g (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}}) {
-			foreach my $coup (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$g}}) {
+		for my $g (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}}) {
+			for my $coup (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$g}}) {
 				my ($p1, $p2) = split '==', $coup;
 				my %P = ($p1 => 1, $p2 => 1);
 				my $flag = 1;
 				while ($flag) {
 					$flag = 0;
-					foreach my $p (keys %P) {
-						foreach my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+					for my $p (keys %P) {
+						for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 							if (! $P{$c}) {
 								$P{$c} = 1;
 								$flag = 1;
@@ -3874,7 +3865,7 @@ sub FindTop {
 						}
 					}
 				}
-				foreach (keys %P) {
+				for (keys %P) {
 					if ($save{$_}) {
 						delete $self->{FAM}{FOUNDER_COUPLE}{$fam}{$g}{$coup};
 					} else {
@@ -3886,7 +3877,7 @@ sub FindTop {
 		### work arround for special case of multiple couple group which is deleted for generation 0
 		if (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}} && ! keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{0}}) {
 			my $lg;
-			foreach my $g (sort { $a <=> $b } keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}}) {
+			for my $g (sort { $a <=> $b } keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}}) {
 				if (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$g}}) {
 					$lg = $g if ! defined $lg;
 					$self->{FAM}{FOUNDER_COUPLE}{$fam}{$g - $lg} = $self->{FAM}{FOUNDER_COUPLE}{$fam}{$g};
@@ -3899,7 +3890,7 @@ sub FindTop {
 		$self->{FAM}{STRUK}{$fam} = [ [] ];
 		my $s = $self->{FAM}{STRUK}{$fam}[0];
 		my @couples = keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{0}};
-		foreach (@couples) {
+		for (@couples) {
 			my ($p1, $p2) = split '==', $_;
 			($p1, $p2) = ($p2, $p1) if int(rand(2));
 			my $Next_S = [];
@@ -3926,18 +3917,18 @@ sub ChangeOrder {
 	if ($param->{SORT_BY_PEDID}) {
 		### do not mix this array but sort it by Case_Info_1
 		my %s;
-		foreach (@$array) {
+		for (@$array) {
 			$s{$self->{FAM}{CASE_INFO}{$fam}{PID}{$_}{'Case_Info_1'}} = $_;
 		}
 
 		@$array = ();
-		foreach (nsort keys %s) {
+		for (nsort keys %s) {
 			push @$array, $self->{FAM}{PID2PIDNEW}{$fam}{$_};
 		}
 	} else {
 		### mix this array
 		for (my $i = @$array; --$i;) {
-			my $j = int rand ($i + 1);
+			my $j = int(rand($i + 1));
 			@$array[$i, $j] = @$array[$j, $i];
 		}
 	}
@@ -3985,19 +3976,19 @@ sub BuildStruk {
 		my $Next_G = [];
 		push @$s, $Next_G;
 		$EndFlag = 0;
-		foreach my $S (@{$s->[$G]}) {
-			foreach my $P (@$S) {
+		for my $S (@{$s->[$G]}) {
+			for my $P (@$S) {
 				if (ref $P) {
 					$EndFlag = 1;
-					foreach my $p (@{$P->[1]}) {
+					for my $p (@{$P->[1]}) {
 						my @children;
-						foreach my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{@$p[0]}{@$p[1]}}) {
+						for my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{@$p[0]}{@$p[1]}}) {
 							my $r = SetCouples($fam, $child);
 							if (ref $r) {
 								my $c = join '==', nsort @{$r->[0]};
 
 								my $founder = 0;
-								foreach my $coupl (@{$r->[0]}) {
+								for my $coupl (@{$r->[0]}) {
 									if (!$self->{FAM}{FOUNDER}{$fam}{$coupl}) {
 										$founder++;
 									}
@@ -4005,15 +3996,15 @@ sub BuildStruk {
 
 								### checking if child must be skipped, because it belongs to a multiple mate node
 								### and this node would be drawn multiple times depending from number of non-founders inside
-								if (!$self->{GLOB}{STRUK_MODE} && ($founder >1)) {
+								if (!$self->{GLOB}{STRUK_MODE} && ($founder > 1)) {
 									if ($skip->{$child} && ($skip->{$child} == ($founder - 1))) {
 										push @children, $child;
 									} else {
-										$skip->{$_}++ foreach @{$r->[0]};
+										$skip->{$_}++ for @{$r->[0]};
 									}
 								} else {
 									push @children, $child if ! $skip2->{$child};
-									$skip2->{$_}++ foreach @{$r->[0]};
+									$skip2->{$_}++ for @{$r->[0]};
 								}
 							} else {
 								push @children, $child;
@@ -4025,7 +4016,7 @@ sub BuildStruk {
 						if (@children) {
 							push @$Next_G, $Next_S;
 						}
-						foreach my $child (@children) {
+						for my $child (@children) {
 							$_ = SetCouples($fam, $child);
 							push @$Next_S, $_ if $_;
 						}
@@ -4036,11 +4027,11 @@ sub BuildStruk {
 		### if there are new founder couples in that generation (see FindTop)
 		### they have to be integrated as new starting point
 		if (! $self->{GLOB}{STRUK_MODE} && $self->{FAM}{FOUNDER_COUPLE}{$fam}{$G + 1}) {
-			foreach (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$G + 1}}) {
+			for (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$G + 1}}) {
 				my ($p1) = split '==', $_;
 				my $Next_S = [];
 				### new founder couple are randomly placed inside $Next_g
-				splice (@$Next_G, int(rand(scalar @$Next_G + 1)), 0, $Next_S);
+				splice(@$Next_G, int(rand(scalar @$Next_G + 1)), 0, $Next_S);
 				push @$Next_S, SetCouples($fam, $p1);
 			}
 		}
@@ -4067,11 +4058,11 @@ sub BuildMatrix {
 	my %save;
 
 	### Zeichenmatrix anlegen
-	foreach my $G (@$s) {
-		foreach my $S (@$G) {
-			foreach my $P (@$S) {
+	for my $G (@$s) {
+		for my $S (@$G) {
+			for my $P (@$S) {
 				if (ref $P) {
-					foreach my $p (@{$P->[0]}) {
+					for my $p (@{$P->[0]}) {
 						next if $save{$p};
 						$mt->{P2XY}{$p} = { X => $x, Y => $y };
 						$mt->{YX2P}{$y}{$x} = $p;
@@ -4135,7 +4126,7 @@ sub ImportPedigreeDBI {
 			return;
 		}
 
-		my $d2 = $mw->DialogBox(-title => 'Choose Pedigrees', -buttons => [ 'Ok', 'Cancel' ]);
+		my $d2 = $mw->DialogBox(-title => 'Choose Pedigrees', -buttons => [ qw/Ok Cancel/ ]);
 
 		### Choosing Pedigrees from the listbox
 		my $f1 = $d2->Frame->grid(-row => 1, -column => 0, -sticky => 'w');
@@ -4144,7 +4135,7 @@ sub ImportPedigreeDBI {
 				       -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
 				       -height => 14, -width => 25, -exportselection => 0)->pack(-side => 'top', -fill => 'both', -expand => 1);
 		$d2->gridColumnconfigure(0, -pad => 10);
-		foreach (@$ped_ref) {
+		for (@$ped_ref) {
 			$lb->insert('end', $_);
 		}
 
@@ -4152,75 +4143,74 @@ sub ImportPedigreeDBI {
 		if ($answ eq 'Cancel') {
 			$dbh->disconnect;
 			return;
-		} else {
-
-			### processing
-			my @ped;
-			foreach ($lb->curselection) {
-				push @ped, $lb->get($_);
-			}
-			return unless @ped;
-			foreach (@ped) {
-				$_ = "'$_'";
-			}
-			my $choose = join ',', @ped;
-			my $aref = $dbh->selectall_arrayref("select * from $self->{GLOB}{DB_RELATION} where $colnames->[0] in ($choose)");
-			if ($DBI::errstr) {
-				ShowInfo($DBI::errstr);
-				$dbh->disconnect;
-				return undef;
-			}
-			$dbh->disconnect();
-			return unless @$aref;
-
-			### read the data in global Hash %pedigree
-			foreach my $r (@$aref) {
-				my $fam = shift @$r;
-				push @{$ped_org{$fam}}, [ @$r ];
-			}
-
-			my $er = CheckPedigreesForErrors(\%ped_org, 'CSV');
-			if ($er) {
-				ShowInfo($er);
-				return undef;
-			}
-
-			### make a copy of $self to restore it in case of family processing errors
-			$param->{SELF_BACKUP} = freeze($self);
-
-			### Performing $self and preprocessing families
-			foreach my $fam (nsort keys %ped_org) {
-				foreach (keys %{$self->{FAM}}) {
-					delete $self->{FAM}{$_}{$fam} if $self->{FAM}{$_}{$fam};
-				}
-				AddFamToSelf($fam);
-				$self->{FAM}{PED_ORG}{$fam} = $ped_org{$fam};
-				ProcessFamily($fam) or return;
-				FindLoops($fam);
-
-				if (scalar keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}} > 3) {
-					$self->{FAM}{LOOP_BREAK_STATUS}{$fam} = 2;
-					foreach (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
-						$self->{FAM}{BREAK_LOOP_OK}{$fam}{$_} = 1;
-					}
-				}
-			}
-
-			### Updating Main Window menu
-			my $fileref = $menubar->entrycget('View', -menu);
-			my $drawref = $fileref->entrycget('Draw Pedigree ...', -menu);
-			$drawref->delete(0, 'end');
-			for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
-				$drawref->add('command', -label => $fam,
-					      -command => sub {
-						      StoreDrawPositions();
-						      DrawOrRedraw($fam);
-						      RestoreDrawPositions();
-					      });
-			}
-			($self->{GLOB}{CURR_FAM}) = nsort keys %{$self->{FAM}{PED_ORG}};
-			DoIt();
 		}
+
+		### processing
+		my @ped;
+		for ($lb->curselection) {
+			push @ped, $lb->get($_);
+		}
+		return unless @ped;
+		for (@ped) {
+			$_ = "'$_'";
+		}
+		my $choose = join ',', @ped;
+		my $aref = $dbh->selectall_arrayref("select * from $self->{GLOB}{DB_RELATION} where $colnames->[0] in ($choose)");
+		if ($DBI::errstr) {
+			ShowInfo($DBI::errstr);
+			$dbh->disconnect;
+			return undef;
+		}
+		$dbh->disconnect();
+		return unless @$aref;
+
+		### read the data in global Hash %pedigree
+		for my $r (@$aref) {
+			my $fam = shift @$r;
+			push @{$ped_org{$fam}}, [ @$r ];
+		}
+
+		my $er = CheckPedigreesForErrors(\%ped_org, 'CSV');
+		if ($er) {
+			ShowInfo($er);
+			return undef;
+		}
+
+		### make a copy of $self to restore it in case of family processing errors
+		$param->{SELF_BACKUP} = freeze($self);
+
+		### Performing $self and preprocessing families
+		for my $fam (nsort keys %ped_org) {
+			for (keys %{$self->{FAM}}) {
+				delete $self->{FAM}{$_}{$fam} if $self->{FAM}{$_}{$fam};
+			}
+			AddFamToSelf($fam);
+			$self->{FAM}{PED_ORG}{$fam} = $ped_org{$fam};
+			ProcessFamily($fam) or return;
+			FindLoops($fam);
+
+			if (scalar keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}} > 3) {
+				$self->{FAM}{LOOP_BREAK_STATUS}{$fam} = 2;
+				for (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
+					$self->{FAM}{BREAK_LOOP_OK}{$fam}{$_} = 1;
+				}
+			}
+		}
+
+		### Updating Main Window menu
+		my $fileref = $menubar->entrycget('View', -menu);
+		my $drawref = $fileref->entrycget('Draw Pedigree ...', -menu);
+		$drawref->delete(0, 'end');
+		for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
+			$drawref->add('command', -label => $fam,
+				      -command => sub {
+					      StoreDrawPositions();
+					      DrawOrRedraw($fam);
+					      RestoreDrawPositions();
+				      });
+		}
+		($self->{GLOB}{CURR_FAM}) = nsort keys %{$self->{FAM}{PED_ORG}};
+		DoIt();
 	})->grid(-row => 0, -column => 0, -sticky => 'w');
 
 	### Cancel bottom
@@ -4232,8 +4222,8 @@ sub ImportPedigreeDBI {
 	### Save Default bottom
 	$fb->Button(-text => 'Save Default', -width => 10,
 		    -command => sub {
-			    open (FH, ">", "hp_dbi_default") or (ShowInfo("Unable to save current setting as default!\n$!"));
-			    foreach (qw/DB_TYPE DB_HOST DB_PORT DB_RELATION DB_SID DB_UNAME/) {
+			    open(FH, ">", "hp_dbi_default") or (ShowInfo("Unable to save current setting as default!\n$!"));
+			    for (qw/DB_TYPE DB_HOST DB_PORT DB_RELATION DB_SID DB_UNAME/) {
 				    print FH "$_=$self->{GLOB}{$_}\n" if $self->{GLOB}{$_};
 			    }
 			    close FH;
@@ -4242,13 +4232,13 @@ sub ImportPedigreeDBI {
 	### Load Default Bottom
 	$fb->Button(-text => 'Load Default', -width => 10,
 		    -command => sub {
-			    open (FH, "<", "hp_dbi_default") or (ShowInfo("Unable to load the default file:hp_dbi_default\n$!"));
+			    open(FH, "<", "hp_dbi_default") or (ShowInfo("Unable to load the default file:hp_dbi_default\n$!"));
 			    while (<FH>) {
 				    chomp;
 				    s/ //g;
 				    next unless $_;
 				    @_ = split "=", $_;
-				    if (@_ && (scalar @_==2) && $T{$_[0]}) {
+				    if (@_ && (scalar @_ == 2) && $T{$_[0]}) {
 					    $self->{GLOB}{$_[0]} = $_[1];
 				    }
 			    }
@@ -4256,8 +4246,8 @@ sub ImportPedigreeDBI {
 		    })->grid(-row => 0, -column => 3, -sticky => 'w');
 
 	### BrowseEntry widget for Database Type
-	$f1->Label(-text => 'Database type', -width => 13, -justify => 'left', -anchor => 'w',)->pack(-side => 'left');
-	$f1->BrowseEntry(-textvariable => \$self->{GLOB}{DB_TYPE}, -choices => [ 'Oracle', 'PostgreSQL', 'MySQL' ],
+	$f1->Label(-text => 'Database type', -width => 13, -justify => 'left', -anchor => 'w',)->pack(qw/-side left/);
+	$f1->BrowseEntry(-textvariable => \$self->{GLOB}{DB_TYPE}, -choices => [ qw/Oracle PostgreSQL MySQL/ ],
 			 -bg => 'white', -disabledbackground => 'white', -width => 25, -state => 'readonly',
 			 -browsecmd => sub {
 				 if ($self->{GLOB}{DB_TYPE} =~ /Oracle/) {
@@ -4267,25 +4257,25 @@ sub ImportPedigreeDBI {
 				 } elsif ($self->{GLOB}{DB_TYPE} =~ /MySQL/) {
 					 $self->{GLOB}{DB_PORT} = 3306
 				 }
-			 })->pack(-padx => 11, -side => 'left');
+			 })->pack(-padx => 11, qw/-side left/);
 
-	$f2->Label(-text => 'Hostname', -width => 15, -justify => 'left', -anchor => 'w')->pack(-side => 'left');
-	my $entry2 = $f2->Entry(-textvariable => \$self->{GLOB}{DB_HOST}, -width => 25)->pack(-side => 'left');
+	$f2->Label(-text => 'Hostname', -width => 15, -justify => 'left', -anchor => 'w')->pack(qw/-side left/);
+	my $entry2 = $f2->Entry(-textvariable => \$self->{GLOB}{DB_HOST}, -width => 25)->pack(qw/-side left/);
 
-	$f3->Label(-text => 'Port', -width => 15, -justify => 'left', -anchor => 'w')->pack(-side => 'left');
-	$f3->Entry(-textvariable => \$self->{GLOB}{DB_PORT}, -width => 25)->pack(-side => 'left');
+	$f3->Label(-text => 'Port', -width => 15, -justify => 'left', -anchor => 'w')->pack(qw/-side left/);
+	$f3->Entry(-textvariable => \$self->{GLOB}{DB_PORT}, -width => 25)->pack(qw/-side left/);
 
-	$f4->Label(-text => 'Table name', -width => 15, -justify => 'left', -anchor => 'w')->pack(-side => 'left');
-	$f4->Entry(-textvariable => \$self->{GLOB}{DB_RELATION}, -width => 25)->pack(-side => 'left');
+	$f4->Label(-text => 'Table name', -width => 15, -justify => 'left', -anchor => 'w')->pack(qw/-side left/);
+	$f4->Entry(-textvariable => \$self->{GLOB}{DB_RELATION}, -width => 25)->pack(qw/-side left/);
 
-	$f5->Label(-text => 'DBname(SID)', -width => 15, -justify => 'left', -anchor => 'w')->pack(-side => 'left');
-	$f5->Entry(-textvariable => \$self->{GLOB}{DB_SID}, -width => 25)->pack(-side => 'left');
+	$f5->Label(-text => 'DBname(SID)', -width => 15, -justify => 'left', -anchor => 'w')->pack(qw/-side left/);
+	$f5->Entry(-textvariable => \$self->{GLOB}{DB_SID}, -width => 25)->pack(qw/-side left/);
 
-	$f6->Label(-text => 'Username', -width => 15, -justify => 'left', -anchor => 'w')->pack(-side => 'left');
-	$f6->Entry(-textvariable => \$self->{GLOB}{DB_UNAME}, -width => 25)->pack(-side => 'left');
+	$f6->Label(-text => 'Username', -width => 15, -justify => 'left', -anchor => 'w')->pack(qw/-side left/);
+	$f6->Entry(-textvariable => \$self->{GLOB}{DB_UNAME}, -width => 25)->pack(qw/-side left/);
 
-	$f7->Label(-text => 'Password', -width => 15, -justify => 'left', -anchor => 'w')->pack(-side => 'left');
-	$f7->Entry(-textvariable => \$self->{GLOB}{DB_PASSWD}, -show => '*', -width => 25)->pack(-side => 'left');
+	$f7->Label(-text => 'Password', -width => 15, -justify => 'left', -anchor => 'w')->pack(qw/-side left/);
+	$f7->Entry(-textvariable => \$self->{GLOB}{DB_PASSWD}, -show => '*', -width => 25)->pack(qw/-side left/);
 
 	$d->withdraw();
 	$d->Popup();
@@ -4297,7 +4287,7 @@ sub ImportPedigreeDBI {
 #=====================
 sub MakeDBConnection {
 #=====================
-	foreach (qw/DB_TYPE DB_HOST DB_PORT DB_RELATION DB_UNAME DB_PASSWD/) {
+	for (qw/DB_TYPE DB_HOST DB_PORT DB_RELATION DB_UNAME DB_PASSWD/) {
 		if (! $self->{GLOB}{$_}) {
 			ShowInfo("There are missing values which are needed to establish a data base connection: $_");
 			return undef;
@@ -4367,7 +4357,7 @@ sub ReadPedFromDB {
 
 	### read the data in global Hash %pedigree
 	my %ped_org;
-	foreach my $r (@$aref) {
+	for my $r (@$aref) {
 		my $fam = shift @$r;
 		push @{$ped_org{$fam}}, [ @$r ];
 	}
@@ -4385,7 +4375,7 @@ sub ReadPedFromDB {
 
 	if (scalar keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}} > 3) {
 		$self->{FAM}{LOOP_BREAK_STATUS}{$fam} = 2;
-		foreach (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
+		for (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
 			$self->{FAM}{BREAK_LOOP_OK}{$fam}{$_} = 1;
 		}
 	}
@@ -4425,8 +4415,8 @@ sub ImportPedfile {
 sub DrawNextFamily {
 #===================
 	my @fam = nsort keys %{$self->{FAM}{PED_ORG}} or return;
-	return if scalar @fam ==1;
-	for (my $i=0; $i < scalar @fam; $i++) {
+	return if scalar @fam == 1;
+	for (my $i = 0; $i < scalar @fam; $i++) {
 		if ($self->{GLOB}{CURR_FAM} eq $fam[$i]) {
 			StoreDrawPositions();
 			if (shift) {
@@ -4518,7 +4508,7 @@ sub OptionsPrint {
 	my $d = $mw->DialogBox(-title => 'Page Settings', -buttons => [ 'Ok' ]);
 	my $f = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both');
 
-	foreach my $s (
+	for my $s (
 		       [ 'BORDER', 'Margin [mm]', 0, 0, 0, 100, 5 ],
 		       [ 'RESOLUTION_DPI', 'Resolution [dpi]', 1, 0, 72, 600, 4 ],
 		      ) {
@@ -4529,7 +4519,7 @@ sub OptionsPrint {
 	}
 
 	my $be3 = $f->BrowseEntry(-label => 'Orientation: ', -variable => \$self->{GLOB}{ORIENTATION},
-				  -width => 15, -choices => [ 'Landscape', 'Portrait' ],
+				  -width => 15, -choices => [ qw/Landscape Portrait/ ],
 				  -labelPack => [ -side => 'top', -anchor => 'w' ])->grid(-row => 3, -column => 0, -sticky => 'w', -padx => 4, -pady => 10);
 
 	my $be4 = $f->BrowseEntry(-label => 'Paper Size: ', -variable => \$self->{GLOB}{PAPER},
@@ -4543,7 +4533,7 @@ sub OptionsPrint {
 sub OptionsConsanguine {
 #=======================
 	if (! $self->{GLOB}{CURR_FAM}) {
-		ShowInfo("You have to load any pedigree first to change settings!", 'info');
+		ShowInfo("Load some pedigree first, then change settings!", 'info');
 		return;
 	}
 	my $fam = $self->{GLOB}{CURR_FAM};
@@ -4575,17 +4565,17 @@ sub OptionsConsanguine {
 		    })->grid(-row => 0, -column => 3, -sticky => 'w');
 
 	### choose PIDs for Loop break
-	$f1->Label(-text => '  Select consanguineous couples', -width => 20)->pack(-side => 'top', -anchor => 'n');
+	$f1->Label(-text => 'Select consanguineous couples', -width => 30)->pack(-side => 'top', -anchor => 'n');
 	my $lb = $f1->Scrolled('Listbox',
-			       -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 	'red',
+			       -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
 			       -height => 14, -width => 25, -exportselection => 0)->pack(-side => 'top', -fill => 'both', -expand => 1);
 
 	my @nodes = nsort keys %{$self->{FAM}{PARENT_NODE}{$fam}};
-	foreach (@nodes) {
+	for (@nodes) {
 		my ($p1, $p2) = split '==', $_;
 		$p1 = $self->{FAM}{CASE_INFO}{$fam}{PID}{$p1}{'Case_Info_1'};
 		$p2 = $self->{FAM}{CASE_INFO}{$fam}{PID}{$p2}{'Case_Info_1'};
-		$_ = join '==', nsort ($p1, $p2);
+		$_ = join '==', nsort($p1, $p2);
 	}
 	$lb->insert('end', @nodes);
 
@@ -4602,7 +4592,7 @@ sub OptionsConsanguine {
 
 	$lb->bind('<ButtonRelease-1>' => sub {
 			  undef $self->{FAM}{CONSANGUINE_MAN}{$fam};
-			  foreach ($lb->curselection()) {
+			  for ($lb->curselection()) {
 				  my ($p1, $p2) = split '==', $lb->get($_);
 				  $p1 = $self->{FAM}{PID2PIDNEW}{$fam}{$p1};
 				  $p2 = $self->{FAM}{PID2PIDNEW}{$fam}{$p2};
@@ -4623,7 +4613,7 @@ sub OptionsConsanguine {
 sub OptionsLoopBreak {
 #=====================
 	if (! $self->{GLOB}{CURR_FAM}) {
-		ShowInfo("You have to load any pedigree first to change settings!", 'info');
+		ShowInfo("Load some pedigree first, then change settings!", 'info');
 		return;
 	}
 	my $fam = $self->{GLOB}{CURR_FAM};
@@ -4646,7 +4636,7 @@ sub OptionsLoopBreak {
 	$f3->Button(-text => 'Ok', -width => 10,
 		    -command => sub {
 			    if ($flag) {
-				    foreach my $k (keys %{$self->{FAM}}) {
+				    for my $k (keys %{$self->{FAM}}) {
 					    undef $self->{FAM}{$k}{$fam} if ! defined $def->{FAM}{$k};
 				    }
 				    ProcessFamily() or return undef;
@@ -4664,7 +4654,7 @@ sub OptionsLoopBreak {
 
 	$f3->Button(-text => 'Preview', -width => 10,
 		    -command => sub {
-			    foreach my $k (keys %{$self->{FAM}}) {
+			    for my $k (keys %{$self->{FAM}}) {
 				    undef $self->{FAM}{$k}{$fam} if ! defined $def->{FAM}{$k};
 			    }
 			    ProcessFamily($fam) or return undef;
@@ -4693,7 +4683,7 @@ sub OptionsLoopBreak {
 					  my ($p1, $p2) = split '==', $lb6->get($i);
 					  $p1 = $self->{FAM}{PID2PIDNEW}{$fam}{$p1};
 					  $p2 = $self->{FAM}{PID2PIDNEW}{$fam}{$p2};
-					  my $p1p2 = join '==', nsort ($p1, $p2);
+					  my $p1p2 = join '==', nsort($p1, $p2);
 
 					  $self->{FAM}{BREAK_LOOP_OK}{$fam}{$p1p2} = 1;
 					  $lb6->selectionSet($i);
@@ -4713,11 +4703,11 @@ sub OptionsLoopBreak {
 
 	### Fill Listbox
 	my @nodes = nsort keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}};
-	foreach (@nodes) {
+	for (@nodes) {
 		my ($p1, $p2) = split '==', $_;
 		$p1 = $self->{FAM}{CASE_INFO}{$fam}{PID}{$p1}{'Case_Info_1'};
 		$p2 = $self->{FAM}{CASE_INFO}{$fam}{PID}{$p2}{'Case_Info_1'};
-		$_ = join '==', nsort ($p1, $p2);
+		$_ = join '==', nsort($p1, $p2);
 	}
 
 	$lb6->insert('end', @nodes);
@@ -4726,7 +4716,7 @@ sub OptionsLoopBreak {
 			my ($p1, $p2) = split '==', $lb6->get($i);
 			$p1 = $self->{FAM}{PID2PIDNEW}{$fam}{$p1};
 			$p2 = $self->{FAM}{PID2PIDNEW}{$fam}{$p2};
-			$_ = join '==', nsort ($p1, $p2);
+			$_ = join '==', nsort($p1, $p2);
 			if ($self->{FAM}{BREAK_LOOP_OK}{$fam}{$_} == 1) {
 				$lb6->selectionSet($i);
 			} else {
@@ -4740,14 +4730,14 @@ sub OptionsLoopBreak {
 	$lb6->bind('<ButtonRelease-1>' => sub {
 			   my %save;
 			   $flag = 1;
-			   foreach ($lb6->curselection()) {
+			   for ($lb6->curselection()) {
 				   my ($p1, $p2) = split '==', $lb6->get($_);
 				   $p1 = $self->{FAM}{PID2PIDNEW}{$fam}{$p1};
 				   $p2 = $self->{FAM}{PID2PIDNEW}{$fam}{$p2};
-				   my $p1p2 = join '==', nsort ($p1, $p2);
+				   my $p1p2 = join '==', nsort($p1, $p2);
 				   $save{$p1p2} = 1;
 			   }
-			   foreach (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
+			   for (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
 				   if ($save{$_}) {
 					   $self->{FAM}{BREAK_LOOP_OK}{$fam}{$_} = 1;
 				   } else {
@@ -4773,7 +4763,7 @@ sub Configuration {
 	my %flag;
 
 	if (! $self->{GLOB}{CURR_FAM}) {
-		ShowInfo("You have to load any pedigree first to change settings!", 'info');
+		ShowInfo("Load some pedigree first, then change settings!", 'info');
 		return;
 	}
 
@@ -4849,10 +4839,10 @@ sub Configuration {
 		       [ 'BBOX_WIDTH',         'Width of bounding boxes',      3, 1,   10, 100,   1 ],
 		       [ 'LEGEND_SHIFT_RIGHT', 'Legend distance right',        4, 1,   20, 500,   5 ],
 		      ) {
-		$p1_f1->Scale(-label  => @$s[1], -variable => \$self->{FAM}{@$s[0]}{$fam},
-			      -from => @$s[4], -to => @$s[5], -orient => 'horizontal', -length => 150, -width => 12,
-			      -resolution => @$s[6])->grid(-row => @$s[2], -column => @$s[3], -sticky => 'ns');
-		$p1_f1->gridColumnconfigure(@$s[2], -pad => 50);
+		$p1_f1->Scale(-label => $s->[1], -variable => \$self->{FAM}{$s->[0]}{$fam},
+			      -from => $s->[4], -to => $s->[5], -orient => 'horizontal', -length => 160, -width => 12,
+			      -resolution => $s->[6])->grid(-row => $s->[2], -column => $s->[3], -sticky => 'ns');
+		$p1_f1->gridColumnconfigure($s->[2], -pad => 50);
 	}
 
 	###############################################################################
@@ -4891,19 +4881,19 @@ sub Configuration {
 	my $hap_b = $hap_f->Button(-text => 'Haplotype font', -width => 20,
 				   -command => sub {
 					   ChooseFont($opt, $fam, 'FONT_HAPLO', $hap_l);
-				   })->pack(-side => 'left');
+				   })->pack(qw/-side left/);
 	my $inf_f = $p3_f1->Frame->grid(-row => 1, -column => 0, -sticky => 'w');	### Font Farbe
 	my $inf_l = $inf_f->Label(-width => 3, -bg => $self->{FAM}{FONT1}{$fam}{COLOR})->pack(-side => 'left', -padx => 10);
 	my $inf_b = $inf_f->Button(-text => 'Symbol information font', -width => 20,
 				   -command => sub {
 					   ChooseFont($opt, $fam, 'FONT1', $inf_l);
-				   })->pack(-side => 'left');
+				   })->pack(qw/-side left/);
 	my $head_f = $p3_f1->Frame->grid(-row => 2, -column => 0, -sticky => 'w');	### Font Farbe
 	my $head_l = $head_f->Label(-width => 3, -bg => $self->{FAM}{FONT_HEAD}{$fam}{COLOR})->pack(-side => 'left', -padx => 10);
 	my $head_b = $head_f->Button(-text => 'Title font', -width => 20,
 				     -command => sub {
 					     ChooseFont($opt, $fam, 'FONT_HEAD', $head_l);
-				     })->pack(-side => 'left');
+				     })->pack(qw/-side left/);
 
 	### Farbe fuer HAPLO_UNKNOWN
 	my $fc2 = $p3_f1->Frame->grid(-row => 3, -column => 0, -sticky => 'w');		### Font Farbe
@@ -4913,7 +4903,7 @@ sub Configuration {
 				      my $col = $n->chooseColor() or return;
 				      $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam} = $col;
 				      $lb2->configure(-bg => $col);
-			      })->pack(-side => 'left');
+			      })->pack(qw/-side left/);
 
 	### Farbe fuer ALLE HAPLOTYPEN
 	my $fc5 = $p3_f1->Frame->grid(-row => 4, -column => 0, -sticky => 'w');		### Font Farbe
@@ -4921,11 +4911,11 @@ sub Configuration {
 	$fc5->Button(-text => 'Color of all haplotypes', -width => 20, -height => 1,
 		     -command => sub {
 			     my $col_new = $n->chooseColor() or return;
-			     foreach my $p (keys %{$self->{FAM}{FOUNDER}{$fam}}) {
+			     for my $p (keys %{$self->{FAM}{FOUNDER}{$fam}}) {
 				     next unless $self->{FAM}{HAPLO}{$fam}{PID}{$p};
-				     foreach my $mp ('M', 'P') {
+				     for my $mp (qw/M P/) {
 					     next if $self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{SAVE};
-					     foreach my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
+					     for my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
 						     @$r[1] = $col_new;
 					     }
 				     }
@@ -4933,7 +4923,7 @@ sub Configuration {
 			     $lb5->configure(-bg => $col_new);
 			     $opt->focusForce;
 			     ProcessHaplotypes();
-		     })->pack(-side => 'left');
+		     })->pack(qw/-side left/);
 
 	my $fc3 = $p3_f1->Frame->grid(-row => 1, -column => 2, -sticky => 'w');		### Font Farbe
 	my $lb3 = $fc3->Label(-width => 3)->pack(-side => 'left', -padx => 10);
@@ -4943,15 +4933,15 @@ sub Configuration {
 				   if ($pid && $self->{FAM}{HAPLO}{$fam}{PID}{$pid} && $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}[0]) {
 					   my $col_new = $n->chooseColor() or return;
 					   my $col_old = $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}[0][1] or return;
-					   foreach my $mp ('M', 'P') {
-						   foreach my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{$mp}{BAR}}) {
+					   for my $mp (qw/M P/) {
+						   for my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{$mp}{BAR}}) {
 							   @$r[1] = $col_new if $col_old eq @$r[1];
 						   }
 					   }
 					   $lb3->configure(-bg => $col_new);
 					   $opt->focusForce;
 				   }
-			   })->pack(-side => 'left');
+			   })->pack(qw/-side left/);
 
 	my $fc4 = $p3_f1->Frame->grid(-row => 2, -column => 2, -sticky => 'w');		### Font Farbe
 	my $lb4 = $fc4->Label(-width => 3)->pack(-side => 'left', -padx => 10);
@@ -4961,15 +4951,15 @@ sub Configuration {
 				      if ($pid && $self->{FAM}{HAPLO}{$fam}{PID}{$pid} && $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{BAR}[0]) {
 					      my $col_new = $n->chooseColor() or return;
 					      my $col_old = $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{BAR}[0][1] or return;
-					      foreach my $mp ('M', 'P') {
-						      foreach my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{$mp}{BAR}}) {
+					      for my $mp (qw/M P/) {
+						      for my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{$mp}{BAR}}) {
 							      @$r[1] = $col_new if $col_old eq @$r[1];
 						      }
 					      }
 					      $lb4->configure(-bg => $col_new);
 					      $opt->focusForce;
 				      }
-			      })->pack(-side => 'left');
+			      })->pack(qw/-side left/);
 
 	my $cbs1 = $p3_f1->Checkbutton(-text => 'Anchor paternal haplotype')->grid(-row => 3, -column => 2, -sticky => 'w');
 	my $cbs2 = $p3_f1->Checkbutton(-text => 'Anchor maternal haplotype')->grid(-row => 4, -column => 2, -sticky => 'w');
@@ -4979,20 +4969,20 @@ sub Configuration {
 
 	### personenbezogene Einstellungen
 	@_ = nsort keys %{$self->{FAM}{FOUNDER}{$fam}};
-	foreach (@_) {
+	for (@_) {
 		$_ = $self->{FAM}{CASE_INFO}{$fam}{PID}{$_}{'Case_Info_1'};
 	}
 	my $be5 = $p3_f1->BrowseEntry(-label => '        Founder:', -variable => \$pid_old,
 				      -choices => [ @_ ], -width => 15, -state => 'readonly',
 				      -browsecmd => sub {
 					      $pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid_old};
-					      foreach (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}}) {
+					      for (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}}) {
 						      if (@$_[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam}) {
 							      $lb3->configure(-bg => @$_[1]);
 							      last;
 						      }
 					      }
-					      foreach (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{BAR}}) {
+					      for (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{BAR}}) {
 						      if (@$_[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam}) {
 							      $lb4->configure(-bg => @$_[1]);
 							      last;
@@ -5040,7 +5030,7 @@ sub Configuration {
 	### page4
 	### Listbox Markerauswahl + Bounding Box
 	### Markerauswahl
-	my $p4_f1 = $p4->LabFrame(-label => 'Haplotype region')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand =>1);
+	my $p4_f1 = $p4->LabFrame(-label => 'Haplotype region')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand => 1);
 	my $f5 = $p4_f1->Frame->grid(-row => 1, -column => 0, -sticky => 'w');
 	my $lab5 = $f5->Label(-text => 'Marker Selection', -width => 16)->pack(-side => 'top', -anchor => 'w');
 	my $lb = $f5->Scrolled('Listbox', -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
@@ -5065,7 +5055,7 @@ sub Configuration {
 	$lb->bind('<ButtonRelease-1>' => sub {
 		if ($self->{FAM}{MAP}{$fam}{MARKER}) {
 			my %h;
-			foreach ($lb->curselection()) {
+			for ($lb->curselection()) {
 				$h{$_} = 1;
 			}
 			for (my $i = 0; $i < scalar @{$self->{FAM}{MAP}{$fam}{MARKER}}; $i++) {
@@ -5092,7 +5082,7 @@ sub Configuration {
 
 	### Bounding Box
 	@_ = nsort keys %{$self->{FAM}{PID}{$fam}};
-	foreach (@_) {
+	for (@_) {
 		$_ = $self->{FAM}{CASE_INFO}{$fam}{PID}{$_}{'Case_Info_1'};
 	}
 	my ($person, $lb6, $sid_new);
@@ -5126,7 +5116,7 @@ sub Configuration {
 	$lb6->bind('<ButtonRelease-1>' => sub {
 			   if ($self->{FAM}{MAP}{$fam}{MARKER}) {
 				   my %h;
-				   foreach ($lb6->curselection()) {
+				   for ($lb6->curselection()) {
 					   $h{$_} = 1;
 				   }
 				   for (my $i = 0; $i < scalar @{$self->{FAM}{MAP}{$fam}{MARKER}}; $i++) {
@@ -5143,7 +5133,7 @@ sub Configuration {
 	### page5
 	### Lines Option Schieberegler
 	my $p5_f1 = $p5->LabFrame(-label => 'Pedigree style')->pack(-side => 'top', -padx => 5, -pady => 5, -fill => 'both', -expand => 1);
-	foreach my $s (
+	for my $s (
 		       [ 'CROSS_FAKTOR1',     'Cross factor',                0, 0, 0.1,  5, 0.1 ],
 		       [ 'ALIVE_SPACE',       'Deceased line length',        1, 0,   1, 20,   1 ],
 		       [ 'GITTER_X',          'Grid X space',                2, 0,   5, 50,   1 ],
@@ -5203,7 +5193,7 @@ sub Configuration {
 					    $self->{FAM}{AFF_COLOR}{$fam}{$nr} = $NewCol;
 					    $lb->configure(-bg => $NewCol);
 					    $opt->focusForce;
-				    })->pack(-side => 'left');
+				    })->pack(qw/-side left/);
 	}
 
 	for my $nr (sort { $a <=> $b } keys %{$c{LC}}) {
@@ -5215,11 +5205,11 @@ sub Configuration {
 					    $self->{FAM}{$c{LC}{$nr}[0]}{$fam} = $NewCol;
 					    $lb->configure(-bg => $NewCol);
 					    $opt->focusForce;
-				    })->pack(-side => 'left');
+				    })->pack(qw/-side left/);
 
 		if ($nr == 1) {
 			$f->Checkbutton(-text => "Set for affected",
-					-variable => \$self->{FAM}{SYMBOL_LINE_COLOR_SET}{$fam})->pack(-side => 'left');
+					-variable => \$self->{FAM}{SYMBOL_LINE_COLOR_SET}{$fam})->pack(qw/-side left/);
 		}
 	}
 
@@ -5232,10 +5222,10 @@ sub Configuration {
 				     $lab->configure(-bg => $NewCol);
 				     $canvas->configure(-bg => $self->{GLOB}{BACKGROUND});
 				     $opt->focusForce;
-			     })->pack(-side => 'left');
+			     })->pack(qw/-side left/);
 
 	$f->Checkbutton(-text => "Export background",
-			-variable => \$self->{FAM}{EXPORT_BACKGROUND}{$fam})->pack(-side => 'left');
+			-variable => \$self->{FAM}{EXPORT_BACKGROUND}{$fam})->pack(qw/-side left/);
 
 	for (0 .. 9) {
 		$p6_f1->gridRowconfigure($_, -pad => 2);
@@ -5258,7 +5248,7 @@ sub Configuration {
 			    -command => sub {}, -width => 5, -choices => [ 5 .. 20, 22, 24, 26, 28, 36, 48, 72 ],
 			    -state => 'readonly')->grid(-row => 0, -column => 2, -sticky => 'w');
 
-	foreach my $col (1 .. 5) {
+	for my $col (1 .. 5) {
 		$p7_f3->BrowseEntry(-label => 'Case  ' . $col, -labelPack => [ -side => 'left', -anchor => 'w' ],
 				    -variable => \$self->{FAM}{CASE_INFO}{$fam}{COL_TO_NAME}{$col}, -state => 'readonly',
 				    -choices => [ nsort keys %{$self->{FAM}{CASE_INFO}{$fam}{COL_NAMES}} ]
@@ -5297,13 +5287,13 @@ sub ChooseFont {
 				    -choices => [ nsort $mw->fontFamilies, 'Lucida' ],
 				    -command => sub {
 					    $cb1->configure(-font => [ $fo->{FAMILY}, 8, $fo->{WEIGHT}, $fo->{SLANT} ]);
-				    })->pack(-side => 'left');
+				    })->pack(qw/-side left/);
 
 	### Font Size
 	my $fe2 = $f1->Frame->grid(-row => 1, -column => 1, -sticky => 'w');
 	my $lab2 = $fe2->Label(-text => 'Size:', -width => 6)->pack(-side => 'left', -anchor => 'w');
 	my $be2 = $fe2->BrowseEntry(-variable => \$fo->{SIZE}, -state => 'readonly',
-				    -choices => [ 5 .. 20, 22, 24, 26, 28, 30, 32, 36, 40, 44, 48, 56, 64, 72 ])->pack(-side => 'left');
+				    -choices => [ 5 .. 20, 22, 24, 26, 28, 30, 32, 36, 40, 44, 48, 56, 64, 72 ])->pack(qw/-side left/);
 
 	### Font Weight
 	my $fe3 = $f1->Frame->grid(-row => 2, -column => 1, -sticky => 'w');
@@ -5311,15 +5301,15 @@ sub ChooseFont {
 	my $be3 = $fe3->BrowseEntry(-variable => \$fo->{WEIGHT}, -choices => [ qw/bold normal/ ], -state => 'readonly',
 				    -command => sub {
 					    $cb1->configure(-font => [ $fo->{FAMILY}, 10, $fo->{WEIGHT}, $fo->{SLANT} ]);
-				    })->pack(-side => 'left');
+				    })->pack(qw/-side left/);
 
 	### Font Style
 	my $fe4 = $f1->Frame->grid(-row => 3, -column => 1, -sticky => 'w');
 	my $lab4 = $fe4->Label(-text => 'Slant:', -width => 6)->pack(-side => 'left', -anchor => 'w');
-	my $be4 = $fe4->BrowseEntry(-variable => \$fo->{SLANT}, -state => 'readonly', -choices => [ 'italic', 'roman' ],
+	my $be4 = $fe4->BrowseEntry(-variable => \$fo->{SLANT}, -state => 'readonly', -choices => [ qw/italic roman/ ],
 				    -command => sub {
 					    $cb1->configure(-font => [ $fo->{FAMILY}, 10, $fo->{WEIGHT}, $fo->{SLANT} ]);
-				    })->pack(-side => 'left');
+				    })->pack(qw/-side left/);
 
 	### Font Color
 	my $fc1 = $f1->Frame->grid(-row => 5, -column => 1, -sticky => 'w');
@@ -5356,7 +5346,7 @@ sub BatchExport {
 	ShowInfo("Please select working directory and a basic file name without suffix.\nGraphic outputs will be extended by pedigree identifiers.\n\n");
 	my $file = $mw->getSaveFile(-initialfile => 'pedigree') or return;
 	my $curr_fam = $self->{GLOB}{CURR_FAM};
-	foreach my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
+	for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
 		my $file = File::Spec->catfile(dirname($file), basename($file) . '_' . $fam . '.' . $suffix);
 		if (! $self->{FAM}{MATRIX}{$fam}) {
 			$self->{GLOB}{CURR_FAM} = $fam;
@@ -5543,81 +5533,81 @@ sub DrawOrExportCanvas {
 		ShowGrid();
 
 		### Lines between symbols
-		foreach my $parent_node (keys %{$d->{COUPLE}}) {
-			foreach my $ln (@{$d->{COUPLE}{$parent_node}}) {
+		for my $parent_node (keys %{$d->{COUPLE}}) {
+			for my $ln (@{$d->{COUPLE}{$parent_node}}) {
 				$canvas->createLine(@$ln, -width => $l * $z, -fill => $lnc);
 			}
 		}
-		foreach my $id (keys %{$d->{SIB}}) {
-			foreach my $ln (@{$d->{SIB}{$id}}) {
+		for my $id (keys %{$d->{SIB}}) {
+			for my $ln (@{$d->{SIB}{$id}}) {
 				$canvas->createLine(@$ln, -width => $l * $z, -fill => $lnc);
 			}
 		}
-		foreach my $id (keys %{$d->{COUPLE_SIB}}) {
-			foreach my $ln (@{$d->{COUPLE_SIB}{$id}}) {
+		for my $id (keys %{$d->{COUPLE_SIB}}) {
+			for my $ln (@{$d->{COUPLE_SIB}{$id}}) {
 				$canvas->createLine(@$ln, -width => $l * $z, -fill => $lnc);
 			}
 		}
-		foreach my $id (keys %{$d->{TWIN_LINES}}) {
-			foreach my $ln (@{$d->{TWIN_LINES}{$id}}) {
+		for my $id (keys %{$d->{TWIN_LINES}}) {
+			for my $ln (@{$d->{TWIN_LINES}{$id}}) {
 				$canvas->createLine(@$ln, -width => $l * $z, -fill => $lnc);
 			}
 		}
 
 		### Drawing male SYMBOL Elements
-		foreach my $r (@{$de->{SYM_MALE}}) {
+		for my $r (@{$de->{SYM_MALE}}) {
 			$canvas->createRectangle(@$r);
 		}
 		### Drawing female SYMBOL Elements
-		foreach my $r (@{$de->{SYM_FEMALE}}) {
+		for my $r (@{$de->{SYM_FEMALE}}) {
 			$canvas->createOval(@$r);
 		}
 		### Drawing stillbirth SYMBOL Elements
-		foreach my $r (@{$de->{SYM_STILLBIRTH}}) {
+		for my $r (@{$de->{SYM_STILLBIRTH}}) {
 			$canvas->createPolygon(@$r);
 		}
 		### Drawing unknown SYMBOL Elements
-		foreach my $r (@{$de->{SYM_UNKNOWN}}) {
+		for my $r (@{$de->{SYM_UNKNOWN}}) {
 			$canvas->createPolygon(@$r);
 		}
 		#### Drawing Text elements
-		foreach my $e (qw/INNER_SYMBOL_TEXT CASE_INFO TITLE PROBAND_TEXT MARK_TEXT SAB_GENDER/) {
-			foreach my $r (@{$de->{$e}}) {
+		for my $e (qw/INNER_SYMBOL_TEXT CASE_INFO TITLE PROBAND_TEXT MARK_TEXT SAB_GENDER/) {
+			for my $r (@{$de->{$e}}) {
 				$canvas->createText(@$r);
 			}
 		}
 		### Drawing live status line
-		foreach my $r (@{$de->{LIVE_LINE}}) {
+		for my $r (@{$de->{LIVE_LINE}}) {
 			$canvas->createLine(@$r);
 		}
 		### Haplotype Bar not informative
-		foreach my $r (@{$de->{HAP_BAR_NI}}) {
+		for my $r (@{$de->{HAP_BAR_NI}}) {
 			$canvas->createRectangle(@$r);
 		}
 		### Haplotype Bar
-		foreach my $r (@{$de->{HAP_BAR}}) {
+		for my $r (@{$de->{HAP_BAR}}) {
 			$canvas->createRectangle(@$r);
 		}
 		### Haplotype Bounding Box
-		foreach my $r (@{$de->{HAP_BOX}}) {
+		for my $r (@{$de->{HAP_BOX}}) {
 			$canvas->createRectangle(@$r);
 		}
 		### Haplotype Text
-		foreach my $e (qw/HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT/) {
-			foreach my $r (@{$de->{$e}}) {
+		for my $e (qw/HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT/) {
+			for my $r (@{$de->{$e}}) {
 				$canvas->createText(@$r);
 			}
 		}
 		### Arrows
-		foreach my $r (@{$de->{ARROWS}}) {
+		for my $r (@{$de->{ARROWS}}) {
 			$canvas->createLine(@$r);
 		}
 		### Adopted lines
-		foreach my $r (@{$de->{IS_ADOPTED}}) {
+		for my $r (@{$de->{IS_ADOPTED}}) {
 			$canvas->createLine(@$r);
 		}
 
-		#foreach my $r (@{$self->{FAM}{CROSS_CHECK}{$fam}}) {
+		#for my $r (@{$self->{FAM}{CROSS_CHECK}{$fam}}) {
 		#	$canvas->createOval(@$r);
 		#}
 		$mw->configure(-title => "HaploPainter V.$self->{GLOB}{VERSION}  -[Family $fam]");
@@ -5640,7 +5630,7 @@ sub DrawOrExportCanvas {
 		}
 		return unless @fams;
 
-		open (FH, $encoding, $file_name) or (ShowInfo("$!: $file_name", 'warning'), return);
+		open(FH, $encoding, $file_name) or (ShowInfo("$!: $file_name", 'warning'), return);
 		my $head = join "\t", (qw/*FAMILY PERSON FATHER MOTHER GENDER AFFECTION IS_DECEASED IS_SAB_OR_TOP
 					  IS_PROBAND IS_ADOPTED ARE_TWINS ARE_CONSANGUINEOUS INNER_SYMBOL_TEXT SIDE_SYMBOL_TEXT
 					  LOWER_SYMBOL_TEXT1 LOWER_SYMBOL_TEXT2 LOWER_SYMBOL_TEXT3 LOWER_SYMBOL_TEXT4/);
@@ -5651,17 +5641,17 @@ sub DrawOrExportCanvas {
 		}
 		print FH "$head\n";
 
-		foreach my $fam (@fams) {
+		for my $fam (@fams) {
 			my %ped;
-			foreach my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
+			for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
 				next unless $r;
 				@_ = @$r;
-				foreach (@_[0 .. 17]) {
+				for (@_[0 .. 17]) {
 					$_ = '' unless defined $_;
 				}
 				$ped{$_[0]} = [@_];
 			}
-			foreach my $pid (nsort keys %ped) {
+			for my $pid (nsort keys %ped) {
 				@_ = @{$ped{$pid}};
 				shift @_;
 				$_ = join "\t", ($fam, $pid, @_);
@@ -5675,10 +5665,10 @@ sub DrawOrExportCanvas {
 		my ($surface, $cairo);
 		my $file_name = $arg{-file} or return undef;
 
-		### exploring coordinates of all drawing elements to find out "bounding box"
+		### get coordinates of all drawing elements to find out "bounding box"
 		my (%x, %y);
-		foreach my $e (keys %$de) {
-			foreach my $r (@{$de->{$e}}) {
+		for my $e (keys %$de) {
+			for my $r (@{$de->{$e}}) {
 				for (my $i = 0; $i < scalar @$r - 1; $i += 2) {
 					if ($r->[$i] !~ /^-[a-z]/) {
 						$x{$r->[$i]} = 1;
@@ -5726,8 +5716,8 @@ sub DrawOrExportCanvas {
 		$cairo->scale($f, $f);
 
 		### any text
-		foreach my $e (qw/SAB_GENDER MARK_TEXT HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT TITLE CASE_INFO INNER_SYMBOL_TEXT PROBAND_TEXT/) {
-			foreach my $r (@{$de->{$e}}) {
+		for my $e (qw/SAB_GENDER MARK_TEXT HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT TITLE CASE_INFO INNER_SYMBOL_TEXT PROBAND_TEXT/) {
+			for my $r (@{$de->{$e}}) {
 				my $pango_layout = GetPangoLayout($cairo, $r);
 				my ($width, $height) = $pango_layout->get_pixel_size();
 				my $x = $r->[0];
@@ -5801,8 +5791,8 @@ sub DrawOrExportCanvas {
 		### Lines between COUPLE symbols
 		$cairo->set_line_width($l * $z);
 		$cairo->set_source_rgb(GetCairoCol($lnc));
-		foreach my $parent_node (keys %{$d->{COUPLE}}) {
-			foreach my $ln (@{$d->{COUPLE}{$parent_node}}) {
+		for my $parent_node (keys %{$d->{COUPLE}}) {
+			for my $ln (@{$d->{COUPLE}{$parent_node}}) {
 				$cairo->move_to($ln->[0] - $x1_bb, $ln->[1] - $y1_bb);
 				for (my $i = 2; $i < scalar @$ln - 1; $i += 2) {
 					$cairo->line_to($ln->[$i] - $x1_bb, $ln->[$i + 1] - $y1_bb);
@@ -5811,8 +5801,8 @@ sub DrawOrExportCanvas {
 			}
 		}
 		### Lines between SIB symbols
-		foreach my $id (keys %{$d->{SIB}}) {
-			foreach my $ln (@{$d->{SIB}{$id}}) {
+		for my $id (keys %{$d->{SIB}}) {
+			for my $ln (@{$d->{SIB}{$id}}) {
 				$cairo->move_to($ln->[0] - $x1_bb, $ln->[1] - $y1_bb);
 				for (my $i = 2; $i < scalar @$ln - 1; $i += 2) {
 					$cairo->line_to($ln->[$i] - $x1_bb, $ln->[$i + 1] - $y1_bb);
@@ -5821,8 +5811,8 @@ sub DrawOrExportCanvas {
 			}
 		}
 		### Lines between COUPLE_SIB symbols
-		foreach my $id (keys %{$d->{COUPLE_SIB}}) {
-			foreach my $ln (@{$d->{COUPLE_SIB}{$id}}) {
+		for my $id (keys %{$d->{COUPLE_SIB}}) {
+			for my $ln (@{$d->{COUPLE_SIB}{$id}}) {
 				$cairo->move_to($ln->[0] - $x1_bb, $ln->[1] - $y1_bb);
 				for (my $i = 2; $i < scalar @$ln - 1; $i += 2) {
 					$cairo->line_to($ln->[$i] - $x1_bb, $ln->[$i + 1] - $y1_bb);
@@ -5832,8 +5822,8 @@ sub DrawOrExportCanvas {
 		}
 
 		### Lines between TWIN symbols
-		foreach my $id (keys %{$d->{TWIN_LINES}}) {
-			foreach my $ln (@{$d->{TWIN_LINES}{$id}}) {
+		for my $id (keys %{$d->{TWIN_LINES}}) {
+			for my $ln (@{$d->{TWIN_LINES}{$id}}) {
 				$cairo->move_to($ln->[0] - $x1_bb, $ln->[1] - $y1_bb);
 				$cairo->line_to($ln->[2] - $x1_bb, $ln->[3] - $y1_bb);
 				$cairo->stroke;
@@ -5841,7 +5831,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### male symbols
-		foreach my $r (@{$de->{SYM_MALE}}) {
+		for my $r (@{$de->{SYM_MALE}}) {
 			my ($x1, $y1, $x2) = ($r->[0] - $x1_bb, $r->[1] - $y1_bb, $r->[2] - $r->[0]);
 			$cairo->set_line_width($r->[5]);
 			$cairo->rectangle($x1, $y1, $x2, $x2);
@@ -5852,7 +5842,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### female symbols
-			foreach my $r (@{$de->{SYM_FEMALE}}) {
+			for my $r (@{$de->{SYM_FEMALE}}) {
 				my ($x1, $y1, $x2) = ((($r->[0] + $r->[2]) / 2) - $x1_bb, (($r->[1] + $r->[3]) / 2) - $y1_bb, ($r->[2] - $r->[0]) / 2);
 				my $lw = $r->[5];
 				$cairo->set_line_width($lw);
@@ -5864,7 +5854,7 @@ sub DrawOrExportCanvas {
 			}
 
 		### unknown gender symbols
-		foreach my $r (@{$de->{SYM_UNKNOWN}}) {
+		for my $r (@{$de->{SYM_UNKNOWN}}) {
 			my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @$r[0 .. 7];
 			for ($x1, $x2, $x3, $x4) {
 				$_ -= $x1_bb;
@@ -5885,7 +5875,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### stillbirth symbol
-		foreach my $r (@{$de->{SYM_STILLBIRTH}}) {
+		for my $r (@{$de->{SYM_STILLBIRTH}}) {
 			my ($x1, $y1, $x2, $y2, $x3, $y3) = @$r[0 .. 5];
 			for ($x1, $x2, $x3) {
 				$_ -= $x1_bb;
@@ -5905,7 +5895,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### live status line
-		foreach my $r (@{$de->{LIVE_LINE}}) {
+		for my $r (@{$de->{LIVE_LINE}}) {
 			my ($x1, $y1, $x2, $y2) = @$r[0 .. 3];
 			for ($x1, $x2) {
 				$_ -= $x1_bb;
@@ -5921,7 +5911,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### IS_ADOPTED
-		foreach my $r (@{$de->{IS_ADOPTED}}) {
+		for my $r (@{$de->{IS_ADOPTED}}) {
 			my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @$r[0 .. 7];
 			for ($x1, $x2, $x3, $x4) {
 				$_ -= $x1_bb;
@@ -5940,7 +5930,7 @@ sub DrawOrExportCanvas {
 
 		### haplotype bars
 		for my $bar (qw/HAP_BAR_NI HAP_BAR/) {
-			foreach my $r (@{$de->{$bar}}) {
+			for my $r (@{$de->{$bar}}) {
 				my ($x1, $y1, $x2, $y2) = ($r->[0] - $x1_bb, $r->[1] - $y1_bb, $r->[2] - $r->[0], $r->[3] - $r->[1]);
 				$cairo->rectangle($x1, $y1, $x2, $y2);
 				$cairo->set_line_width($r->[5]);
@@ -5954,7 +5944,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### haplotype bounding boxes
-		foreach my $r (@{$de->{HAP_BOX}}) {
+		for my $r (@{$de->{HAP_BOX}}) {
 			my ($x1, $y1, $x2, $y2) = ($r->[0] - $x1_bb, $r->[1] - $y1_bb, $r->[2] - $r->[0], $r->[3] - $r->[1]);
 			$cairo->rectangle($x1, $y1, $x2, $y2);
 			$cairo->set_line_width($r->[5]);
@@ -5965,8 +5955,8 @@ sub DrawOrExportCanvas {
 		}
 
 		### any text
-		foreach my $e (qw/SAB_GENDER MARK_TEXT HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT TITLE CASE_INFO INNER_SYMBOL_TEXT PROBAND_TEXT/) {
-			foreach my $r (@{$de->{$e}}) {
+		for my $e (qw/SAB_GENDER MARK_TEXT HAP_TEXT MAP_MARKER_LEFT MAP_MARKER_RIGHT MAP_POS_LEFT MAP_POS_RIGHT TITLE CASE_INFO INNER_SYMBOL_TEXT PROBAND_TEXT/) {
+			for my $r (@{$de->{$e}}) {
 				my $pango_layout = GetPangoLayout($cairo, $r);
 				my ($width, $height) = $pango_layout->get_pixel_size();
 				my $x = $r->[0] - $x1_bb;
@@ -5989,7 +5979,7 @@ sub DrawOrExportCanvas {
 		}
 
 		### proband arrow
-		foreach my $r (@{$de->{ARROWS}}) {
+		for my $r (@{$de->{ARROWS}}) {
 			my ($x1, $y1, $x2, $y2) = @$r[0 .. 3];
 			for ($x1, $x2) {
 				$_ -= $x1_bb;
@@ -6029,13 +6019,13 @@ sub DrawOrExportCanvas {
 		### create graphics
 		$cairo->show_page;
 
-		### PNG slightly differ in syntax --> extra command
+		### PNG slightly differs in syntax --> extra command
 		if ($arg{-modus} eq 'PNG') {
-			$surface->write_to_png ($file_name);
+			$surface->write_to_png($file_name);
 		}
 
 		### otherwise the file handle is not closed properly!
-		### (i found no methods for destroying or finishing cairo/surface ...)
+		### (I found no methods for destroying or finishing cairo/surface ...)
 		undef $surface;
 		undef $cairo;
 	}
@@ -6129,14 +6119,14 @@ sub SetSymbols {
 				       $self->{FAM}{TITLE_Y}{$fam} * $self->{FAM}{GITTER_Y}{$fam} * $z,
 				       -anchor => 'center', -text => $self->{FAM}{TITLE}{$fam},
 				       -font => $head1, -fill => $self->{FAM}{FONT_HEAD}{$fam}{COLOR},
-				       -tags => [ 'TEXT', 'HEAD', 'TAG' ]
+				       -tags => [ qw/TEXT HEAD TAG/ ]
 				      ];
 	}
 
 	### Zeichnen aller Personen-bezogenen Elemente
 	### Drawing of individual related elements
-	foreach my $Y (keys %{$m->{YX2P}}) {
-		foreach my $X (keys %{$m->{YX2P}{$Y}}) {
+	for my $Y (keys %{$m->{YX2P}}) {
+		for my $X (keys %{$m->{YX2P}{$Y}}) {
 			my $p = $m->{YX2P}{$Y}{$X};
 			if ($save{$p}) {
 				next;
@@ -6240,7 +6230,7 @@ sub SetSymbols {
 			}
 
 			### Individual identifier and case information
-			foreach my $col (1 .. 5) {
+			for my $col (1 .. 5) {
 				if ($self->{FAM}{CASE_INFO_SHOW}{$fam}{$col} && $ci->{COL_TO_NAME}{$col}) {
 					my $yp = ($cy + $sz) * $z + $f1->{SIZE} * $z + ($col - 1) * $f1->{SIZE} * $z;
 					my $name = $ci->{COL_TO_NAME}{$col};
@@ -6293,7 +6283,7 @@ sub SetSymbols {
 					  $cx + $sz - $as2, $cy + $sz + $as1, $cx + $sz + $as1, $cy + $sz + $as1,
 					  $cx + $sz + $as1, $cy - $sz - $as1, $cx + $sz - $as2, $cy - $sz - $as1
 					 );
-				foreach (@l1, @l2) {
+				for (@l1, @l2) {
 					$_ *= $z;
 				}
 				push @{$de->{IS_ADOPTED}}, [ @l1, -width => $l * $z, -fill => $lnc ];
@@ -6343,12 +6333,12 @@ sub SetHaplo {
 
 	### find most left and right X matrix position for legend drawing
 	my @X_GLOB;
-	push @X_GLOB, (keys %{$m->{YX2P}{$_}}) foreach keys %{$m->{YX2P}};
+	push @X_GLOB, (keys %{$m->{YX2P}{$_}}) for keys %{$m->{YX2P}};
 	@X_GLOB = sort { $a <=> $b } @X_GLOB;
 
 	### find last valid index ($i2) and number of drawing elements ($i3)
 	my ($i1, $i2, $i3) = (0, 0, 0);
-	foreach (@{$h->{DRAW}}) {
+	for (@{$h->{DRAW}}) {
 		if ($_) {
 			$i2 = $i1;
 			$i3++;
@@ -6359,12 +6349,12 @@ sub SetHaplo {
 	### find disabled or hidden colors
 	my %Hide;
 	if ($self->{FAM}{PED_ORG}{$fam}) {
-		foreach (@{$self->{FAM}{PED_ORG}{$fam}}) {
+		for (@{$self->{FAM}{PED_ORG}{$fam}}) {
 			next unless $_;
 			my $pid = @$_[0];
-			for my $mp ('M', 'P') {
+			for my $mp (qw/M P/) {
 				if ($h->{PID}{$pid}{$mp}{HIDE}) {
-					foreach (@{$h->{PID}{$pid}{$mp}{BAR}}) {
+					for (@{$h->{PID}{$pid}{$mp}{BAR}}) {
 						$Hide{@$_[1]} = 1 if @$_[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
 					}
 				}
@@ -6383,12 +6373,12 @@ sub SetHaplo {
 	my $text = $f1->{SIZE} * $ccc * $z;
 
 	### drawing haplotypes and legend
-	foreach my $Y (keys %{$m->{YX2P}}) {
+	for my $Y (keys %{$m->{YX2P}}) {
 		my @X = sort { $a <=> $b } keys %{$m->{YX2P}{$Y}};
 		my $cy = $Y * $self->{FAM}{GITTER_Y}{$fam} + $lw * $z * 2;
 		my $curr_y = ($cy + $sz) * $z;
 
-		foreach my $X (@X) {
+		for my $X (@X) {
 			my $p = $m->{YX2P}{$Y}{$X};
 			my $cx = $X * $self->{FAM}{GITTER_X}{$fam};
 
@@ -6406,7 +6396,7 @@ sub SetHaplo {
 
 					my $y = $curr_y + $text + $td;
 
-					foreach my $PM ('P', 'M') {
+					for my $PM (qw/P M/) {
 						my ($f, $cc, $nif, $nexti) = (1, 0, 0);
 						if ($PM eq 'M') {
 							$lr = -1;
@@ -6721,9 +6711,9 @@ sub AlignMatrix {
 	my $ok = 1;
 	my $max_x = $self->{FAM}{X_SPACE}{$fam} * scalar keys %{$self->{FAM}{PID}{$fam}};
 
-	foreach my $Y (sort { $b <=> $a } keys %{$m->{YX2P}}) {
+	for my $Y (sort { $b <=> $a } keys %{$m->{YX2P}}) {
 		my %Save;
-		foreach my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
+		for my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
 			my $P = $m->{YX2P}{$Y}{$X} or die "No Person in XY $X $Y\n", Dumper($m);
 			if ($X > $max_x) {
 				return 0;
@@ -6741,7 +6731,7 @@ sub AlignMatrix {
 
 			### alle X Koordinaten der Geschwister
 			my %k;
-			foreach (@s) {
+			for (@s) {
 				if (! $_ || ! defined $m->{P2XY}{$_}) {
 					die Dumper(\@s, $m);
 				}
@@ -6795,18 +6785,18 @@ sub TranslateCoupleGroup {
 	my $m = $self->{FAM}{MATRIX}{$fam};
 	my $c = $self->{FAM}{COUPLE}{$fam};
 	my $cg = {};
-	my $couple_from = join '==', nsort ($p1, $p2);
+	my $couple_from = join '==', nsort($p1, $p2);
 
 	## find everybody joined in couple group
 	my %P;
-	foreach (keys %{$self->{FAM}{COUPLE}{$fam}{$p1}}) {
+	for (keys %{$self->{FAM}{COUPLE}{$fam}{$p1}}) {
 		$P{$_} = 1 if ! $self->{FAM}{CHILDREN}{$fam}{$p1}{$_}
 	}
 	my $flag = 1;
 	while ($flag) {
 		$flag = 0;
-		foreach my $p (keys %P) {
-			foreach my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+		for my $p (keys %P) {
+			for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 				if (! $P{$c} && ! $self->{FAM}{CHILDREN}{$fam}{$p}{$c}) {
 					$P{$c} = 1;
 					$flag = 1;
@@ -6820,7 +6810,7 @@ sub TranslateCoupleGroup {
 		### locate each individual in the actual drawing
 		### and store it in a hash sortable by x coordinate
 		my %ch;
-		foreach my $p (keys %P) {
+		for my $p (keys %P) {
 			if ($modus eq 'FROM_CANVAS') {
 				my @co = $canvas->coords("SYM-$p") or return ($p1, $p2);
 				my $xm = sprintf("%1.3f", ($co[0] + $co[2]) / 2);
@@ -6836,25 +6826,25 @@ sub TranslateCoupleGroup {
 
 		### X-order of all mates as seen on canvas/matrix
 		my @S;
-		foreach my $x (sort { $a <=> $b } keys %ch) {
-			foreach my $p (keys %{$ch{$x}}) {
+		for my $x (sort { $a <=> $b } keys %ch) {
+			for my $p (keys %{$ch{$x}}) {
 				push @S, $p;
 			}
 		}
 
 		my @D2;
-		foreach my $i (0 .. $#S - 1) {
+		for my $i (0 .. $#S - 1) {
 			push @D2, [ $S[$i], $S[$i + 1] ];
 		}
 
 		### from @S derived order of couples for example ([ p1, p3 ], [ p2, p3 ], [ p3, p4 ])
 		### list @S is screened for most right hand free mate
 		my (@D1, %SAVE);
-		foreach my $p1 (@S) {
-			foreach my $p2 (@S) {
+		for my $p1 (@S) {
+			for my $p2 (@S) {
 				next if $p1 eq $p2;
 				if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && ! $SAVE{$p1}{$p2} && ! $SAVE{$p2}{$p1}) {
-					my $str = join "==", nsort ($p1, $p2);
+					my $str = join "==", nsort($p1, $p2);
 					my $last_i = $#D1 + 1;
 					if ($str eq $couple_from) {
 						return @{$D2[$last_i]}
@@ -6880,7 +6870,7 @@ sub ShiftRow {
 	my (%SaveRow, %Freeze);
 
 	### Wird benoetigt um sich kreuzende Zeichengruppen zu erkennen (shift wird unterbunden)
-	foreach my $P (keys %{$self->{FAM}{PID_SAVE}{$fam}}) {
+	for my $P (keys %{$self->{FAM}{PID_SAVE}{$fam}}) {
 		next if $pid eq $P;
 		next if $m->{P2XY}{$P}{Y} != $Y;
 		my $X = $m->{P2XY}{$P}{X};
@@ -6892,13 +6882,13 @@ sub ShiftRow {
 		return undef;
 	}
 
-	foreach my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
+	for my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
 		$SaveRow{$m->{YX2P}{$Y}{$X}} = $X;
 	}
 
-	foreach my $st ($OldPos .. $NewPos - 1) {
+	for my $st ($OldPos .. $NewPos - 1) {
 		my (@right, @pid);
-		foreach my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
+		for my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
 			if ($X >= $OldPos) {
 				push @right, $X;
 				push @pid, $m->{YX2P}{$Y}{$X}
@@ -6937,7 +6927,7 @@ sub SetLines {
 	my $lcy = $self->{FAM}{LINE_CROSS_Y}{$fam};
 
 	### calculate lines between parents
-	foreach my $parent_node (keys %{$self->{FAM}{PARENT_NODE}{$fam}}) {
+	for my $parent_node (keys %{$self->{FAM}{PARENT_NODE}{$fam}}) {
 		my ($par1, $par2) = @{$self->{FAM}{PARENT_NODE}{$fam}{$parent_node}};
 
 		### translate parents into "drawing compatible" order in case of multiple mates
@@ -7061,12 +7051,12 @@ sub SetLines {
 	}
 
 	### calculate lines between sib groups (if not a single child)
-	foreach my $parent_node (keys %{$d->{COUPLE}}) {
+	for my $parent_node (keys %{$d->{COUPLE}}) {
 		my ($c1, $c2) = split '==', $parent_node;
 		$d->{TWIN_LINES}{$parent_node} = [];
 		my @children_org = keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$c1}{$c2}};
 		my (%prtg, @children);
-		foreach (@children_org) {
+		for (@children_org) {
 			### check if children belong to twin groups
 			### the code is not very pretty but works
 			if ($self->{FAM}{SID2TWIN_GROUP}{$fam}{$_}) {
@@ -7076,7 +7066,7 @@ sub SetLines {
 					my (%ch_twin, @cy_twin);
 					my @twins = keys %{$self->{FAM}{TWIN_GROUP2SID}{$fam}{$tg}};
 					### coordinates for all twins
-					foreach my $twin (@twins) {
+					for my $twin (@twins) {
 						my @co = GetCanvasCoor($twin, $fam);
 						if ($co[4]) {
 							@co[2, 3] = @co[4, 5];
@@ -7116,7 +7106,7 @@ sub SetLines {
 			my $r = $d->{SIB}{$parent_node} = [];
 
 			### sort Y-coordinates
-			foreach my $ref (@children) {
+			for my $ref (@children) {
 				if (! ref $ref) {
 					my @co = GetCanvasCoor($ref, $fam);
 					if ($co[4]) { @co[2,3] = @co[4,5] }
@@ -7165,7 +7155,7 @@ sub SetLines {
 			push @$r, [ $K_F, $ch{$K_F}{YUP}, $K_F, $y_up, $K_L, $y_up, $K_L, $ch{$K_L}{YUP} ];
 
 			### remaining children
-			foreach my $xm (@child_x) {
+			for my $xm (@child_x) {
 				if ($ch{$xm}{IS_TWIN}) {
 					$ch{$xm}{YUP} -= ($lty * $z);
 				}
@@ -7173,7 +7163,7 @@ sub SetLines {
 			}
 
 			### special case twin group -> add lines
-			foreach my $child_x ($K_F, @child_x, $K_L) {
+			for my $child_x ($K_F, @child_x, $K_L) {
 				### vertical lines for cross check
 				push @{$d->{LINE_CROSS}}, [ $child_x, $ch{$child_x}{YUP}, $child_x, $y_up ];
 				if ($ch{$child_x}{IS_TWIN}) {
@@ -7186,7 +7176,7 @@ sub SetLines {
 					my $r2 = $d->{TWIN_LINES}{$parent_node};
 
 					### connector line for every twin
-					foreach my $twin (@$cref) {
+					for my $twin (@$cref) {
 						my @co = GetCanvasCoor($twin, $fam);
 						my $xm = sprintf("%1.3f", ($co[0] + $co[2]) / 2);
 						my $ym = sprintf("%1.3f", ($co[1] + $co[3]) / 2);
@@ -7232,7 +7222,7 @@ sub SetLines {
 	}
 
 	#### 3. calculate lines between parents and sibs
-	foreach my $parent_node (keys %{$d->{COUPLE}}) {
+	for my $parent_node (keys %{$d->{COUPLE}}) {
 		my $r1 = $d->{COUPLE}{$parent_node}[-1] or next;
 
 		### most lower line between couples
@@ -7310,7 +7300,7 @@ sub SetLines {
 				}
 
 				my $r2 = $d->{TWIN_LINES}{$parent_node};
-				foreach my $twin (@$cref) {
+				for my $twin (@$cref) {
 					my @co = GetCanvasCoor($twin, $fam);
 					my $xm = sprintf("%1.3f", ($co[0] + $co[2]) / 2);
 					my $ym = sprintf("%1.3f", ($co[1] + $co[3]) / 2);
@@ -7342,10 +7332,10 @@ sub SetLines {
 
 	### special case -> parallel crossing line between two sib groups
 	### upper one horizontal line to distinguish them
-	foreach my $id1 (keys %{$d->{SIB}}) {
+	for my $id1 (keys %{$d->{SIB}}) {
 		my $A = $d->{SIB}{$id1}[0];
 		my $C = $d->{COUPLE_SIB}{$id1}[0];
-		foreach my $id2 (keys %{$d->{SIB}}) {
+		for my $id2 (keys %{$d->{SIB}}) {
 			my $B = $d->{SIB}{$id2}[0];
 			next if $id1 eq $id2;
 			next if ! ($A->[3] == $B->[3]);
@@ -7359,7 +7349,7 @@ sub SetLines {
 			$C->[7] -= 6 * $z if $C->[7];
 			@_ = @{$d->{SIB}{$id1}};
 			shift;
-			$_->[3] -= 6 * $z foreach @_;
+			$_->[3] -= 6 * $z for @_;
 		}
 	}
 
@@ -7374,12 +7364,12 @@ sub CountLineCross {
 	my $cr = 0;
 	my %DS;
 
-	foreach my $r1 (@$s) {
-		foreach my $r2 (@$s) {
+	for my $r1 (@$s) {
+		for my $r2 (@$s) {
 			### do not compare same lines
 			next if $r1 eq $r2;
 			### and do not count crosses of two lines that already have been counted
-			$_ = join '_', sort ($r1, $r2);
+			$_ = join '_', sort($r1, $r2);
 			next if $DS{$_};
 			$DS{$_} = 1;
 			$cr += CrossCheck($fam, $r1, $r2);
@@ -7387,8 +7377,8 @@ sub CountLineCross {
 	}
 
 	#### count symbols overlapping a line
-	foreach my $r1 (@$s) {
-		foreach my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
+	for my $r1 (@$s) {
+		for my $pid (keys %{$self->{FAM}{PID}{$fam}}) {
 			my @co = GetCanvasCoor($pid, $fam);
 			$cr += CrossCheck($fam, $r1, [ @co ]);
 		}
@@ -7425,7 +7415,7 @@ sub CrossCheck {
 	my $de = $self->{FAM}{CROSS_CHECK}{$fam};
 
 	### round values
-	foreach ($ax, $ay, $bx, $by, $cx, $cy, $dx, $dy) {
+	for ($ax, $ay, $bx, $by, $cx, $cy, $dx, $dy) {
 		$_ = sprintf("%0.0f", $_);
 	}
 
@@ -7482,14 +7472,14 @@ sub SetCouples {
 
 	## find everybody joined in couple group
 	my %P;
-	foreach (keys %{$self->{FAM}{COUPLE}{$fam}{$child}}) {
+	for (keys %{$self->{FAM}{COUPLE}{$fam}{$child}}) {
 		$P{$_} = 1 if ! $self->{FAM}{CHILDREN}{$fam}{$child}{$_}
 	}
 	my $flag = 1;
 	while ($flag) {
 		$flag = 0;
-		foreach my $p (keys %P) {
-			foreach my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+		for my $p (keys %P) {
+			for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 				if (! $P{$c} && ! $self->{FAM}{CHILDREN}{$fam}{$p}{$c}) {
 					$P{$c} = 1;
 					$flag = 1;
@@ -7504,10 +7494,10 @@ sub SetCouples {
 	ChangeOrder(\@S);
 	if ($param->{SORT_COUPLE_BY_GENDER}) {
 		@_ = ();
-		foreach (@S) {
+		for (@S) {
 			push @_, $_ if $self->{FAM}{SID2SEX}{$fam}{$_} == 1;
 		}
-		foreach (@S) {
+		for (@S) {
 			push @_, $_ if $self->{FAM}{SID2SEX}{$fam}{$_} != 1;
 		}
 		@_ = reverse(@_) if $param->{SORT_COUPLE_BY_GENDER} == 2;
@@ -7517,8 +7507,8 @@ sub SetCouples {
 	### from @S derived order of couples for example ([ p1, p3 ], [ p2, p3 ], [ p3, p4 ])
 	### list @S is screened for most right hand free mate
 	my (@D, %SAVE);
-	foreach my $p1 (@S) {
-		foreach my $p2 (@S) {
+	for my $p1 (@S) {
+		for my $p2 (@S) {
 			next if $p1 eq $p2;
 			if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && ! $SAVE{$p1}{$p2} && ! $SAVE{$p2}{$p1}) {
 				push @D, [ $p1, $p2 ];
@@ -7530,7 +7520,7 @@ sub SetCouples {
 	### additionally store mate order in respect of centering children correct
 	my @D2;
 	if ($#S > 1) {
-		foreach my $i (0 .. $#S - 1) {
+		for my $i (0 .. $#S - 1) {
 			push @D2, [ $S[$i], $S[$i + 1] ];
 		}
 	} else {
@@ -7564,7 +7554,7 @@ sub CanvasTrimYdim {
 		}
 		my $text = $self->{FAM}{FONT1}{$fam}{SIZE} * $cc;
 		my $c = 0;
-		foreach (@{$self->{FAM}{HAPLO}{$fam}{DRAW}}) {
+		for (@{$self->{FAM}{HAPLO}{$fam}{DRAW}}) {
 			$c++ if $_;
 		}
 		my $free_space = ($gy * $sy) - (2 * $sz) - $text - $lsy;
@@ -7596,14 +7586,14 @@ sub AddYspace {
 	my %t;
 	### build translating hash
 	my $c = 0;
-	foreach my $Y (sort { $a <=> $b } keys %{$m->{YX2P}}) {
+	for my $Y (sort { $a <=> $b } keys %{$m->{YX2P}}) {
 		$t{$Y} = $Y + $c * $diff;
 		$c++;
 	}
 
 	### set Y
 	$m->{YX2P} = {};
-	foreach my $p (keys %{$m->{P2XY}}) {
+	for my $p (keys %{$m->{P2XY}}) {
 		my ($x, $y) = ($m->{P2XY}{$p}{X}, $t{$m->{P2XY}{$p}{Y}});
 		$m->{P2XY}{$p}{Y} = $y;
 		$m->{YX2P}{$y}{$x} = $p;
@@ -7653,7 +7643,7 @@ sub DuplicatePid {
 	delete $self->{FAM}{CHILDREN_COUPLE}{$fam}{$mate} unless keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$mate}};
 	delete $self->{FAM}{SIBS}{$fam}{$k1};
 
-	foreach (@children) {
+	for (@children) {
 		$self->{FAM}{SIBS}{$fam}{$k2}{$_} = 1;
 		$self->{FAM}{CHILDREN_COUPLE}{$fam}{$mate}{$pn}{$_} = 1;
 		$self->{FAM}{CHILDREN_COUPLE}{$fam}{$pn}{$mate}{$_} = 1;
@@ -7674,7 +7664,7 @@ sub DuplicatePid {
 	$self->{FAM}{SID2AFF}{$fam}{$pn} = $self->{FAM}{SID2AFF}{$fam}{$p};
 	$self->{FAM}{COUPLE}{$fam}{$mate}{$pn} = 1;
 	$self->{FAM}{COUPLE}{$fam}{$pn}{$mate} = 1;
-	$self->{FAM}{PID}{$fam}{$pn}=1;
+	$self->{FAM}{PID}{$fam}{$pn} = 1;
 	$self->{FAM}{IS_DECEASED}{$fam}{$pn} = $self->{FAM}{IS_DECEASED}{$fam}{$p} if $self->{FAM}{IS_DECEASED}{$fam}{$p};
 
 	### the new person is founder per se
@@ -7682,7 +7672,7 @@ sub DuplicatePid {
 
 	### add case info fields
 	if (keys %{$ci->{$p}}) {
-		foreach (keys %{$ci->{$p}}) {
+		for (keys %{$ci->{$p}}) {
 			$ci->{$pn}{$_} = $ci->{$p}{$_}
 		}
 	}
@@ -7693,7 +7683,7 @@ sub DuplicatePid {
 
 	if (keys %{$self->{FAM}{LOOP}{$fam}{CONSANGUINE}{$p}}) {
 		@_ = keys %{$self->{FAM}{LOOP}{$fam}{CONSANGUINE}{$p}};
-		foreach (@_) {
+		for (@_) {
 			$self->{FAM}{LOOP}{$fam}{CONSANGUINE}{$pn}{$_} = 1;
 			$self->{FAM}{LOOP}{$fam}{CONSANGUINE}{$_}{$pn} = 1;
 		}
@@ -7710,17 +7700,17 @@ sub DuplicatePid {
 sub LoopBreak {
 #==============
 	my $fam = shift @_ || $self->{GLOB}{CURR_FAM};
-	foreach (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
+	for (keys %{$self->{FAM}{BREAK_LOOP_OK}{$fam}}) {
 		next unless $self->{FAM}{BREAK_LOOP_OK}{$fam}{$_};
 		my @p = split '==', $_;
-		foreach (@p) {
+		for (@p) {
 			delete $self->{FAM}{LOOP}{$fam}{DROP_CHILDREN_FROM}{$_} if $self->{FAM}{LOOP}{$fam}{DROP_CHILDREN_FROM}{$_}
 		}
 
 		ChangeOrder(\@p);
 		if (scalar @p > 2) {
 			my $p = shift @p;
-			foreach (@p) {
+			for (@p) {
 				if ($self->{FAM}{COUPLE}{$fam}{$p}{$_}) {
 					@p = ($p, $_);
 					last;
@@ -7730,8 +7720,8 @@ sub LoopBreak {
 		$self->{FAM}{LOOP}{$fam}{BREAK}{$p[0]}{$p[1]} = 1;
 	}
 
-	foreach my $p (keys %{$self->{FAM}{LOOP}{$fam}{BREAK}}) {
-		foreach my $mate (keys %{$self->{FAM}{LOOP}{$fam}{BREAK}{$p}}) {
+	for my $p (keys %{$self->{FAM}{LOOP}{$fam}{BREAK}}) {
+		for my $mate (keys %{$self->{FAM}{LOOP}{$fam}{BREAK}{$p}}) {
 			DuplicatePid($fam, $p, $mate);
 		}
 	}
