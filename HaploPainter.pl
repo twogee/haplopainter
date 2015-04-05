@@ -29,7 +29,7 @@ use File::Spec::Functions;
 use Gtk2;
 use Math::Trig;
 use Sort::Naturally;
-use Storable qw/freeze thaw retrieve store/;
+use Storable qw/freeze thaw retrieve nstore/;
 use Tk;
 use Tk::BrowseEntry;
 use Tk::DialogBox;
@@ -51,7 +51,7 @@ my $param = {
 	     HAPLOTYPE_FORMATS => {
 				   do { map { $_ => 1 } qw/allegro genehunter merlin simwalk/ }
 				  },
-	     LAST_CHANGE => '2015-04-03',
+	     LAST_CHANGE => '2015-04-05',
 	     MAP_FORMATS => {
 			     do { map { $_ => 1 } (1..2) }
 			    },
@@ -97,7 +97,7 @@ my $def = {
 		    RESOLUTION_DPI  => 96,
 		    STATUS => 0,
 		    STRUK_MODE => 0,
-		    VERSION => '1.06'
+		    VERSION => '1.07'
 		   },
 	   FAM => {
 		   ADOPTED_SPACE1 => 5,
@@ -2060,7 +2060,7 @@ sub SaveSelf {
 		$_ = $self->{GLOB}{FILENAME} or return;
 	}
 	$canvas->configure(-cursor => 'watch');
-	store $self, $_;
+	nstore $self, $_;
 	$canvas->configure(-cursor => $self->{GLOB}{CURSOR});
 }
 
@@ -2211,19 +2211,21 @@ sub FindLoops {
 			for my $node (@subnodes) {
 				### don't go back inside the path!
 				next if $node eq $plist[-2];
-				### imperfect LOOP --> no further processing
-				next if ($node ne $plist[0] && grep { $_ eq $node } @plist);
 
+				### perfect LOOP (start = end)
 				if ($node eq $plist[0]) {
-					### perfect LOOP (start = end)
 					$path{$node_cc} = [ @plist, 'LOOP' ];
 					$node_cc++;
-				} else {
-					### expand paths by subnodes else
-					$path{$node_cc} = [ @plist, $node ];
-					$node_cc++;
-					$flag = 1;
+					next;
 				}
+
+				### imperfect LOOP --> no further processing
+				next if (grep { $_ eq $node } @plist);
+
+				### expand paths by subnodes
+				$path{$node_cc} = [ @plist, $node ];
+				$node_cc++;
+				$flag = 1;
 			}
 		}
 	}
