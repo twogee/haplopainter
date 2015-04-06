@@ -350,21 +350,21 @@ tr:last-child td
 	</p>
 	<h3><a name="_Toc211847762">Installing compulsory missing Perl modules</a></h3>
 	<p>
-	  Perl modules from ActiveState&rsquo;s Perl are added via
-	  Perl Package Manager &ndash; ppm. Type the following
-	  commands into the console window.
+	  Perl modules for ActiveState&rsquo;s Perl are added via Perl
+	  Package Manager &ndash; ppm. Type the following commands
+	  into the console window:
 	</p>
-<pre>&gt; ppm install Tk
-&gt; ppm install Sort-Naturally
+<pre>&gt; ppm install Sort-Naturally
 &gt; ppm rep add sisyphusion http://www.sisyphusion.tk/ppm
+&gt; ppm install Tk
 &gt; ppm install Gtk2 --force</pre>
 	<p>
-	 If the Tk ppm provided by ActiveState is broken on Windows
+	 If the Tk ppm provided by Sisyphusion is broken on Windows
 	 (lacks <code>libwinpthread-1.dll</code> used by gcc 4.8.2
 	 from MinGW distribution), pull it from the MinGW
 	 <a href="http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.2/threads-posix/sjlj/">build</a>
 	 and place it in the <code>site/bin</code> folder of the
-	 ActiveState perl installation.
+	 ActiveState Perl installation.
 	</p>
 	<h3><a name="_Toc211847763">Installing optional missing Perl modules for database support</a></h3>
 	<p>
