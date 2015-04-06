@@ -578,7 +578,7 @@ sub NewPedigree {
 sub OpenDefaults {
 #=================
 	return unless $self->{GLOB}{CURR_FAM};
-	my $file = $mw->getOpenFile(-filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', 'hp' ] ]) or return;
+	my $file = SelectFilename(-filetypes => [ [ 'HaploPainter files', '*.hp' ], [ 'All files', '*' ] ]) or return;
 	my $test;
 	eval { $test = retrieve($file) };
 	if ($@) {
@@ -2052,7 +2052,7 @@ sub SaveSelf {
 		$_ = $mw->getSaveFile(
 				      -initialfile => basename($self->{GLOB}{FILENAME}),
 				      -defaultextension => 'hp',
-				      -filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', 'hp' ] ]
+				      -filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', '*.hp' ] ]
 				     ) or return;
 		$self->{GLOB}{FILENAME} = $_;
 		$self->{GLOB}{FILENAME_SAVE} = 1;
@@ -2067,8 +2067,8 @@ sub SaveSelf {
 #====================
 sub RestoreSelfGUI {
 #====================
-	my $file = $mw->getOpenFile() or return;
-	RestoreSelf($file,1);
+	my $file = SelectFilename(-filetypes => [ [ 'HaploPainter files', '*.hp' ], [ 'All files', '*' ] ]) or return;
+	RestoreSelf($file, 1);
 	$self->{GLOB}{FILENAME} = $file;
 	$self->{GLOB}{FILENAME_SAVE} = 1;
 }
@@ -4389,7 +4389,7 @@ sub ImportPedfile {
 	our $menubar;
 	my ($form, $f) = @_;
 	if (!$f) {
-		$f = $mw->getOpenFile() or return;
+		$f = SelectFilename() or return;
 	}
 	ReadPed(-file => $f, -format => $form) or return;
 	($f) = fileparse($f, qr/\.[^.]*/);
@@ -4440,7 +4440,7 @@ sub ImportHaplofile {
 	return unless keys %{$self->{FAM}{PED_ORG}};
 	my ($format, $f) = @_;
 	if (!$f) {
-		$f = $mw->getOpenFile() or return;
+		$f = SelectFilename() or return;
 	}
 	ReadHaplo(-file => $f, -format => $format) or return;
 	DuplicateHaplotypes();
@@ -4450,10 +4450,22 @@ sub ImportHaplofile {
 sub ImportMapfile {
 #==================
 	return unless $self->{GLOB}{CURR_FAM};
-	my $f = $mw->getOpenFile() or return;
+	my $f = SelectFilename() or return;
 	ReadMap(-file => $f, -format => shift) or return;
 	RedrawPed();
 	AdjustView();
+}
+
+# a workaround for https://rt.cpan.org/Public/Bug/Display.html?id=5905
+#==================
+sub SelectFilename {
+#==================
+	my $f = $mw->getOpenFile(@_) or return;
+	if ($^O =~ /MSWin32/) {
+		require Win32;
+		$f = Win32::GetANSIPathName($f);
+	}
+	return $f;
 }
 
 #=========
@@ -6768,7 +6780,7 @@ sub AlignMatrix {
 				return 0;
 			} elsif ($diff > 0) {
 				### Shift Eltern nach rechts ->
-				unless (ShiftRow($fam, $Y_f, $k2{$ek[$ind]}, $newpos2,1)) {
+				unless (ShiftRow($fam, $Y_f, $k2{$ek[$ind]}, $newpos2, 1)) {
 					next;
 				}
 				return 0;
@@ -7110,7 +7122,9 @@ sub SetLines {
 			for my $ref (@children) {
 				if (! ref $ref) {
 					my @co = GetCanvasCoor($ref, $fam);
-					if ($co[4]) { @co[2,3] = @co[4,5] }
+					if ($co[4]) {
+						@co[2,3] = @co[4,5];
+					}
 					my $xm = sprintf("%1.3f", ($co[0] + $co[2]) / 2);
 					### work around to prevent overwriting children with same x coordinate
 					if ($ch{$xm}) {
