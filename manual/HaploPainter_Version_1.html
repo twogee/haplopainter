@@ -395,9 +395,9 @@ tr:last-child td
 	  from the &ldquo;File&rdquo; menu. It is the best to follow
 	  this order. Don&rsquo;t be confused by the
 	  &ldquo;Open&rdquo; command! That&rsquo;s for the
-	  HaploPainter specific data storage. Those files become the
-	  file extension &lsquo;<code>.hp</code>&rsquo; by default and
-	  are not human readable.
+	  HaploPainter specific data storage. Those files have the
+	  extension &lsquo;<code>.hp</code>&rsquo; by default and are
+	  not human readable.
 	</p>
 	<h2><a name="_Toc211847766">Import pedigrees</a></h2>
 	<p>
@@ -412,8 +412,8 @@ tr:last-child td
 	  Encoding. HaploPainter deals with Unicode by looking for the
 	  byte-order mark (BOM) sequence &lsquo;U+FEFF&rsquo; at the
 	  beginning of documents, and uses settings only if this
-	  sequence is not found. In that way it is for instance
-	  possible to read Excel sheets which are saved as <i>Unicode
+	  sequence is not found. In that way it is, for example,
+	  possible to read Excel sheets, which are saved as <i>Unicode
 	  Text format</i> (UTF-16LE) although the setting in
 	  HaploPainter is different. The encoding is very important
 	  for saving/exporting pedigrees in CSV format. In this case
@@ -501,8 +501,8 @@ tr:last-child td
 	  pedigree from the sample above but extended by HaploPainter
 	  specific columns. It illustrates many of
 	  HaploPainter&rsquo;s additionally features like Unicode
-	  support, twins, termination of pregnancy symbols, deceased,
-	  adopted or consanguineous individuals.
+	  support, twins, termination of pregnancy symbols, and
+	  deceased, adopted or consanguineous individuals.
 	</p>
 	<figure><img border="0" width="605" height="239" src="HaploPainter_Version_1_files/image003.gif"/></figure>
 	<h4><b><u>CSV format</u></b></h4>
@@ -571,7 +571,8 @@ tr:last-child td
 	  <b>IS_DECEASED</b>: Set to 1, y or Y if the individual is
 	  deceased. In that case a diagonal line through the symbol
 	  representing that individual is drawn. This line is split
-	  into two lines if a text placed in the center of the symbol.
+	  into two lines if a text is placed in the center of the
+	  symbol.
 	</p>
 	<p>
 	  <b>IS_SAB_OR_TOP</b>: Set to 1, y or Y if the individual
@@ -582,10 +583,9 @@ tr:last-child td
 	</p>
 	<p>
 	  <b>IS_PROBAND</b>: Set to 1, y or Y if the individual is
-	  declared as proband. (The first affected family member
-	  coming to medical attention.) This results in a
-	  &lsquo;P&rsquo; sign attached to an arrow pointing to that
-	  individual.
+	  declared as proband (the person being reported on in a
+	  medical study). This results in a &lsquo;P&rsquo; sign
+	  attached to an arrow pointing to that individual.
 	</p>
 	<p>
 	  <b>IS_ADOPTED</b>: Set to 1, y or Y if the individual has
@@ -597,7 +597,7 @@ tr:last-child td
 	  this column are recognized as twins. The first character in
 	  that string tells HaploPainter if the twins are monozygotic
 	  &lsquo;m&rsquo; or dizygotic &lsquo;d&rsquo; followed by an
-	  underscore followed by an unique identifier. Examples for
+	  underscore followed by a unique identifier. Examples for
 	  allowed strings
 	  are: <code>m_1</code>, <code>d_gruppe1</code>. Twins are
 	  drawn according to
@@ -610,8 +610,8 @@ tr:last-child td
 	  (individuals are related to each other). This only makes
 	  sense if individuals have offspring. In that case a double
 	  line between couples is drawn. Although HaploPainter
-	  automatically detects consanguinities, for instance if it
-	  find loops, you additionally can define any couple as
+	  automatically detects consanguinities, for instance, if it
+	  finds loops, you can additionally define any couple as
 	  consanguineous. This is good for situations when the real
 	  degree of consanguinity is unknown or you want to draw more
 	  compact pedigrees. A consanguineous group must contain two
@@ -621,11 +621,12 @@ tr:last-child td
 	  <b>TEXT_INSIDE_SYMBOLS</b>: Place text inside symbols.
 	</p>
 	<p>
-	  <b>TEXT_BESIDE_SYMBOL</b>: Place text left upper hand to symbols.
+	  <b>TEXT_BESIDE_SYMBOL</b>: Place text to the left and above
+	  the symbols.
 	</p>
 	<p>
 	  <b>TEXT&lt;n&gt;_BELOW_SYMBOL</b>: HaploPainter gives you
-	  the opportunity to place text below symbols. By default the
+	  the opportunity to place text below symbols. By default, the
 	  individual identifier is one of those text lines, but you
 	  can attach up to four additional text lines below. In the
 	  configuration menu you can arrange the combination of
@@ -636,10 +637,10 @@ tr:last-child td
 	<p>
 	  Import of pedigree data from database tables is supported
 	  &ndash; to date for MySQL, PostgreSQL and Oracle. To use
-	  this feature the corresponding Perl modules must be
+	  this feature, the corresponding Perl modules must be
 	  installed (only if you run HaploPainter from source file!
 	  HaploPainter will work without DBD modules because they are
-	  loaded at runtime but will issue warnings). For Oracle you
+	  loaded at runtime, but will issue warnings). For Oracle, you
 	  also need the Oracle client, <code>NLS_LANG</code>
 	  and <code>ORACLE_HOME</code> environment variables and an
 	  entry in the <code>tnsnames.ora</code> file. You access the
@@ -656,8 +657,8 @@ tr:last-child td
 	  <figure style="float:left"><img border="0" width="133" height="216" src="HaploPainter_Version_1_files/image005.jpg"/></figure>
 	</p>
 	<p>
-	  Inside this box all families are listed and can be marked by
-	  use of the left mouse bottom in combination with the shift
+	  All families are listed inside this window and can be marked
+	  by using the left mouse button in combination with the shift
 	  and control (Ctrl) keys. All marked pedigrees are imported
 	  after pressing &lsquo;Ok&rsquo;.
 	</p>
@@ -670,13 +671,13 @@ tr:last-child td
 	<p>
 	  A haplotype describes the linear sequence of alleles at
 	  multiple loci in the genome that are transmitted on the same
-	  chromosome. In diploid cells a genotype is composed of two
+	  chromosome. In diploid cells, a genotype is composed of two
 	  alleles. Commonly used methods for measurement of genotypes
 	  are not able to distinguish which allele belongs to which
-	  chromosome, but in many cases likely haplotypes can be
+	  chromosome, but in many cases possible haplotypes can be
 	  reconstructed through statistical methods. Haplotypes are
 	  nice instruments in the interpretation of linkage
-	  results. They are able to map a disease causing gene to a
+	  results. They are able to map a disease-causing gene to a
 	  region in the genome. HaploPainter supports four statistical
 	  software packages that are popular in the calculation of
 	  haplotypes: Genehunter, Allegro, Simwalk2 and
@@ -705,7 +706,7 @@ tr:last-child td
 	  SimWalk2 controls the way it outputs haplotype results
 	  through a batch file. In batch number #46 line 1 you can
 	  switch between default horizontal (N) or vertical (Y) output
-	  orientation. HaploPainter expects to use the default value
+	  orientations. HaploPainter expects to use the default value
 	  (N). Merlin also has two possible output modes. By default
 	  Merlin produces files with haplotypes in vertical
 	  orientation &ndash; the format that HaploPainter
@@ -740,9 +741,9 @@ tr:last-child td
 	</ul>
 	<p>
 	  After you have imported haplotypes, if you are not satisfied
-	  with the colors HaploPainter have been choosing for you, you
-	  can press F6 to choose all colors anew. The configuration
-	  menu gives you the opportunity to manually modify colors of
+	  with the colors HaploPainter has chosen for you, you can
+	  press F6 to choose all colors anew. The configuration menu
+	  gives you the opportunity to manually modify colors of
 	  haplotypes or fix some colors so that pressing F6 has no
 	  effect for those. You also can prevent markers from being
 	  shown.
@@ -751,16 +752,16 @@ tr:last-child td
 	<p>
 	  Points of recombination are often surrounded by
 	  uninformative markers. Due to the way HaploPainter deals
-	  with analysis results it is possible that your region of
+	  with analysis results, it is possible that your region of
 	  interest is shown as too small or shifted. That should be
 	  checked and manually corrected! To do this, just
 	  double-click on alleles from those individuals. The menu
-	  which appears gives you an instrument to change the phase or
+	  that appears gives you an instrument to change the phase or
 	  declare markers as uninformative. You may find uninformative
-	  markers by moving the mouse cursor over alleles which start
-	  flashing red in that case. In general you should orientate
-	  the results of your multipoint linkage. Also be distrustful
-	  if you see double recombinations (two neighbored
+	  markers by moving the mouse cursor over alleles, which start
+	  flashing red in that case. In general, you should order the
+	  results of your multipoint linkage. Also be distrustful if
+	  you see double recombinations (two neighboring
 	  recombinations). They are mostly hints for genotyping
 	  errors. Some software packages tend to complete haplotypes
 	  for not genotyped individuals. You never should thrust those
@@ -806,26 +807,26 @@ tr:last-child td
 	<p>
 	  Since version 1.0, HaploPainter uses Cairo, Pango and GTK+
 	  internally for rendering exported graphics. If you use the
-	  standalone version you don&rsquo;t need additional programs
+	  standalone version, you don&rsquo;t need additional programs
 	  to convert images into other formats. Only if you plan to
 	  run HaploPainter in your own Perl environment you have to
 	  take care of that
 	  (see <a href="#_Toc211847758">Installation</a> part). Within
-	  HaploPainter there are different formats available
-	  in <b>vector graphics</b> (PostScript, PDF, SVG), <b>bitmap
-	  graphics</b> (to date only PNG) and <b>flat file</b>
-	  (CSV). Keep in mind, that images produced by HaploPainter
-	  will cover the RGB color space. If you plan to use the
-	  produced images for the web this doesn&rsquo;t matter but if
-	  not you must take care of this. Some journals like to have
-	  graphic in CMYK colors, and probably you don&rsquo;t have
-	  much experience with transformations from RGB to
-	  CMYK. Unfortunately this is not as easy as you might think,
+	  HaploPainter there are different formats
+	  available: <b>vector graphics</b> (PostScript, PDF,
+	  SVG), <b>bitmap graphics</b> (to date only PNG) and <b>flat
+	  file</b> (CSV). Keep in mind that images produced by
+	  HaploPainter will cover the RGB color space. If you plan to
+	  use the produced images for the web, this doesn&rsquo;t
+	  matter but otherwise you must be careful. Some journals like
+	  to have graphic in CMYK colors, and probably you don&rsquo;t
+	  have much experience with transformations from RGB to
+	  CMYK. Unfortunately, this is not as easy as you might think,
 	  because you must choose the right color profile that should
 	  be used for transformation of color spaces. It is not
 	  possible to describe every RGB color in CMYK. Furthermore,
 	  the end result and color impressions depend of the
-	  calibration of your monitor the used paper and other
+	  calibration of your monitor, the paper used and other
 	  printing dependent stuff. So, whenever possible let the
 	  journal do this job for you or ask them which profiles give
 	  the best results. In case you want to do it yourself, you
@@ -836,15 +837,17 @@ tr:last-child td
 	  profiles and color resolution greater 300 dpi. Sending
 	  images in other vector graphics formats, which are accepted
 	  (like Adobe Illustrator/AI, EPS, PS, PDF, CorelDRAW/CDR,
-	  FreeHand/FH) would be of advantage (at least for you) as the
-	  layout and printer professionals could transform the drawing
-	  to the best resolution and colors herself. Those images send
-	  by you also are much smaller in size.
+	  FreeHand/FH) would be an advantage (at least for you) since
+	  the layout and printing professionals could transform the
+	  drawing to the best resolution and colors themselves.
+	  <!--
+	  Those images send by you also are much smaller in size.
+	  -->
 	</p>
 	<h2><a name="_Toc211847774">Vector graphics</a></h2>
 	<p>
-	  Vector graphics describe drawing elements as a mathematical
-	  formula. The main advantage is its scalability &ndash; you
+	  Vector graphics describe drawing elements as mathematical
+	  formulas. The main advantage is its scalability &ndash; you
 	  can create every possible image resolution you want! The
 	  other advantage is that you can edit images with common
 	  desktop publishing software.
@@ -852,20 +855,21 @@ tr:last-child td
 	<h3><a name="_Toc211847775">SVG</a></h3>
 	<p>
 	  <b>S</b>calable <b>V</b>ector <b>G</b>raphics is based on
-	  XML and has been developed as open standard from the World
-	  Wide Web Consortium (W3C) since 1999. Since that time most
-	  modern web browsers integrated native support (Firefox,
-	  Opera, Safari, Chrome). It seems that Adobe and Microsoft
-	  try to subvert this standard, because Adobe as most known
-	  provider for SVG browser plug-ins lost their interest to
-	  give further support after buying Macromedia and Microsoft
-	  itself interferes with its own proprietary vector graphics
-	  format VML (which again is ignored by other
-	  browsers). However, SVG is a good choice if you plan to
-	  integrate images into web pages. Probably Microsoft&rsquo;s
-	  Internet Explorer will support SVG sometimes if the SVG
-	  diffusion rate increases over the web. You can import SVG
-	  into a plenty of desktop publishing software like the freely
+	  XML and has been developed as open standard by the World
+	  Wide Web Consortium (W3C) since 1999 with version 1.0
+	  released in 2001. Since then, most modern web browsers
+	  integrated native support (Firefox, Opera, Safari,
+	  Chrome). It seems that Adobe and Microsoft tried to subvert
+	  this standard, because Adobe as most known provider for SVG
+	  browser plug-ins lost their interest to give further support
+	  after buying Macromedia and Microsoft preferred a
+	  proprietary vector graphics format VML (which is ignored by
+	  other browsers). However, SVG is a good choice if you plan
+	  to integrate images into web pages. Even Microsoft&rsquo;s
+	  Internet Explorer 9+ and mobile OS (Android 4+, iOS 7+)
+	  support SVG 1.0 natively, allowing for use of SVG on all
+	  websites. You can import SVG into a plenty of desktop
+	  publishing software, like the freely
 	  available <a href="http://www.inkscape.org/">Inkscape</a>.
 	</p>
 	<h3><a name="_Toc211847776">PostScript</a></h3>
@@ -876,7 +880,7 @@ tr:last-child td
 	  high quality printer jobs. Programs like
 	  <a href="http://pages.cs.wisc.edu/~ghost/gsview/index.htm">Ghostview/Ghostscript</a>
 	  are able to view them or convert PostScript into PDF, EPS or
-	  other graphic formats.
+	  other formats.
 	</p>
 	<h3><a name="_Toc211847777">PDF</a></h3>
 	<p>
@@ -906,8 +910,8 @@ tr:last-child td
 	</p>
 	<h1><a name="_Toc211847782">Encoding and Unicode support</a></h1>
 	<p>
-	  Since HaploPainter version 1.0 reading and writing files in
-	  Unicode is supported. There are a lot of Unicode encodings,
+	  Since HaploPainter version 1.0, reading and writing files in
+	  Unicode is supported. There are several Unicode encodings,
 	  but UTF-8 and UTF-16LE seem to be the most relevant to
 	  date. UTF-8 is the most common
 	  type, <a href="http://en.wikipedia.org/wiki/UTF-8">dominating
@@ -916,14 +920,14 @@ tr:last-child td
 	  HaploPainter is a good idea! Although most text editors
 	  would do their job well, handling of tables in Excel is
 	  quite comfortable. If you plan to work with strange
-	  characters (for you they are surely not strange) you must
-	  save data in Excel using Unicode Text format and this is in
-	  fact UTF-16LE. The encoding type setting is located inside
+	  characters (for you, they are surely not strange) you must
+	  save data in Excel using Unicode Text format and this is, in
+	  fact, UTF-16LE. The encoding type setting is located inside
 	  the file menu. There are three kinds available: ASCII, UTF-8
 	  and UTF-16LE &ndash; the default being UTF-8.
 	</p>
 	<p>
-	  May be you wondered about the checkbox &ldquo;Write
+	  Maybe you wondered about the checkbox &ldquo;Write
 	  BOM&rdquo; available from the File menu. This is the special
 	  Unicode character &lsquo;U+FEFF&rsquo; (byte-order mark)
 	  represented by a series of 2-4 bytes used as marker to
@@ -931,7 +935,7 @@ tr:last-child td
 	  the actual discussion if this is good or not!
 	  HaploPainter&rsquo;s default is to write a BOM sequence for
 	  Unicode files &ndash; and you can switch it off, if you
-	  want! HaploPainter is able to read Unicode files which are
+	  want! HaploPainter is able to read Unicode files that are
 	  encoded in ASCII, UTF-8, UTF-16LE, UTF-16BE, UTF-32LE and
 	  UTF-32BE. If a BOM sequence is found, HaploPainter uses it
 	  &ndash; whatever encoding type is preset.
@@ -939,9 +943,9 @@ tr:last-child td
 	<h1><a name="_Toc211847783">Working with pedigrees</a></h1>
 	<h2><a name="_Toc211847784">Navigation</a></h2>
 	<p>
-	  Once you imported the pedigrees, haplotypes and mapping data
-	  some functions to navigate through the pedigrees are
-	  available in for instance the navigation menu.
+	  Once you imported the pedigrees, haplotypes and mapping
+	  data, some functions to navigate through the pedigrees are
+	  available, for instance, in the navigation menu.
 	</p>
 	<figure>
 	  <img border="0" width="177" height="32" src="HaploPainter_Version_1_files/image006.jpg"/>
@@ -949,27 +953,27 @@ tr:last-child td
 	</figure>
 	<p>
 	  The arrow symbol is activated by default. In this mode you
-	  can activate symbols ether by clicking single symbols or
+	  can activate symbols either by clicking single symbols or
 	  clicking the mouse button while moving. This forces
-	  HaploPainter to draw a rectangle with dashed line. Every
+	  HaploPainter to draw a rectangle with a dashed line. Every
 	  symbol inside this rectangle is activated as indicated by a
 	  change of its color to red. Now you can move symbols around
 	  by drag and drop. Note that you must place symbols at
-	  positions that are not occupied by other symbols. Those
-	  symbols will not be moved! Zooming in or out the drawing is
-	  available in different ways &ndash; via plus/minus
+	  positions that are not occupied by other symbols, otherwise
+	  the symbols will not be moved! Zooming in or out the drawing
+	  is available in different ways &ndash; via plus/minus
 	  navigation menu symbol, plus/minus keys, Edit menu and
 	  context menu. Use the hand symbol to shift the drawing by
 	  clicking the mouse button to have a fixed point while moving
 	  the mouse. In case of many imported pedigrees you can change
 	  the current pedigree by clicking the green left/right arrows
 	  (resulting in a change to next or previous pedigree) or
-	  alternatively use the View &rarr; Draw Pedigree menu. This
-	  menu also is able to separate from the main menu for easy
-	  navigation through the pedigrees. Two other useful functions
-	  to center or fit the pedigree into the current window
-	  &ndash; Center View/Fit View are accessible from the Edit
-	  and context menu.
+	  alternatively by using the View &rarr; Draw Pedigree
+	  menu. This menu also is detachable from the main menu for
+	  easy navigation through the pedigrees. Two other useful
+	  functions to center or fit the pedigree into the current
+	  window &ndash; Center View/Fit View are accessible from the
+	  context menu and Edit menu.
 	</p>
 	<h3><a name="_Toc21184778a">Redrawing pedigrees</a></h3>
 	<p>
@@ -979,7 +983,7 @@ tr:last-child td
 	<ul>
 	  <li>use the Redraw Ped (F5) function</li>
 	  <li>make changes in the way how loops are broken</li>
-	  <li>make changes in the Inter symbol distance value from the Configuration/Ped Style menu</li>
+	  <li>make changes to the Intersymbol distance value from the Configuration/Ped Style menu</li>
 	  <li>extend pedigrees with the GUI functions</li>
 	</ul>
 	<p>
@@ -987,19 +991,19 @@ tr:last-child td
 	  pedigree according to the settings of the Options
 	  &rarr; <i>Sort by SID</i> and <i>Sort couples by gender</i>
 	  flag. If the <i>Sort couples by gender</i> flag is not set,
-	  the individuals belonging to a couple group are assembled
+	  the individuals belonging to a generation are assembled
 	  randomly. If the flag is set, the <b>male individuals are
 	  placed first</b>! That&rsquo;s the only difference. The
-	  second modifier in respect of drawing order &ndash; <i>Sort
+	  second modifier regarding the drawing order &ndash; <i>Sort
 	  by SID</i> &ndash; reflects the handling of sibling
-	  groups. By default the order of siblings is random. If the
-	  flag <i>Sort by SID</i> is set HaploPainter will change the
+	  groups. By default, the order of siblings is random. If the
+	  flag <i>Sort by SID</i> is set, HaploPainter will change the
 	  drawing order of the members of a sibling group and applies
 	  a special name sorting mechanism (<code>nsort</code> from
 	  the module <code>Sort::Naturally</code>). The algorithm
 	  works in a way human normally would think about sort and is
 	  an intelligent combination of numerical and lexical sort. By
-	  using both flags you can force HaploPainter to draw
+	  using both flags, you can force HaploPainter to draw
 	  pedigrees in a determined way taking individual naming into
 	  account.
 	</p>
@@ -1026,7 +1030,7 @@ tr:last-child td
 	    <tr>
 	      <td><i>Affection</i></td>
 	      <td>
-		A numerical value ranging from 0-9. Dependent of the
+		A numerical value in range 0-9. Dependent of the
 		settings in Options menu &rarr; Ped Color the symbol
 		is filled with that color
 	      </td>
@@ -1076,8 +1080,8 @@ tr:last-child td
 	      <td><i>Proband</i></td>
 	      <td>
 		Attaches an arrow with the letter P left of the symbol
-		and is used to indicate persons that primarily came to
-		medical attention
+		indicating a person that is reported on in a medical
+		study
 	      </td>
 	    </tr>
 	    <tr>
@@ -1089,7 +1093,7 @@ tr:last-child td
 	    <tr>
 	      <td><i>Text beside symbol</i></td>
 	      <td>
-		Places text at the left upper corner of symbols
+		Places text to the left and above the symbols
 	      </td>
 	    </tr>
 	    <tr>
@@ -1116,7 +1120,8 @@ tr:last-child td
 	<h2><a name="_Toc211847785">Building and extending pedigrees with the graphical user interface</a></h2>
 	<p>
 	  The functions to create new or modify existing pedigrees are
-	  available from the Edit or context menu (see example below).
+	  available from the context menu or Edit menu (see example
+	  below).
 	</p>
 	<figure>
 	  <img border="0" width="199" height="298" src="HaploPainter_Version_1_files/image009.jpg"/>
@@ -1126,11 +1131,12 @@ tr:last-child td
 	<p>
 	  To create a new pedigree you also can press the key
 	  combination &ldquo;Ctrl+N&rdquo;. A window will appear that
-	  asks for a pedigree name. After saying &ldquo;Ok&rdquo;
-	  HaploPainter draws a core family consisting of a couple and
-	  one offspring with predefined individual identifiers. To
-	  change the identifiers, gender or other individual settings
-	  double-click on the respective symbol.
+	  asks for a pedigree name. After the name is saved by
+	  clicking &ldquo;Ok&rdquo;, HaploPainter draws a core family
+	  consisting of a couple and one offspring with predefined
+	  individual identifiers. To change the identifiers, gender or
+	  other individual settings, double-click on the respective
+	  symbol.
 	</p>
 	<h3><a name="_Toc211847787">Delete individuals</a></h3>
 	<p>
@@ -1148,7 +1154,7 @@ tr:last-child td
 	  &ldquo;Ok&rdquo; is pressed, HaploPainter attaches all
 	  siblings for which you entered a valid identifier to the
 	  pedigree. To change the identifiers, gender or other
-	  individual settings double-click on the respective symbol.
+	  individual settings, double-click on the respective symbol.
 	</p>
 	<h3><a name="_Toc211847789">Add parents</a></h3>
 	<p>
@@ -1157,8 +1163,8 @@ tr:last-child td
 	  A window will appear that asks for the mother and father
 	  identifiers. After &ldquo;Ok&rdquo; is pressed, HaploPainter
 	  attaches a new founder couple to the pedigree. To change the
-	  identifiers or other individual settings double-click on the
-	  respective symbol.
+	  identifiers or other individual settings, double-click on
+	  the respective symbol.
 	</p>
 	<h3><a name="_Toc211847790">Add mate &amp; offspring</a></h3>
 	<p>
@@ -1169,14 +1175,14 @@ tr:last-child td
 	  &ldquo;Ok&rdquo; is pressed, HaploPainter attaches a new
 	  founder (only if that mate does not already exist) and a new
 	  offspring with unknown gender to the pedigree. To change the
-	  identifiers, gender or other individual settings
+	  identifiers, gender or other individual settings,
 	  double-click on the respective symbol.
 	</p>
 	<h3><a name="_Toc211847791">Consanguinity settings</a></h3>
 	<p>
 	  Consanguineous individuals are automatically detected if the
 	  pedigree contains loops. However, you can declare any couple
-	  as consanguineous too. The function to change consanguinity
+	  as consanguineous, too. The function to change consanguinity
 	  for all couples at once can be found in the Options and
 	  context menu &rarr; Consanguinity Settings. A new window
 	  displaying all couples will appear. Here you can mark any
@@ -1205,32 +1211,32 @@ tr:last-child td
 	</p>
 	<figure><img border="0" width="604" height="150" src="HaploPainter_Version_1_files/image011.gif"/></figure>
 	<p>
-	  In the example above the
-	  &ldquo;<b>Inter sibling Y distance</b>&rdquo; parameter
-	  from the Configuration &rarr; Ped Style menu was increased
-	  to a value of 45 to better separate the twin groups from the
-	  horizontal sibling connecting line. This value is set per
-	  default to a lower value to have more space for haplotypes
-	  and case information.
+	  In the example above the &ldquo;<b>Intersibling Y
+	  distance</b>&rdquo; parameter from the Configuration &rarr;
+	  Ped Style menu was increased to a value of 45 to better
+	  separate the twin groups from the horizontal sibling
+	  connecting line. This value is set by default to a lower
+	  value to have more space for haplotypes and case
+	  information.
 	</p>
 	<h3><a name="_Toc211847793">Loop breaking</a></h3>
 	<p>
 	  With respect to finding a good drawing solution, loops are
 	  the major challenge! Breaking a loop can be the only way to
 	  draw the pedigree without line crosses. Loops are broken by
-	  a duplication of an individual that is located and the
+	  duplicating an individual that is located at the
 	  &ldquo;end&rdquo; node of a loop.
 	</p>
 	<p>
 	  <figure style="float:left"><img width="192" height="190" src="HaploPainter_Version_1_files/image012.gif"/></figure>
 	  Due to HaploPainter&rsquo;s internal algorithms some loops
-	  are always broken, for instance the pedigree on the left
+	  are always broken, for instance, the pedigree on the left
 	  that belongs to the category parent-offspring mate
 	  situation.
 	</p>
 	<p>
 	  <figure style="float:left"><img width="136" height="186" src="HaploPainter_Version_1_files/image013.gif"/></figure>
-	  On the other hand there are situations when breaking of
+	  On the other hand, there are situations when breaking of
 	  loops makes no sense &ndash; like the offspring mating
 	  situation shown on the left. Those unproblematic loops would
 	  not lead to line crossings and therefore will never be
@@ -1241,11 +1247,11 @@ tr:last-child td
 	  to find a good drawing solution. For this reason
 	  HaploPainter breaks loops automatically when it finds more
 	  then 3 of them. Later you can decide which loops should be
-	  broken or not. To select them there is a &ldquo;Breaking
+	  broken or not. To select them, there is a &ldquo;Breaking
 	  loops &hellip;&rdquo; window, available from the Options or
 	  context menu. The following figures show the test pedigree
 	  hp_19 which contains 3 loops. After you select the
-	  &ldquo;Breaking loops &hellip;&rdquo; function a new window
+	  &ldquo;Breaking loops &hellip;&rdquo; function, a new window
 	  appears that gives you the possibilities to choose either
 	  select breaking no loops, all loops or to manually select
 	  loops for breaking. Here it was selected to manually break
@@ -1286,8 +1292,8 @@ tr:last-child td
 	<h2><a name="_Toc211847796">Hap style</a></h2>
 	<p>
 	  The settings in this menu will mainly affect the haplotype
-	  drawing style. Parameters collected there have quantitative
-	  values and are changed via scroll bars.
+	  drawing style. Parameters collected there have numeric
+	  values and are changed via sliders.
 	</p>
 	<figure style="float:left"><img border="0" width="534" height="433" src="HaploPainter_Version_1_files/image016.jpg"/></figure>
 	<table style="width:474pt">
@@ -1308,7 +1314,7 @@ tr:last-child td
 	    </tr>
 	    <tr>
 	      <td>Line width</td>
-	      <td>Bar border line width, makes sense without &lsquo;fill out bars&rsquo; option</td>
+	      <td>Bar border line width, makes sense without &lsquo;Fill bars&rsquo; option</td>
 	    </tr>
 	    <tr>
 	      <td>Legend distance left</td>
@@ -1340,8 +1346,7 @@ tr:last-child td
 	<p>
 	  The settings in this menu also will mainly affect the
 	  haplotype and legend drawing style. Parameters collected
-	  here have qualitative aspects and are changed via
-	  checkboxes.
+	  here are flags changed via checkboxes.
 	</p>
 	<figure style="float:left"><img border="0" width="534" height="433" src="HaploPainter_Version_1_files/image017.jpg"/></figure>
 	<table>
@@ -1367,8 +1372,8 @@ tr:last-child td
 	      <td>Show question mark inside person symbols for unknown affection status</td>
 	    </tr>
 	    <tr>
-	      <td>Fill out bars</td>
-	      <td>Fill out bars at given color</td>
+	      <td>Fill bars</td>
+	      <td>Fill bars with given color</td>
 	    </tr>
 	    <tr>
 	      <td>Show completely lost haplotypes</td>
@@ -1388,7 +1393,7 @@ tr:last-child td
 	    </tr>
 	    <tr>
 	      <td>Draw each allele as separate bar</td>
-	      <td>Useful only when &lsquo;Fill out bars&rsquo; option is not set</td>
+	      <td>Useful only when &lsquo;Fill bars&rsquo; option is not set</td>
 	    </tr>
 	    <tr>
 	      <td>Show legend left</td>
@@ -1402,13 +1407,13 @@ tr:last-child td
 	</table>
 	<h2><a name="_Toc211847798">Hap color &amp; font</a></h2>
 	<p>
-	  In this menu you can change the colors and font attributes
+	  In this menu, you can change the colors and font attributes
 	  of different types of information content like alleles from
 	  haplotypes, case information, pedigree header or phase
 	  unknown color. If you want to show all haplotypes, except of
 	  one in a unique color, press the &lsquo;Color of all
 	  haplotypes&rsquo; button. Before you do so, you should
-	  anchor one or more haplotypes of course! To do that choose
+	  anchor one or more haplotypes of course! To do that, choose
 	  the founder from whom the haplotype derives in the browse
 	  entry box and activate &lsquo;Anchor paternal/maternal
 	  haplotype&rsquo; in the checkbox. You also can fade out
@@ -1428,15 +1433,15 @@ tr:last-child td
 	<p>
 	  The list box on the right side allows drawing of black
 	  unfilled boxes around markers. You can define as many boxes
-	  as you want for any individual which has to be selected with
-	  the browse entry field above.
+	  as you want for any individual, which has to be selected
+	  with the browse entry field above.
 	</p>
 	<figure><img border="0" width="534" height="433" src="HaploPainter_Version_1_files/image020.jpg"/></figure>
 	<h2><a name="_Toc211847800">Ped style</a></h2>
 	<p>
 	  The settings in this menu will mainly affect the pedigree
-	  drawing style. Parameters collected there have quantitative
-	  values and are changed via scroll bars.
+	  drawing style. Parameters collected there have numerical
+	  values and are changed via sliders.
 	</p>
 	<figure style="float:left"><img border="0" width="534" height="433" src="HaploPainter_Version_1_files/image021.jpg"/></figure>
 	<table style="width:474pt">
@@ -1480,7 +1485,7 @@ tr:last-child td
 	      <td>Width of symbols connecting lines</td>
 	    </tr>
 	    <tr>
-	      <td>Inter symbol distance</td>
+	      <td>Intersymbol distance</td>
 	      <td>Number of grid units that are placed between symbols in X-dimension</td>
 	    </tr>
 	    <tr>
@@ -1493,7 +1498,7 @@ tr:last-child td
 		Fine tuning of the length of haplotype bars. It only
 		works for haplotypes that are drawn without alleles
 		and legends when bars are compressed/elongated to the
-		available space according to the inter generation
+		available space according to the intergeneration
 		distance.
 	      </td>
 	    </tr>
@@ -1501,7 +1506,7 @@ tr:last-child td
 	</table>
 	<h2><a name="_Toc211847801">Ped color</a></h2>
 	<p>
-	  The Ped Color submenu allows changes for the most color
+	  The Ped Color submenu allows changes to the most color
 	  relevant parameters.
 	</p>
 	<figure style="float:left"><img border="0" width="534" height="433" src="HaploPainter_Version_1_files/image022.jpg"/></figure>
@@ -1513,7 +1518,7 @@ tr:last-child td
 	      <td>Affection colors #0-9</td>
 	      <td>
 		Symbols are filled with colors according to their
-		affection status value ranging from 0-9
+		affection status value in range 0-9
 	      </td>
 	    </tr>
 	    <tr>
@@ -1537,18 +1542,18 @@ tr:last-child td
 	      <td>Background color</td>
 	      <td>
 		Set the background color. It is only exported into
-		other graphic formats if the Export background
-		checkbox flag is switched on
+		other graphic formats if the &ldquo;Export
+		background&rdquo; checkbox is on
 	      </td>
 	    </tr>
 	  </tbody>
 	</table>
 	<h2><a name="_Toc211847802">Ped &amp; case info</a></h2>
 	<p>
-	  In this menu there are settings for the title and case
-	  information. The rows from case 1-5 are shown below symbols
-	  if the checkbox is on. Furthermore you can choose in which
-	  order the fields are drawn.
+	  In this menu, there are settings for the title and case
+	  information. Extra rows 1-5 are shown below symbols if the
+	  checkbox is on. Furthermore you can choose in which order
+	  the fields are drawn.
 	</p>
 	<figure><img border="0" width="534" height="433" src="HaploPainter_Version_1_files/image023.jpg"/></figure>
 	<h1><a name="_Toc211847803">Page settings</a></h1>
@@ -1558,8 +1563,8 @@ tr:last-child td
 	  important for the PNG bitmap format. For vector graphics
 	  format, this parameter is handled in different ways. SVG
 	  graphics uses it to define the scaling factor to which the
-	  graphics should be expanded. PostScript has a default
-	  resolution of 72 dpi. HaploPainter tries to extend the
+	  graphics should be zoomed. PostScript has a default
+	  resolution of 72 dpi. HaploPainter tries to zoom the
 	  pedigrees according to the Margin, Paper Size and Paper
 	  Orientation settings. This may not be what you want and
 	  cutting the image with other software is necessary.
@@ -1570,12 +1575,13 @@ tr:last-child td
 	  The grid is visible only in the graphical user interface. It
 	  is never exported into images! The grid (visible or not) is
 	  internally used as an anchor point for the positioning of
-	  symbols. The configuration parameters Grid X space and Grid
-	  Y space affect the size of it.
+	  symbols. The configuration parameters &ldquo;Grid X
+	  space&rdquo; and &ldquo;Grid Y space&rdquo; affect the size
+	  of it.
 	</p>
 	<p>
-	  You can switch it on/off by the checkbox from the File menu
-	  or context menu.
+	  You can switch it on/off by using the checkbox in the File
+	  menu or context menu.
 	</p>
 	<h1><a name="_Toc211847805">Storing and restoring defaults</a></h1>
 	<p>
@@ -1585,8 +1591,9 @@ tr:last-child td
 	  file in HAPLOPAINTER format! One way to go is to prepare a
 	  HAPLOPAINTER file with some small families and modify/store
 	  them. Now you can attach the default parameters from a
-	  certain family from that file to others by choosing the Open
-	  default function from the File menu.
+	  certain family from that file to others by choosing the
+	  &ldquo;Get Default Values&rdquo; function from the File
+	  menu.
 	</p>
 	<figure><img border="0" width="338" height="98" src="HaploPainter_Version_1_files/image025.jpg"/></figure>
 	<p>
@@ -1596,16 +1603,16 @@ tr:last-child td
 	</p>
 	<h1><a name="_Toc211847806">Command line mode</a></h1>
 	<p>
-	  HaploPainter can run in a command line mode without using of
+	  HaploPainter can run in a command line mode without using
 	  the graphical interface. The first argument must
-	  be <code>-b</code> to tell HaploPainter being in command
-	  line (<b>b</b>atch) mode or <code>-h</code> to output a list
-	  of supported parameters.
+	  be <code>-b</code> to switch HaploPainter to command line
+	  (<b>b</b>atch) mode or <code>-h</code> to output a list of
+	  supported parameters.
 	</p>
 	<p>
-	  All following parameters have to be in a key &ndash; value
-	  manner. Allowed keys, their meaning and allowed values
-	  illustrates the following table.
+	  All following parameters must be provided in a key &ndash;
+	  value manner. Options, their meaning and allowed values are
+	  listed in the following table.
 	</p>
 	<table style="width:474pt">
 	  <col style="width:108pt"/>
@@ -1712,7 +1719,7 @@ tr:last-child td
 	    </tr>
 	    <tr>
 	      <td><code>-h</code></td>
-	      <td>Displaying a list of supported parameters</td>
+	      <td>Display a list of supported parameters</td>
 	    </tr>
 	  </tbody>
 	</table>
