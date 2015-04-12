@@ -392,7 +392,7 @@ sub _MainMenu {
 		[ '~File',
 			[
 				[ 'command', 'Open ...', -command => \&RestoreSelfGUI, -accelerator => 'Contr+O' ],
-				[ 'command', 'Open Default ...', -command => \&OpenDefaults ],
+				[ 'command', 'Get Default Values ...', -command => \&OpenDefaults ],
 				[ 'command', 'Save', -command => [\&SaveSelf, 0], -accelerator => 'Contr+S' ],
 				[ 'command', 'Save as ...', -command => [\&SaveSelf, 1] ],
 				,'-',
@@ -2052,7 +2052,7 @@ sub SaveSelf {
 		$_ = $mw->getSaveFile(
 				      -initialfile => basename($self->{GLOB}{FILENAME}),
 				      -defaultextension => 'hp',
-				      -filetypes => [ [ 'All Files', '*' ], [ 'HaploPainter Files', '*.hp' ] ]
+				      -filetypes => [ [ 'HaploPainter Files', '*.hp' ], [ 'All Files', '*' ] ]
 				     ) or return;
 		$self->{GLOB}{FILENAME} = $_;
 		$self->{GLOB}{FILENAME_SAVE} = 1;
@@ -2966,7 +2966,7 @@ sub ReadPed {
 
 	if (uc $arg{-format} eq 'LINKAGE') {
 		### LINKAGE format --- delimiter = 'tab' or ';' or 'space' --> must have 6 fields
-		### HaploPainter trys to process lines in a way that delimiters are automatically dedected
+		### HaploPainter tries to process lines in a way that delimiters are automatically dedected
 
 		### Syntax of LINKAGE format
 		###
@@ -4871,7 +4871,7 @@ sub Configuration {
 		       [ 'SHOW_INNER_SYBOL_TEXT', 'Show text inside symbols',          5, 0 ],
 		       [ 'ALIGN_LEGEND',          'Justify map legend',                6, 0 ],
 		       [ 'SHOW_COLORED_TEXT',     'Show alleles like bar colours',     7, 0 ],
-		       [ 'FILL_HAPLO',            'Fill out bars',                     0, 1 ],
+		       [ 'FILL_HAPLO',            'Fill bars',                         0, 1 ],
 		       [ 'SHOW_HAPLO_NI_0',       'Show completely lost haplotypes',   1, 1 ],
 		       [ 'SHOW_HAPLO_NI_1',       'Show other lost genotypes',         2, 1 ],
 		       [ 'SHOW_HAPLO_NI_2',       'Show user defined non-informative', 3, 1 ],
@@ -5156,8 +5156,8 @@ sub Configuration {
 		       [ 'SYMBOL_SIZE',       'Symbol size',                 2, 1,   5, 50,   1 ],
 		       [ 'SYMBOL_LINE_WIDTH', 'Symbol outer line width',     3, 1, 0.1,  5, 0.1 ],
 		       [ 'LINE_WIDTH',        'Line width',                  0, 2, 0.1,  5, 0.1 ],
-		       [ 'X_SPACE',           'Inter symbol distance',       1, 2,   1, 20,   1 ],
-		       [ 'Y_SPACE_DEFAULT',   'Inter generation distance',   2, 2,   3, 50,   1 ],
+		       [ 'X_SPACE',           'Intersymbol distance',        1, 2,   1, 20,   1 ],
+		       [ 'Y_SPACE_DEFAULT',   'Intergeneration distance',    2, 2,   3, 50,   1 ],
 		       [ 'Y_SPACE_EXTRA',     'Haplo extra space',           3, 2,   2, 50,   1 ],
 		      ) {
 		$p5_f1->Scale(-label => @$s[1], -variable => \$self->{FAM}{@$s[0]}{$fam},
