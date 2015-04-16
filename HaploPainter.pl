@@ -578,7 +578,10 @@ sub NewPedigree {
 sub OpenDefaults {
 #=================
 	return unless $self->{GLOB}{CURR_FAM};
-	my $file = SelectFilename(-filetypes => [ [ 'HaploPainter files', '*.hp' ], [ 'All files', '*' ] ]) or return;
+	my $file = SelectOpenFile(
+				  -defaultextension => '.hp',
+				  -filetypes => [ [ 'HaploPainter files', '.hp' ], [ 'All files', '*' ] ]
+				 ) or return;
 	my $test;
 	eval { $test = retrieve($file) };
 	if ($@) {
@@ -961,15 +964,27 @@ sub ExportSaveDialog {
 #=====================
 	my ($format, $flag) = @_;
 	my $fam = $self->{GLOB}{CURR_FAM};
-	my $filename = "family-$fam." . lc($format);
-	if ($format eq 'CSV') {
-		if ($flag) {
-			$filename = "hpcsv.$param->{ENCODING}";
-		} else {
-			$filename = "hpcsv_family-$fam.$param->{ENCODING}";
-		}
+	my $extension = '.' . do { ($format eq 'CSV') ? $param->{ENCODING} : lc($format) };
+	my $filename = "family-$fam$extension";
+	if ($format eq 'CSV' && !$flag) {
+		$filename = "hpcsv_family-$fam$extension";
 	}
-	my $file = $mw->getSaveFile(-initialfile => $filename) or return;
+	my $file = SelectSaveFile(
+				  -initialfile => $filename,
+				  -defaultextension => $extension,
+				  -filetypes => [
+						 grep { $_->[1] eq $extension || $_->[1] eq '*' }
+						 [ 'HaploPainter Files', '.hp' ],
+						 [ 'PostScript Files', '.ps' ],
+						 [ 'Portable Document Files', '.pdf' ],
+						 [ 'SVG Files', '.svg' ],
+						 [ 'PNG Files', '.png' ],
+						 [ 'ASCII CSV Files', '.ascii' ],
+						 [ 'UTF-8 CSV Files', '.utf8' ],
+						 [ 'UTF-16LE CSV Files', '.utf16le' ],
+						 [ 'All Files', '*' ]
+						]
+				 ) or return;
 	DrawOrExportCanvas(-modus => $format, -fam => $fam, -file => $file, -fammode => $flag);
 }
 
@@ -2038,26 +2053,28 @@ sub DrawPed {
 sub SaveSelf {
 #=============
 	return unless $self->{GLOB}{CURR_FAM};
-	if ($_[0] || !$self->{GLOB}{FILENAME_SAVE}) {
-		$_ = $mw->getSaveFile(
-				      -initialfile => basename($self->{GLOB}{FILENAME}),
-				      -defaultextension => 'hp',
-				      -filetypes => [ [ 'HaploPainter Files', '*.hp' ], [ 'All Files', '*' ] ]
-				     ) or return;
-		$self->{GLOB}{FILENAME} = $_;
+	my $gui = shift || 0;
+	my $file;
+	if ($gui || !$self->{GLOB}{FILENAME_SAVE}) {
+		$file = SelectSaveFile(
+				       -initialfile => basename($self->{GLOB}{FILENAME}),
+				       -defaultextension => '.hp',
+				       -filetypes => [ [ 'HaploPainter Files', '.hp' ], [ 'All Files', '*' ] ]
+				      ) or return;
+		$self->{GLOB}{FILENAME} = $file;
 		$self->{GLOB}{FILENAME_SAVE} = 1;
 	} else {
-		$_ = $self->{GLOB}{FILENAME} or return;
+		$file = $self->{GLOB}{FILENAME} or return;
 	}
 	$canvas->configure(-cursor => 'watch');
-	nstore $self, $_;
+	nstore $self, $file;
 	$canvas->configure(-cursor => $self->{GLOB}{CURSOR});
 }
 
 #====================
 sub RestoreSelfGUI {
 #====================
-	my $file = SelectFilename(-filetypes => [ [ 'HaploPainter files', '*.hp' ], [ 'All files', '*' ] ]) or return;
+	my $file = SelectOpenFile(-filetypes => [ [ 'HaploPainter files', '.hp' ], [ 'All files', '*' ] ]) or return;
 	RestoreSelf($file, 1);
 	$self->{GLOB}{FILENAME} = $file;
 	$self->{GLOB}{FILENAME_SAVE} = 1;
@@ -4375,7 +4392,7 @@ sub ImportPedfile {
 	our $menubar;
 	my ($form, $f) = @_;
 	if (!$f) {
-		$f = SelectFilename() or return;
+		$f = SelectOpenFile() or return;
 	}
 	ReadPed(-file => $f, -format => $form) or return;
 	($f) = fileparse($f, qr/\.[^.]*/);
@@ -4426,7 +4443,7 @@ sub ImportHaplofile {
 	return unless keys %{$self->{FAM}{PED_ORG}};
 	my ($format, $f) = @_;
 	if (!$f) {
-		$f = SelectFilename() or return;
+		$f = SelectOpenFile() or return;
 	}
 	ReadHaplo(-file => $f, -format => $format) or return;
 	DuplicateHaplotypes();
@@ -4436,7 +4453,7 @@ sub ImportHaplofile {
 sub ImportMapfile {
 #==================
 	return unless $self->{GLOB}{CURR_FAM};
-	my $f = SelectFilename() or return;
+	my $f = SelectOpenFile() or return;
 	ReadMap(-file => $f, -format => shift) or return;
 	RedrawPed();
 	AdjustView();
@@ -4444,9 +4461,20 @@ sub ImportMapfile {
 
 # a workaround for https://rt.cpan.org/Public/Bug/Display.html?id=5905
 #==================
-sub SelectFilename {
+sub SelectOpenFile {
 #==================
 	my $f = $mw->getOpenFile(@_) or return;
+	if ($^O =~ /MSWin32/) {
+		require Win32;
+		$f = Win32::GetANSIPathName($f);
+	}
+	return $f;
+}
+
+#==================
+sub SelectSaveFile {
+#==================
+	my $f = $mw->getSaveFile(@_) or return;
 	if ($^O =~ /MSWin32/) {
 		require Win32;
 		$f = Win32::GetANSIPathName($f);
@@ -5343,7 +5371,7 @@ sub BatchExport {
 #==============
 	my $suffix = shift or return;
 	ShowInfo("Please select working directory and a basic file name without suffix.\nGraphic outputs will be extended by pedigree identifiers.\n\n");
-	my $file = $mw->getSaveFile(-initialfile => 'pedigree') or return;
+	my $file = SelectSaveFile(-initialfile => 'pedigree') or return;
 	my $curr_fam = $self->{GLOB}{CURR_FAM};
 	for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
 		my $file = File::Spec->catfile(dirname($file), basename($file) . '_' . $fam . '.' . $suffix);
