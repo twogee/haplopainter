@@ -1587,9 +1587,9 @@ sub HeadB1Release {
 	my $z = $self->{FAM}{ZOOM}{$fam};
 	my $gx = $self->{FAM}{GITTER_X}{$fam} * $z;
 	my $gy = $self->{FAM}{GITTER_Y}{$fam} * $z;
-	@_ = $c->coords('HEAD');
-	my $X = $self->{FAM}{TITLE_X}{$fam} = sprintf("%1.0f", $_[0] / $gx);
-	my $Y = $self->{FAM}{TITLE_Y}{$fam} = sprintf("%1.0f", $_[1] / $gy);
+	my @coord = $c->coords('HEAD');
+	my $X = $self->{FAM}{TITLE_X}{$fam} = sprintf("%1.0f", $coord[0] / $gx);
+	my $Y = $self->{FAM}{TITLE_Y}{$fam} = sprintf("%1.0f", $coord[1] / $gy);
 
 	RedrawPed();
 }
@@ -1611,10 +1611,10 @@ sub MouseB1Release {
 			my $p = $s->{$id}{PID};
 			my ($x1g, $y1g) = ($m->{P2XY}{$p}{X}, $m->{P2XY}{$p}{Y});
 
-			@_ = $c->coords($id);
-			my ($x1c, $y1c) = (($_[0] + $_[2]) / 2, ($_[1] + $_[3]) / 2);
-			@_ = $c->coords($s->{$id}{ID_CLONE}) or return;
-			my ($x2c, $y2c) = (($_[0] + $_[2]) / 2, ($_[1] + $_[3]) / 2);
+			my @coord = $c->coords($id);
+			my ($x1c, $y1c) = (($coord[0] + $coord[2]) / 2, ($coord[1] + $coord[3]) / 2);
+			@coord = $c->coords($s->{$id}{ID_CLONE}) or return;
+			my ($x2c, $y2c) = (($coord[0] + $coord[2]) / 2, ($coord[1] + $coord[3]) / 2);
 
 			my $gxd = sprintf("%1.0f", ($x2c - $x1c) / $gx);
 			my $gyd = sprintf("%1.0f", ($y2c - $y1c) / $gy);
@@ -3657,20 +3657,20 @@ sub CompleteBar {
 	for (my $i = 0; $i < scalar @$a; $i++) {
 		### nicht informative Stelle -> entweder Haplotyp fortfuehren
 		### oder, wenn voreingestellt als uninformativ deklarieren
-		if (@$a[$i] eq $un) {
+		if ($a->[$i] eq $un) {
 			if ($phase == 1) {
 				push @bar, [ 'NI-1', $ba1->[$i][1] ];
 			} elsif ($phase == 2) {
 				push @bar, [ 'NI-1', $ba2->[$i][1] ];
 			}
-		} elsif ((@$aa1[$i] eq @$aa2[$i])) {
+		} elsif (($aa1->[$i] eq $aa2->[$i])) {
 			if ($phase == 1) {
 				push @bar, [ 'NI-3', $ba1->[$i][1] ];
 			} elsif ($phase == 2) {
 				push @bar, [ 'NI-3', $ba2->[$i][1] ];
 			}
 		} else {
-			if (@$a[$i] eq @$aa1[$i]) {
+			if ($a->[$i] eq $aa1->[$i]) {
 				push @bar, [ 'I', $ba1->[$i][1] ];
 				$phase = 1;
 			} else {
@@ -3969,7 +3969,7 @@ sub BuildStruk {
 					$EndFlag = 1;
 					for my $p (@{$P->[1]}) {
 						my @children;
-						for my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{@$p[0]}{@$p[1]}}) {
+						for my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$p->[0]}{$p->[1]}}) {
 							my $r = SetCouples($fam, $child);
 							if (ref $r) {
 								my $c = join '==', nsort @{$r->[0]};
@@ -4511,10 +4511,10 @@ sub OptionsPrint {
 		       [ 'BORDER', 'Margin [mm]', 0, 0, 0, 100, 5 ],
 		       [ 'RESOLUTION_DPI', 'Resolution [dpi]', 1, 0, 72, 600, 4 ],
 		      ) {
-		$f->Scale(-label => @$s[1], -variable => \$self->{GLOB}{@$s[0]},
-			  -from => @$s[4], -to => @$s[5], -orient => 'horizontal',
-			  -length => 150, -width => 12, -resolution => @$s[6],
-			  -command => sub {})->grid(-row => @$s[2], -column => @$s[3], -sticky => 'w');
+		$f->Scale(-label => $s->[1], -variable => \$self->{GLOB}{$s->[0]},
+			  -from => $s->[4], -to => $s->[5], -orient => 'horizontal',
+			  -length => 150, -width => 12, -resolution => $s->[6],
+			  -command => sub {})->grid(-row => $s->[2], -column => $s->[3], -sticky => 'w');
 	}
 
 	my $be3 = $f->BrowseEntry(-label => 'Orientation: ', -variable => \$self->{GLOB}{ORIENTATION},
@@ -4866,8 +4866,8 @@ sub Configuration {
 		       [ 'SHOW_LEGEND_LEFT',      'Show legend left',                  6, 1 ],
 		       [ 'SHOW_LEGEND_RIGHT',     'Show legend right',                 7, 1 ],
 		      ) {
-		$p2_f1->Checkbutton(-text => @$s[1], -variable => \$self->{FAM}{@$s[0]}{$fam})->grid(-row => @$s[2], -column => @$s[3], -sticky => 'w');
-		$p2_f1->gridColumnconfigure(@$s[2], -pad => 30);
+		$p2_f1->Checkbutton(-text => $s->[1], -variable => \$self->{FAM}{$s->[0]}{$fam})->grid(-row => $s->[2], -column => $s->[3], -sticky => 'w');
+		$p2_f1->gridColumnconfigure($s->[2], -pad => 30);
 	}
 
 	###############################################################################
@@ -4915,7 +4915,7 @@ sub Configuration {
 				     for my $mp (qw/M P/) {
 					     next if $self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{SAVE};
 					     for my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$p}{$mp}{BAR}}) {
-						     @$r[1] = $col_new;
+						     $r->[1] = $col_new;
 					     }
 				     }
 			     }
@@ -4934,7 +4934,7 @@ sub Configuration {
 					   my $col_old = $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}[0][1] or return;
 					   for my $mp (qw/M P/) {
 						   for my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{$mp}{BAR}}) {
-							   @$r[1] = $col_new if $col_old eq @$r[1];
+							   $r->[1] = $col_new if $col_old eq $r->[1];
 						   }
 					   }
 					   $lb3->configure(-bg => $col_new);
@@ -4952,7 +4952,7 @@ sub Configuration {
 					      my $col_old = $self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{BAR}[0][1] or return;
 					      for my $mp (qw/M P/) {
 						      for my $r (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{$mp}{BAR}}) {
-							      @$r[1] = $col_new if $col_old eq @$r[1];
+							      $r->[1] = $col_new if $col_old eq $r->[1];
 						      }
 					      }
 					      $lb4->configure(-bg => $col_new);
@@ -4976,14 +4976,14 @@ sub Configuration {
 				      -browsecmd => sub {
 					      $pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid_old};
 					      for (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{P}{BAR}}) {
-						      if (@$_[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam}) {
-							      $lb3->configure(-bg => @$_[1]);
+						      if ($_->[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam}) {
+							      $lb3->configure(-bg => $_->[1]);
 							      last;
 						      }
 					      }
 					      for (@{$self->{FAM}{HAPLO}{$fam}{PID}{$pid}{M}{BAR}}) {
-						      if (@$_[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam}) {
-							      $lb4->configure(-bg => @$_[1]);
+						      if ($_->[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam}) {
+							      $lb4->configure(-bg => $_->[1]);
 							      last;
 						      }
 					      }
@@ -5146,16 +5146,16 @@ sub Configuration {
 		       [ 'Y_SPACE_DEFAULT',   'Intergeneration distance',    2, 2,   3, 50,   1 ],
 		       [ 'Y_SPACE_EXTRA',     'Haplo extra space',           3, 2,   2, 50,   1 ],
 		      ) {
-		$p5_f1->Scale(-label => @$s[1], -variable => \$self->{FAM}{@$s[0]}{$fam},
-			      -from => @$s[4], -to => @$s[5], -orient => 'horizontal',
-			      -length => 130, -width => 12, -resolution => @$s[6],
+		$p5_f1->Scale(-label => $s->[1], -variable => \$self->{FAM}{$s->[0]}{$fam},
+			      -from => $s->[4], -to => $s->[5], -orient => 'horizontal',
+			      -length => 130, -width => 12, -resolution => $s->[6],
 			      -command => sub {
 				      ### reason: changing X_SPACE must follow building the Matrix and Aligning new.
 				      ### As invoking notepad page for the first time activate the callback like moving slider too,
 				      ### a counter is used here
-				      $flag{@$s[0]}++ if @$s[0] eq 'X_SPACE';
-			      })->grid(-row => @$s[2], -column => @$s[3], -sticky => 'w');
-		$p5_f1->gridColumnconfigure(@$s[2], -pad => 20);
+				      $flag{$s->[0]}++ if $s->[0] eq 'X_SPACE';
+			      })->grid(-row => $s->[2], -column => $s->[3], -sticky => 'w');
+		$p5_f1->gridColumnconfigure($s->[2], -pad => 20);
 	}
 
 	###############################################################################
@@ -6350,11 +6350,11 @@ sub SetHaplo {
 	if ($self->{FAM}{PED_ORG}{$fam}) {
 		for (@{$self->{FAM}{PED_ORG}{$fam}}) {
 			next unless $_;
-			my $pid = @$_[0];
+			my $pid = $_->[0];
 			for my $mp (qw/M P/) {
 				if ($h->{PID}{$pid}{$mp}{HIDE}) {
 					for (@{$h->{PID}{$pid}{$mp}{BAR}}) {
-						$Hide{@$_[1]} = 1 if @$_[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
+						$Hide{$_->[1]} = 1 if $_->[1] ne $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
 					}
 				}
 			}
