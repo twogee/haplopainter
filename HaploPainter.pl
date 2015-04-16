@@ -322,10 +322,10 @@ sub Main {
 	my $menu = $canvas->Menu(-tearoff => 0, -menuitems => &_ContextMenu);
 
 	### Bindings for all user interaction remaining the main window and canvas drawing elements
-	$canvas->CanvasBind('<1>' => [ \&MouseB1Klick, Ev('x'), Ev('y') ]);
-	$canvas->CanvasBind('<3>' => [ \&ShowContextMenue, $menu, Ev('x'), Ev('y') ]);
-	$canvas->CanvasBind('<Control-1>' => [ \&MouseB1ControlKlick, Ev('x'), Ev('y') ]);
-	$canvas->CanvasBind('<Shift-1>' => [ \&MouseB1ControlKlick, Ev('x'), Ev('y') ]);
+	$canvas->CanvasBind('<1>' => [ \&MouseB1Click, Ev('x'), Ev('y') ]);
+	$canvas->CanvasBind('<3>' => [ \&ShowContextMenu, $menu, Ev('x'), Ev('y') ]);
+	$canvas->CanvasBind('<Control-1>' => [ \&MouseB1ControlClick, Ev('x'), Ev('y') ]);
+	$canvas->CanvasBind('<Shift-1>' => [ \&MouseB1ControlClick, Ev('x'), Ev('y') ]);
 	$canvas->CanvasBind('<ButtonRelease-1>' => [ \&ButtonRelease ]);
 	$canvas->CanvasBind('<Enter>' => sub { $canvas->configure(-cursor => $self->{GLOB}{CURSOR}) });
 	$canvas->CanvasBind('<Configure>' => \&AdjustView);
@@ -340,10 +340,10 @@ sub Main {
 			      $canvas->itemconfigure($self->{GLOB}{ACTIVE_ITEM}, -fill => $self->{GLOB}{ACTIVE_COLOUR});
 			      delete $self->{GLOB}{ACTIVE_ITEM};
 		      });
-	$canvas->bind('ALLEL', '<Double-1>', \&KlickAllel);
-	$canvas->bind('SYMBOL', '<Double-1>', \&KlickSymbol);
-	$canvas->bind('HEAD', '<Double-1>', \&KlickHead);
-	$canvas->bind('ALLEL', '<Enter>', \&EnterAllel);
+	$canvas->bind('ALLEL', '<Double-1>', \&ClickAllele);
+	$canvas->bind('SYMBOL', '<Double-1>', \&ClickSymbol);
+	$canvas->bind('HEAD', '<Double-1>', \&ClickHead);
+	$canvas->bind('ALLEL', '<Enter>', \&EnterAllele);
 
 	$mw->bind('<Control-Key-1>' => sub { ImportMapfile(1) });
 	$mw->bind('<Control-Key-2>' => sub { ImportMapfile(2) });
@@ -1314,10 +1314,10 @@ sub AddFamToSelf {
 	}
 }
 
-# Show Context Menue and store current cursor coordinates
+# Show Context Menu and store current cursor coordinates
 # for later positioning after zooming
 #=====================
-sub ShowContextMenue {
+sub ShowContextMenu {
 #=====================
 	my ($c, $menu, $x, $y) = @_;
 	$menu->Post($mw->pointerxy);
@@ -1331,7 +1331,7 @@ sub ShowContextMenue {
 # double clicking uninformative alleles cause appearing dialog box to change
 # chromosomal phase or declaring as uninformative
 #===============
-sub KlickAllel {
+sub ClickAllele {
 #===============
 	return if $self->{GLOB}{STATUS};
 	my $fam = $self->{GLOB}{CURR_FAM};
@@ -1408,7 +1408,7 @@ sub KlickAllel {
 }
 
 #==============
-sub KlickHead {
+sub ClickHead {
 #==============
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
 	my $d = $mw->DialogBox(-title => 'Change family title', -buttons => [ qw/Ok Cancel/ ]);
@@ -1420,7 +1420,7 @@ sub KlickHead {
 }
 
 #================
-sub KlickSymbol {
+sub ClickSymbol {
 #================
 	return if $self->{GLOB}{STATUS};
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
@@ -1548,7 +1548,7 @@ sub KlickSymbol {
 
 # Moving mouse over uninformative alleles from non-founder cause changing its color to red
 #===============
-sub EnterAllel {
+sub EnterAllele {
 #===============
 	my $c = shift;
 	my $fam = $self->{GLOB}{CURR_FAM};
@@ -1622,7 +1622,7 @@ sub MouseB1Release {
 			my ($x2g, $y2g) = ($x1g + $gxd, $y1g + $gyd);
 
 			if ($gxd || $gyd) {
-				### somebody at X/Y ?
+				### somebody at X/Y?
 				if (! $m->{YX2P}{$y2g}{$x2g}) {
 					delete $m->{YX2P}{$y1g}{$x1g};
 					$m->{YX2P}{$y2g}{$x2g} = $p;
@@ -1646,7 +1646,6 @@ sub MouseB1Release {
 sub MoveHead {
 #=============
 	my ($c, $x, $y) = @_;
-
 	$x = $c->canvasx($x);
 	$y = $c->canvasy($y);
 	$c->move('current', $x - $self->{GLOB}{X_CANVAS}, $y - $self->{GLOB}{Y_CANVAS});
@@ -1779,7 +1778,7 @@ sub MouseB1Move {
 }
 
 #========================
-sub MouseB1ControlKlick {
+sub MouseB1ControlClick {
 #========================
 	my ($c, $x, $y) = @_;
 
@@ -1813,7 +1812,7 @@ sub MouseB1ControlKlick {
 }
 
 #=================
-sub MouseB1Klick {
+sub MouseB1Click {
 #=================
 	my ($c, $x, $y) = @_;
 
@@ -2108,7 +2107,7 @@ sub RestoreSelf {
 #==============
 sub FindLoops {
 #==============
-	my $fam = shift @_ || $self->{GLOB}{CURR_FAM};
+	my $fam = shift || $self->{GLOB}{CURR_FAM};
 	my $s = $self->{FAM}{LOOP}{$fam} = {};
 	my %N;
 
@@ -3456,7 +3455,7 @@ sub ShuffleColors {
 	return if ! $self->{FAM}{HAPLO} || ! $self->{FAM}{HAPLO}{$fam} || ! keys %{$self->{FAM}{HAPLO}{$fam}{PID}};
 	my %t;
 	my %s = ($self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam} => 1, 'NI-0' => 1, 'NI-1' => 1, 'NI-2' => 1, 'NI-3' => 1);
-	### which colors are there ?
+	### which colors are there?
 	for my $p (keys %{$self->{FAM}{PID}{$fam}}) {
 		next unless $self->{FAM}{HAPLO}{$fam}{PID}{$p};
 		for my $mp (qw/M P/) {
@@ -3683,7 +3682,7 @@ sub CompleteBar {
 	return \@bar;
 }
 
-# Which founder couple come to the family in which generation ?
+# Which founder couple comes to the family in which generation?
 #============
 sub FindTop {
 #============
@@ -3737,16 +3736,16 @@ sub FindTop {
 		}
 	}
 
-	### are there no founders ? ---> ERROR
+	### are there no founders? ---> ERROR
 	if (! scalar keys %Top) {
 		 ShowInfo("There is no founder couple in this family !\nFurther drawing aborted.", 'error');
 		 return;
 	}
 
-	### Which founder belong to which generation ??
-	### If there are more then one founder couple, this method examine with help of BuildStruk()
-	### separate sub family structures and searches for connecting overlapping peoples
-	### In some situations this has been shown to fail, future work !
+	### Which founder belongs to which generation??
+	### If there is more then one founder couple, this method examines separate sub family structures
+	### and searches for connecting overlapping people with help of BuildStruk()
+	### In some situations this has been shown to fail, future work!
 	my %G2P;
 	for my $c (sort keys %Top) {
 		$self->{FAM}{STRUK}{$fam} = [
@@ -3895,7 +3894,7 @@ sub FindTop {
 }
 
 ### change order of elements in an array
-### input=output= reference to array
+### input=output=reference to array
 #================
 sub ChangeOrder {
 #================
