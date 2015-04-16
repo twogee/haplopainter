@@ -51,7 +51,7 @@ my $param = {
 	     HAPLOTYPE_FORMATS => {
 				   do { map { $_ => 1 } qw/allegro genehunter merlin simwalk/ }
 				  },
-	     LAST_CHANGE => '2015-04-05',
+	     LAST_CHANGE => '2015-04-16',
 	     MAP_FORMATS => {
 			     do { map { $_ => 1 } (1..2) }
 			    },
@@ -97,7 +97,7 @@ my $def = {
 		    RESOLUTION_DPI  => 96,
 		    STATUS => 0,
 		    STRUK_MODE => 0,
-		    VERSION => '1.07'
+		    VERSION => '1.08'
 		   },
 	   FAM => {
 		   ADOPTED_SPACE1 => 5,
@@ -1490,6 +1490,11 @@ sub ClickSymbol {
 
 			$f2->Label(-text => 'Text beside symbol')->grid(-row => 1, -column => 0, -sticky => 'e');
 			$f2->Entry(-textvariable => \$self->{FAM}{SIDE_SYMBOL_TEXT}{$fam}{$id}, -width => 20)->grid(-row => 1, -column => 1, -sticky => 'w');
+
+			$f2->Button(-text => 'Clear text', -width => 10, -command => sub {
+					    $self->{FAM}{INNER_SYMBOL_TEXT}{$fam}{$id} = undef;
+					    $self->{FAM}{SIDE_SYMBOL_TEXT}{$fam}{$id} = undef;
+				    })->grid(-row => 0, -rowspan => 2, -column => 2);
 
 			$f3->Label(-text => 'Case Info #1')->grid(-row => 0, -column => 0, -sticky => 'e');
 			$f3->Entry(-textvariable => \$sid_old, -width => 25)->grid(-row => 0, -column => 1, -sticky => 'w');
@@ -3657,8 +3662,8 @@ sub CompleteBar {
 	### Phase ist nicht definiert -> Vorruecken bis zur ersten informativen Stelle
 	### und Phase danach definieren
 	for (my $j = 0; $j < scalar @$a; $j++) {
-		next if @$aa1[$j] eq @$aa2[$j];
-		if (@$a[$j] eq @$aa1[$j]) {
+		next if $aa1->[$j] eq $aa2->[$j];
+		if ($a->[$j] eq $aa1->[$j]) {
 			$phase = 1;
 		} else {
 			$phase = 2;
