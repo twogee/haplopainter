@@ -51,7 +51,7 @@ my $param = {
 	     HAPLOTYPE_FORMATS => {
 				   do { map { $_ => 1 } qw/allegro genehunter merlin simwalk/ }
 				  },
-	     LAST_CHANGE => '2015-04-16',
+	     LAST_CHANGE => '2015-04-25',
 	     MAP_FORMATS => {
 			     do { map { $_ => 1 } (1..2) }
 			    },
@@ -966,8 +966,8 @@ sub ExportSaveDialog {
 	my $fam = $self->{GLOB}{CURR_FAM};
 	my $extension = '.' . do { ($format eq 'CSV') ? $param->{ENCODING} : lc($format) };
 	my $filename = "family-$fam$extension";
-	if ($format eq 'CSV' && !$flag) {
-		$filename = "hpcsv_family-$fam$extension";
+	if ($format eq 'CSV') {
+		$filename = ($flag) ? "hpcsv$extension" : "hpcsv_family-$fam$extension";
 	}
 	my $file = SelectSaveFile(
 				  -initialfile => $filename,
@@ -2093,11 +2093,8 @@ sub RestoreSelf {
 	my ($file, $flag) = @_ or return;
 	my $test;
 	eval { $test = retrieve($file) };
-	if ($@ && $flag) {
-		ShowInfo "File reading error!\n$@", 'warning';
-		return;
-	}
-	if ($@ && ! $flag) {
+	if ($@) {
+		ShowInfo "File reading error!\n$@", 'warning' if $flag;
 		return;
 	}
 
@@ -3758,11 +3755,14 @@ sub FindTop {
 		}
 	}
 
-	### are there no founders? ---> ERROR
-	if (! scalar keys %Top) {
-		 ShowInfo("There is no founder couple in this family !\nFurther drawing aborted.", 'error');
+	### Are there no founders? ---> ERROR
+	unless (scalar keys %Top) {
+		 ShowInfo("There is no founder couple in this family!\nFurther drawing aborted.", 'error');
 		 return;
-	}
+	 }
+
+	### One founder couple
+	return 1 if (scalar keys %Top == 1);
 
 	### Which founder belongs to which generation??
 	### If there is more then one founder couple, this method examines separate sub family structures
@@ -4490,7 +4490,7 @@ sub SelectSaveFile {
 #=========
 sub Zoom {
 #=========
-	shift if exists($_[0]);
+	shift if exists($_[0]) && ref($_[0]);
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
 	my ($ori, $flag, $x_screen, $y_screen) = @_;
 
