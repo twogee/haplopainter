@@ -936,7 +936,7 @@ sub DeleteSID {
 		}
 		for my $p (keys %{$z{P}}) {
 			my $sid = $self->{FAM}{PID2PIDNEW}{$fam}{$p};
-			if (! $z{R}{$p} && $self->{FAM}{FOUNDER}{$fam}{$sid}) {
+			if (!$z{R}{$p} && $self->{FAM}{FOUNDER}{$fam}{$sid}) {
 				for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
 					if ($r && $r->[0] eq $p) {
 						undef $r;
@@ -1592,7 +1592,7 @@ sub EnterAllele {
 			$self->{GLOB}{ACTIVE_ITEM} = $tag;
 			$self->{GLOB}{ACTIVE_COLOUR} = $c->itemcget($tag, -fill);
 
-			if ((! $a1 || ! $a2) || ($a1 == $a2)) {
+			if ((!$a1 || !$a2) || ($a1 == $a2)) {
 				$c->itemconfigure($tag, -fill => 'red');
 			}
 		}
@@ -1828,7 +1828,7 @@ sub MouseB1ControlClick {
 
 		$c->itemconfigure($curr_tag, -fill => $col);
 		delete $self->{GLOB}{ACTIVE_SYMBOLS}{$curr_tag};
-	} elsif ($curr_tag && ! $self->{GLOB}{ACTIVE_SYMBOLS}{$curr_tag}) {
+	} elsif ($curr_tag && !$self->{GLOB}{ACTIVE_SYMBOLS}{$curr_tag}) {
 		$self->{GLOB}{ACTIVE_SYMBOLS}{$curr_tag}{PID} = $pid;
 		$c->itemconfigure($curr_tag, -fill => 'red');
 	}
@@ -2323,7 +2323,7 @@ sub FindLoops {
 				$lflag = 0;
 				for my $p (keys %P) {
 					for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
-						if (! $P{$c} && $E{$c}) {
+						if (!$P{$c} && $E{$c}) {
 							$P{$c} = 1;
 							$lflag = 1;
 						}
@@ -2355,7 +2355,7 @@ sub FindLoops {
 				}
 			}
 
-			if (! $no_start_flag && $no_end_flag) {
+			if (!$no_start_flag && $no_end_flag) {
 				### START nodes
 				$s->{START}{$p1}{$p2} = 1;
 				$s->{START}{$p2}{$p1} = 1;
@@ -2366,7 +2366,7 @@ sub FindLoops {
 				} else {
 					push @node_types, 'S_';
 				}
-			} elsif ($no_start_flag && ! $no_end_flag) {
+			} elsif ($no_start_flag && !$no_end_flag) {
 				### END nodes
 				$s->{END}{$p1}{$p2} = 1;
 				$s->{END}{$p2}{$p1} = 1;
@@ -2486,8 +2486,8 @@ sub FindLoops {
 			}
 		}
 
-		if (($cc1 != $cc2) && ! $D2{$loop}) {
 		##### asymmetric loop!!!
+		if (($cc1 != $cc2) && !$D2{$loop}) {
 			my ($n1, $n2);
 			for my $i (1 - $cll .. $cll - 1) {
 				if (($cc1 < $cc2) && ($node_types[$i] =~ /E./) && ($node_types[$i - 1] =~ /M.|S./)) {
@@ -2605,7 +2605,7 @@ sub FindLoops {
 sub ReadHaplo {
 #==============
 	my %arg = @_;
-	open(FH, "<", $arg{-file}) or (ShowInfo("$!: $arg{-file}", 'warning'), return);
+	open(FH, '<', $arg{-file}) or (ShowInfo("$!: $arg{-file}", 'warning'), return);
 	my @file = (<FH>);
 	close FH;
 
@@ -2816,14 +2816,14 @@ sub ReadMap {
 #============
 	my %arg = @_;
 	if ($arg{-file}) {
-		open(FHM, "<", $arg{-file}) or ShowInfo("$! $arg{-file}", 'warning') && return;
+		open(FHM, '<', $arg{-file}) or ShowInfo("$!: $arg{-file}", 'warning') && return;
 			while (<FHM>) {
 				${$arg{-data}} .= $_;
 			}
 		close FHM;
 	}
 	unless ($arg{-data}) {
-		ShowInfo("No data to read !", 'warning');
+		ShowInfo("No data to read!", 'warning');
 		return;
 	}
 
@@ -2918,7 +2918,7 @@ sub ReadPed {
 
 	### read in first 4 bytes to check for BOM sequence
 	my ($bom, $file, $bflag);
-	open(IN, "<", $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return);
+	open(IN, '<', $arg{-file}) or (ShowInfo("$!: $arg{-file}", 'warning'), return);
 	binmode IN;
 	read(IN, $bom, 4);
 	close IN;
@@ -2955,7 +2955,7 @@ sub ReadPed {
 		$encoding = $e{$param->{ENCODING}}
 	}
 
-	open(FH, $encoding, $arg{-file}) or (ShowInfo("$! $arg{-file}", 'warning'), return);
+	open(FH, $encoding, $arg{-file}) or (ShowInfo("$!: $arg{-file}", 'warning'), return);
 		### removing BOM if there
 		if ($bflag) {
 			if (defined ($_ = <FH>)) {
@@ -3225,7 +3225,7 @@ sub ProcessFamily {
 		$sid = $save{$old_sid};
 
 		### FID
-		if ($old_fid && ! $save{$old_fid}) {
+		if ($old_fid && !$save{$old_fid}) {
 			$fid = $id_counter;
 			$save{$old_fid} = $id_counter;
 			$ci->{PID}{$fid}{'Case_Info_1'} = $old_fid;
@@ -3237,7 +3237,7 @@ sub ProcessFamily {
 		$fid = $save{$old_fid} || 0;
 
 		### MID
-		if ($old_mid && ! $save{$old_mid}) {
+		if ($old_mid && !$save{$old_mid}) {
 			$mid = $id_counter;
 			$save{$old_mid} = $id_counter;
 			$ci->{PID}{$mid}{'Case_Info_1'} = $old_mid;
@@ -3274,7 +3274,7 @@ sub ProcessFamily {
 			### parent node creation
 			$_ = join '==', nsort($fid, $mid);
 			$self->{FAM}{PARENT_NODE}{$fam}{$_} = [ $fid, $mid ];
-		} elsif (! $fid && ! $mid) {
+		} elsif (!$fid && !$mid) {
 			### (bzw FOUNDER Status)
 			$self->{FAM}{FOUNDER}{$fam}{$sid} = 1;
 		} else {
@@ -3628,7 +3628,7 @@ sub ProcessHaplotypes {
 						$flag = 1;
 					}
 				} else {
-					ShowInfo("The file seems to be corrupted - missing haplotype for $pid ?\n", 'error');
+					ShowInfo("The file seems to be corrupted - missing haplotype for $pid?\n", 'error');
 					delete $self->{FAM}{HAPLO}{$fam};
 					delete $self->{FAM}{HAPLO}{$fam};
 					return;
@@ -3895,7 +3895,7 @@ sub FindTop {
 		}
 	}
 	### work around for special case of multiple couple group which is deleted for generation 0
-	if (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}} && ! keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{0}}) {
+	if (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}} && !keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{0}}) {
 		my $lg;
 		for my $g (sort { $a <=> $b } keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}}) {
 			if (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$g}}) {
@@ -3930,7 +3930,7 @@ sub FindTop {
 sub ChangeOrder {
 #================
 	my $array = shift || return;
-	return if ! @$array || scalar @$array == 1;
+	return if !@$array || scalar @$array == 1;
 	my $fam = $self->{GLOB}{CURR_FAM};
 	if ($param->{SORT_BY_PEDID}) {
 		### do not mix this array but sort it by Case_Info_1
@@ -4044,7 +4044,7 @@ sub BuildStruk {
 		}
 		### if there are new founder couples in that generation (see FindTop)
 		### they have to be integrated as new starting point
-		if (! $self->{GLOB}{STRUK_MODE} && $self->{FAM}{FOUNDER_COUPLE}{$fam}{$G + 1}) {
+		if (!$self->{GLOB}{STRUK_MODE} && $self->{FAM}{FOUNDER_COUPLE}{$fam}{$G + 1}) {
 			for (keys %{$self->{FAM}{FOUNDER_COUPLE}{$fam}{$G + 1}}) {
 				my ($p1) = split '==', $_;
 				my $Next_S = [];
@@ -4240,7 +4240,7 @@ sub ImportPedigreeDBI {
 	### Save Default bottom
 	$fb->Button(-text => 'Save Default', -width => 10,
 		    -command => sub {
-			    open(FH, ">", "hp_dbi_default") or (ShowInfo("Unable to save current setting as default!\n$!"));
+			    open(FH, '>', "hp_dbi_default") or (ShowInfo("Unable to save current setting as default!\n$!"));
 			    for (qw/DB_TYPE DB_HOST DB_PORT DB_RELATION DB_SID DB_UNAME/) {
 				    print FH "$_=$self->{GLOB}{$_}\n" if $self->{GLOB}{$_};
 			    }
@@ -4250,7 +4250,7 @@ sub ImportPedigreeDBI {
 	### Load Default Bottom
 	$fb->Button(-text => 'Load Default', -width => 10,
 		    -command => sub {
-			    open(FH, "<", "hp_dbi_default") or (ShowInfo("Unable to load the default file:hp_dbi_default\n$!"));
+			    open(FH, '<', "hp_dbi_default") or (ShowInfo("Unable to load the default file:hp_dbi_default\n$!"));
 			    while (<FH>) {
 				    chomp;
 				    s/ //g;
@@ -5454,7 +5454,7 @@ sub AdjustView {
 		$scry = 1.5 * $wy;
 	}
 
-	if (! $arg{-fit}) {
+	if (!$arg{-fit}) {
 		### just shift to middle point of the drawing without zoom
 		$c->configure(-scrollregion => [ $bx[0] - $scrx, $bx[1] - $scry, $bx[2] + $scrx, $bx[3] + $scry ]);
 
@@ -5568,7 +5568,7 @@ sub DrawOrExportCanvas {
 	my $d = $self->{FAM}{LINES}{$fam};
 	my $f1 = $self->{FAM}{FONT1}{$fam};
 	### draw pedigree in a Tk widget
-	if (! $arg{-modus}) {
+	if (!$arg{-modus}) {
 		### clear canvas and rebuild grid
 		$canvas->delete('all');
 		ShowGrid();
@@ -6218,7 +6218,7 @@ sub SetSymbols {
 			### for now disabled for SAB/TAP symbols because the inner space for that symbol
 			### is to small to fit text properly
 			if ($self->{FAM}{SHOW_INNER_SYBOL_TEXT}{$fam} && defined $self->{FAM}{INNER_SYMBOL_TEXT}{$fam}{$p}
-			    && ! $self->{FAM}{IS_SAB_OR_TOP}{$fam}{$p}) {
+			    && !$self->{FAM}{IS_SAB_OR_TOP}{$fam}{$p}) {
 				push @{$de->{INNER_SYMBOL_TEXT}}, [
 								   $cx * $z, $cy * $z,
 								   -anchor => 'center', -text => $self->{FAM}{INNER_SYMBOL_TEXT}{$fam}{$p},
@@ -6462,7 +6462,7 @@ sub SetHaplo {
 							    (($inf eq 'NI-3') && $self->{FAM}{SHOW_HAPLO_NI_3}{$fam})
 							   ) {
 								$out = $fill = $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
-								if ($self->{FAM}{SHOW_HAPLO_TEXT}{$fam} && ! $self->{FAM}{ALLELES_SHIFT}{$fam}) {
+								if ($self->{FAM}{SHOW_HAPLO_TEXT}{$fam} && !$self->{FAM}{ALLELES_SHIFT}{$fam}) {
 									$cc++;
 									next;
 								}
@@ -6796,7 +6796,7 @@ sub AlignMatrix {
 			my $newpos1 = $sk[0] - $diff;
 			my $newpos2 = $ek[0] + $diff;
 
-			if (scalar (keys %{$self->{FAM}{COUPLE}{$fam}{$k2{$ek[0]}}}) != 1) {
+			if (scalar keys %{$self->{FAM}{COUPLE}{$fam}{$k2{$ek[0]}}} != 1) {
 				$ind = 1;
 				$newpos2 = $ek[1] + $diff;
 			}
@@ -6884,7 +6884,7 @@ sub TranslateCoupleGroup {
 		for my $p1 (@S) {
 			for my $p2 (@S) {
 				next if $p1 eq $p2;
-				if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && ! $SAVE{$p1}{$p2} && ! $SAVE{$p2}{$p1}) {
+				if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && !$SAVE{$p1}{$p2} && !$SAVE{$p2}{$p1}) {
 					my $str = join "==", nsort($p1, $p2);
 					my $last_i = $#D1 + 1;
 					if ($str eq $couple_from) {
@@ -7381,8 +7381,8 @@ sub SetLines {
 		for my $id2 (keys %{$d->{SIB}}) {
 			my $B = $d->{SIB}{$id2}[0];
 			next if $id1 eq $id2;
-			next if ! (($A->[2] < $B->[2]) && ($A->[4] > $B->[2])) ||
 			next unless ($A->[3] == $B->[3]);
+			next if !(($A->[2] < $B->[2]) && ($A->[4] > $B->[2])) ||
 			  (($B->[2] < $A->[2]) && ($B->[4] > $A->[2]));
 
 			$A->[3] -= 6 * $z;
@@ -7553,7 +7553,7 @@ sub SetCouples {
 	for my $p1 (@S) {
 		for my $p2 (@S) {
 			next if $p1 eq $p2;
-			if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && ! $SAVE{$p1}{$p2} && ! $SAVE{$p2}{$p1}) {
+			if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && !$SAVE{$p1}{$p2} && !$SAVE{$p2}{$p1}) {
 				push @D, [ $p1, $p2 ];
 				$SAVE{$p1}{$p2} = 1;
 			}
