@@ -590,7 +590,7 @@ sub OpenDefaults {
 	}
 	my @list = nsort keys %{$test->{FAM}{PED_ORG}};
 	if (!@list) {
-		ShowInfo("The file seems not to contain valid data!\n$@", 'warning');
+		ShowInfo("The file apparently contains no valid data!\n$@", 'warning');
 		return;
 	}
 
@@ -1267,7 +1267,7 @@ sub AddSiblings {
 		if ($pid_new->{$_}{NAME}) {
 			my $name = $pid_new->{$_}{NAME};
 			if ($self->{FAM}{PID2PIDNEW}{$fam}{$name}) {
-		 		ShowInfo("The PID $name is already in use, pleasy try again!", 'error');
+		 		ShowInfo("The PID $name is already in use, please try again!", 'error');
 				return;
 			}
 			push @{$self->{FAM}{PED_ORG}{$fam}}, [ $name, $f_old, $m_old, $pid_new->{$_}{GENDER}, 1 ];
@@ -1514,14 +1514,14 @@ sub ClickSymbol {
 				$self = thaw($backup);
 			} elsif ($_ eq 'Ok') {
 				if (($gender ne $self->{FAM}{SID2SEX}{$fam}{$id}) && $self->{FAM}{CHILDREN}{$fam}{$id}) {
-					ShowInfo("Changing gender for individuals that which have offspring is forbidden!", 'warning');
+					ShowInfo("Changing gender for individuals that have offspring is forbidden!", 'warning');
 					return;
 				}
 				$self->{FAM}{SID2SEX}{$fam}{$id} = $gender;
 
 				### Check if case info #1 contains data
 				if (!$sid_old) {
-					ShowInfo("The Case Info #1 filed must contain data!, 'warning'");
+					ShowInfo("The Case Info #1 field must contain data!", 'warning');
 					return;
 				}
 				### Check if change in case info #1 lead to PID duplication
@@ -1883,7 +1883,7 @@ sub MouseB1Click {
 		### STATUS = 1 --> zoom in
 		Zoom($c, 1, 1, $x, $y);
 	} elsif ($self->{GLOB}{STATUS} == 2) {
-		### STATUS = 1 --> zoom in
+		### STATUS = 2 --> zoom out
 		Zoom($c, -1, 1, $x, $y);
 	}
 }
@@ -1982,7 +1982,7 @@ sub ShowInfo {
 }
 
 # This method implements maximal number of trials to find good drawing solutions
-# Given values are found empirical working well. The aligning algorithm still could be improved !
+# Given values are found empirical working well. The aligning algorithm still could be improved!
 #============
 sub DrawPed {
 #============
@@ -2098,7 +2098,7 @@ sub RestoreSelf {
 		return;
 	}
 
-	### check for compatability --> old Versions do not have this variable
+	### check for compatibility --> old Versions do not have this variable
 	### if changes in save format break backward compatibility --> do it here
 	if (! $test->{GLOB}{VERSION}) {
 		ShowInfo "This version of HaploPainter does not support the specified file format!", 'warning';
@@ -2477,8 +2477,8 @@ sub FindLoops {
 			}
 		}
 
-		##### asymmetric loop !!!
 		if (($cc1 != $cc2) && ! $D2{$loop}) {
+		##### asymmetric loop!!!
 			my ($n1, $n2);
 			for my $i (1 - $cll .. $cll - 1) {
 				if (($cc1 < $cc2) && ($node_types[$i] =~ /E./) && ($node_types[$i - 1] =~ /M.|S./)) {
@@ -2601,7 +2601,7 @@ sub ReadHaplo {
 	close FH;
 
 	unless (@file) {
-		ShowInfo("$arg{-file} has no data !", 'warning');
+		ShowInfo("$arg{-file} has no data!", 'warning');
 		return;
 	}
 	my $h1;
@@ -2753,7 +2753,7 @@ sub ReadHaplo {
 				$haplo{$fam}{PID}{$p}{M}{TEXT} = [ @_[6 .. $#_] ];
 			}
 		} else {
-			ShowInfo ("Unknown haplotype file format $arg{-format} !", 'info');
+			ShowInfo ("Unknown haplotype file format $arg{-format}!", 'info');
 			return;
 		}
 	}
@@ -3067,7 +3067,7 @@ sub ReadPed {
 	}
 
 	unless (%ped_org) {
-		ShowInfo("There are no data to read !", 'warning');
+		ShowInfo("There are no data to read!", 'warning');
 		return;
 	}
 	my $er = CheckPedigreesForErrors(\%ped_org, $arg{-format});
@@ -3636,7 +3636,7 @@ sub ProcessHaplotypes {
 						$h->{$pid}{M}{BAR} = CompleteBar($fam, $b, $aa3, $ba3, $aa4, $ba4);
 					}
 				} else {
-					ShowInfo("The file seems to be corrupted - missing haplotype for $m ?\n", 'error');
+					ShowInfo("The file seems to be corrupted - missing haplotype for $m?\n", 'error');
 					delete $self->{FAM}{HAPLO}{$fam};
 					return;
 				}
@@ -3854,7 +3854,7 @@ sub FindTop {
 	}
 	### Sollte eigentlich nicht mehr vorkommen ...
 	unless ($self->{FAM}{FOUNDER_COUPLE}{$fam}{0}) {
-		ShowInfo("There is no founder couple in generation 1 !", 'error');
+		ShowInfo("There is no founder couple in generation 1!", 'error');
 		return;
 	}
 
@@ -4129,8 +4129,8 @@ sub ImportPedigreeDBI {
 		}
 
 		### No pedigrees found, something is bad
-		if (!@$ped_ref) {
-			ShowInfo("The relation $self->{GLOB}{DB_RELATION} seems not to contain any data!");
+		unless (@$ped_ref) {
+			ShowInfo("The relation $self->{GLOB}{DB_RELATION} apparently contains no data!");
 			$dbh->disconnect;
 			return;
 		}
@@ -4564,8 +4564,8 @@ sub OptionsPrint {
 #=======================
 sub OptionsConsanguine {
 #=======================
-	if (! $self->{GLOB}{CURR_FAM}) {
-		ShowInfo("Load some pedigree first, then change settings!", 'info');
+	unless ($self->{GLOB}{CURR_FAM}) {
+		ShowInfo("Please load some pedigree first, then change settings!", 'info');
 		return;
 	}
 	my $fam = $self->{GLOB}{CURR_FAM};
@@ -4644,8 +4644,8 @@ sub OptionsConsanguine {
 #=====================
 sub OptionsLoopBreak {
 #=====================
-	if (! $self->{GLOB}{CURR_FAM}) {
-		ShowInfo("Load some pedigree first, then change settings!", 'info');
+	unless ($self->{GLOB}{CURR_FAM}) {
+		ShowInfo("Please load some pedigree first, then change settings!", 'info');
 		return;
 	}
 	my $fam = $self->{GLOB}{CURR_FAM};
@@ -4794,8 +4794,8 @@ sub Configuration {
 	my $freeze = freeze($self);
 	my %flag;
 
-	if (! $self->{GLOB}{CURR_FAM}) {
-		ShowInfo("Load some pedigree first, then change settings!", 'info');
+	unless ($self->{GLOB}{CURR_FAM}) {
+		ShowInfo("Please load some pedigree first, then change settings!", 'info');
 		return;
 	}
 
@@ -6090,7 +6090,7 @@ sub GetCairoCol {
 	if ($col =~ /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/) {
 		return (hex($1) / 255, hex($2) / 255, hex($3) / 255);
 	}
-	ShowInfo("Error reading color: $col - is substituted to black!\n");
+	ShowInfo("Error reading color: $col - black is substituted!\n");
 	return (0, 0, 0);
 }
 
