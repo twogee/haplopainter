@@ -1038,7 +1038,7 @@ sub SetAsTwins {
 				ShowInfo("The twin individual $sib_old is not a member of the sibling group.", 'warning');
 				return;
 			}
-			### monozygotic twins schould have same gender
+			### monozygotic twins should have same gender
 			if (($tt eq 'm') && $self->{FAM}{SID2SEX}{$fam}{$sib} != $gender) {
 				ShowInfo("The twin individual $sib_old is declared as monozygotic but differs in gender of other twins.", 'warning');
 				return;
@@ -1732,7 +1732,7 @@ sub MouseB1Move {
 			$curr_tag = $tag if $tag =~ /^SYM-/;
 		}
 		if ($curr_tag) {
-			### move active symbols arround the screen
+			### move active symbols around the screen
 			my @act_sym = keys %{$self->{GLOB}{ACTIVE_SYMBOLS}} or return;
 			my $fam = $self->{GLOB}{CURR_FAM} or return;
 
@@ -2932,7 +2932,7 @@ sub ReadPed {
 		);
 
 	### HaploPainter deals with BOM/Unicode sequence in a way that it checks for it
-	### and if there it will overides the $param->{ENCODING} flag
+	### and if there it will override the $param->{ENCODING} flag
 	if ($bom =~ /^\xEF\xBB\xBF/) {
 		$bflag = 1;
 		$encoding = $e{utf8}
@@ -2981,7 +2981,7 @@ sub ReadPed {
 
 	if (uc $arg{-format} eq 'LINKAGE') {
 		### LINKAGE format --- delimiter = 'tab' or ';' or 'space' --> must have 6 fields
-		### HaploPainter tries to process lines in a way that delimiters are automatically dedected
+		### HaploPainter tries to process lines in a way that delimiters are automatically detected
 
 		### Syntax of LINKAGE format
 		###
@@ -5502,7 +5502,7 @@ sub AdjustView {
 		my $x = $self->{GLOB}{X_CANVAS};
 		my $y = $self->{GLOB}{Y_CANVAS};
 
-		### center canvas scrollregion to that coordinates
+		### center canvas scroll region to these coordinates
 		my @scn = ($x - $scrx, $y - $scry, $x + $scrx, $y + $scry);
 		$c->configure(-scrollregion => \@scn);
 
