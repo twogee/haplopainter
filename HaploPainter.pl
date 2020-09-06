@@ -2309,21 +2309,20 @@ sub FindLoops {
 		### exploring loop
 		my @node_types;
 		for my $node (@loop_list) {
-			my ($p1, $p2) = (split '==', $node);
-
 			### there is a chance that this is a multiple mate case and
 			### one of those mates is further connected
 
 			### getting all connected mates of this node which are part of the loop
-			my %P = ($p1, 1, $p2, 1);
-			my $lflag = 1;
-			while ($lflag) {
-				$lflag = 0;
+			my @p = split '==', $node, 2;
+			my %P = map { $_ => 1 } @p;
+			my $linked = 1;
+			while ($linked) {
+				$linked = 0;
 				for my $p (keys %P) {
 					for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
 						if (!$P{$c} && $E{$c}) {
 							$P{$c} = 1;
-							$lflag = 1;
+							$linked = 1;
 						}
 					}
 				}
@@ -2355,10 +2354,10 @@ sub FindLoops {
 
 			if (!$no_start_flag && $no_end_flag) {
 				### START nodes
-				$s->{START}{$p1}{$p2} = 1;
-				$s->{START}{$p2}{$p1} = 1;
-				$s->{NR2START}{$countl}{$p1} = 1;
-				$s->{NR2START}{$countl}{$p2} = 1;
+				$s->{START}{$p[0]}{$p[1]} = 1;
+				$s->{START}{$p[1]}{$p[0]} = 1;
+				$s->{NR2START}{$countl}{$p[0]} = 1;
+				$s->{NR2START}{$countl}{$p[1]} = 1;
 				if ((scalar keys %P) > 2) {
 					push @node_types, 'SM';
 				} else {
@@ -2366,28 +2365,28 @@ sub FindLoops {
 				}
 			} elsif ($no_start_flag && !$no_end_flag) {
 				### END nodes
-				$s->{END}{$p1}{$p2} = 1;
-				$s->{END}{$p2}{$p1} = 1;
-				$s->{NR2END}{$countl}{$p1} = 1;
-				$s->{NR2END}{$countl}{$p2} = 1;
+				$s->{END}{$p[0]}{$p[1]} = 1;
+				$s->{END}{$p[1]}{$p[0]} = 1;
+				$s->{NR2END}{$countl}{$p[0]} = 1;
+				$s->{NR2END}{$countl}{$p[1]} = 1;
 
 				if ((scalar keys %P) > 2) {
 					push @node_types, 'EM';
 				} else {
-					if ($self->{FAM}{COUPLE}{$fam}{$p1} && $self->{FAM}{COUPLE}{$fam}{$p1}{$p2}) {
-						$s->{CONSANGUINE}{$p1}{$p2} = 1;
-						$s->{CONSANGUINE}{$p2}{$p1} = 1;
-						$_ = join '==', nsort($p1, $p2);
+					if ($self->{FAM}{COUPLE}{$fam}{$p[0]} && $self->{FAM}{COUPLE}{$fam}{$p[0]}{$p[1]}) {
+						$s->{CONSANGUINE}{$p[0]}{$p[1]} = 1;
+						$s->{CONSANGUINE}{$p[1]}{$p[0]} = 1;
+						$_ = join '==', nsort($p[0], $p[1]);
 						$s->{CONSANGUINE_ORG}{$_} = 1;
 					}
 					push @node_types, 'E_';
 				}
 			} elsif ($no_start_flag && $no_end_flag) {
 				### MIDDLE nodes
-				$s->{MIDDLE}{$p1}{$p2} = 1;
-				$s->{MIDDLE}{$p2}{$p1} = 1;
-				$s->{NR2MIDDLE}{$countl}{$p1} = 1;
-				$s->{NR2MIDDLE}{$countl}{$p2} = 1;
+				$s->{MIDDLE}{$p[0]}{$p[1]} = 1;
+				$s->{MIDDLE}{$p[1]}{$p[0]} = 1;
+				$s->{NR2MIDDLE}{$countl}{$p[0]} = 1;
+				$s->{NR2MIDDLE}{$countl}{$p[1]} = 1;
 				if ((scalar keys %P) > 2) {
 					push @node_types, 'MM';
 				} else {
