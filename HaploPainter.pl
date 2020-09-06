@@ -1571,7 +1571,7 @@ sub EnterAllele {
 #===============
 	my $c = shift;
 	my $fam = $self->{GLOB}{CURR_FAM};
-	my $z = $self->{GLOB}{ZOOM}{$fam};
+#	my $z = $self->{GLOB}{ZOOM}{$fam};
 
 	for my $tag ($c->itemcget('current', -tags)) {
 		if ($tag =~ /ALLEL-(\w)-(\d+)-(.+)/) {
@@ -3526,7 +3526,7 @@ sub ShuffleFounderColors {
 
 	my $h = $self->{FAM}{HAPLO}{$fam}{PID};
 	my $un = $self->{FAM}{HAPLO_UNKNOWN}{$fam};
-	my $huc = $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
+#	my $huc = $self->{FAM}{HAPLO_UNKNOWN_COLOR}{$fam};
 
 	my @founder = keys %{$self->{FAM}{FOUNDER}{$fam}} or return;
 
@@ -3578,7 +3578,7 @@ sub ProcessHaplotypes {
 	return unless $self->{FAM}{HAPLO}{$fam}{PID};
 
 	my $h = $self->{FAM}{HAPLO}{$fam}{PID};
-	my $s = $self->{FAM}{STRUK}{$fam};
+#	my $s = $self->{FAM}{STRUK}{$fam};
 
 	### delete everything instaed of founder
 	for my $pid (keys %{$self->{FAM}{PID}{$fam} }) {
@@ -4655,7 +4655,7 @@ sub OptionsLoopBreak {
 		return;
 	}
 	my $fam = $self->{GLOB}{CURR_FAM};
-	my $s = $self->{FAM}{LOOP}{$fam};
+#	my $s = $self->{FAM}{LOOP}{$fam};
 	my $fbl = $self->{FAM}{BREAK_LOOP_OK}{$fam};
 	my $freeze = freeze($self);
 	my $nr_loops = scalar keys %$fbl;
@@ -5407,7 +5407,7 @@ sub AdjustView {
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
 	my $c = $canvas;
 	my $s = $param->{SHOW_GRID};
-	my $z = $self->{FAM}{ZOOM}{$fam};
+#	my $z = $self->{FAM}{ZOOM}{$fam};
 
 	$param->{SHOW_GRID} = 0;
 	ShowGrid();
@@ -5563,7 +5563,7 @@ sub DrawOrExportCanvas {
 	my $lnc = $self->{FAM}{LINE_COLOR}{$fam};
 	my $de = $self->{FAM}{DRAW_ELEMENTS}{$fam}{CANVAS};
 	my $d = $self->{FAM}{LINES}{$fam};
-	my $f1 = $self->{FAM}{FONT1}{$fam};
+#	my $f1 = $self->{FAM}{FONT1}{$fam};
 	### draw pedigree in a Tk widget
 	if (!$arg{-modus}) {
 		### clear canvas and rebuild grid
@@ -6108,7 +6108,7 @@ sub SetSymbols {
 	my $z = $self->{FAM}{ZOOM}{$fam};
 	my $l = $self->{FAM}{SYMBOL_LINE_WIDTH}{$fam};
 	my $lnc = $self->{FAM}{LINE_COLOR}{$fam};
-	my $s = $param->{SHOW_GRID};
+#	my $s = $param->{SHOW_GRID};
 	my $slnc = $self->{FAM}{SYMBOL_LINE_COLOR}{$fam};
 	my $f1 = $self->{FAM}{FONT1}{$fam};
 	my $f2 = $self->{FAM}{FONT_INNER_SYMBOL}{$fam};
@@ -6351,17 +6351,17 @@ sub SetHaplo {
 	my $z = $self->{FAM}{ZOOM}{$fam};
 	my $f1 = $self->{FAM}{FONT1}{$fam};
 	my $fh = $self->{FAM}{FONT_HAPLO}{$fam};
-	my $l = $self->{FAM}{SYMBOL_LINE_WIDTH}{$fam};
-	my $lnc = $self->{FAM}{LINE_COLOR}{$fam};
+#	my $l = $self->{FAM}{SYMBOL_LINE_WIDTH}{$fam};
+#	my $lnc = $self->{FAM}{LINE_COLOR}{$fam};
 	my $lw = $self->{FAM}{HAPLO_TEXT_LW}{$fam};
 	my $td1 = ($fh->{SIZE} * $z) + ($lw * $fh->{SIZE} * $z);
-	my $font1 = [ $f1->{FAMILY}, $f1->{SIZE} * $z, $f1->{WEIGHT}, $f1->{SLANT} ];
+#	my $font1 = [ $f1->{FAMILY}, $f1->{SIZE} * $z, $f1->{WEIGHT}, $f1->{SLANT} ];
 	my $font_haplo = [ $fh->{FAMILY}, $fh->{SIZE} * $z, $fh->{WEIGHT}, $fh->{SLANT} ];
 	my $hw = $self->{FAM}{HAPLO_WIDTH}{$fam};
 	my $hwni = $self->{FAM}{HAPLO_WIDTH_NI}{$fam};
 	my $hs = $self->{FAM}{HAPLO_SPACE}{$fam};
 	my $hlw = $self->{FAM}{HAPLO_LW}{$fam};
-	my $un = $self->{FAM}{HAPLO_UNKNOWN}{$fam};
+#	my $un = $self->{FAM}{HAPLO_UNKNOWN}{$fam};
 	my $de = $self->{FAM}{DRAW_ELEMENTS}{$fam}{CANVAS};
 	my $sz = $self->{FAM}{SYMBOL_SIZE}{$fam};
 	my $gy = $self->{FAM}{GITTER_Y}{$fam};
@@ -6742,7 +6742,7 @@ sub SetHaplo {
 sub AlignMatrix {
 #================
 	my $fam = shift || $self->{GLOB}{CURR_FAM};
-	my $s = $self->{FAM}{STRUK}{$fam};
+#	my $s = $self->{FAM}{STRUK}{$fam};
 	my $m = $self->{FAM}{MATRIX}{$fam};
 	my $cc = 1;
 	my $max_x = $self->{FAM}{X_SPACE}{$fam} * scalar keys %{$self->{FAM}{PID}{$fam}};
@@ -6818,7 +6818,7 @@ sub TranslateCoupleGroup {
 #=========================
 	my ($fam, $modus, $p1, $p2) = @_;
 	my $m = $self->{FAM}{MATRIX}{$fam};
-	my $c = $self->{FAM}{COUPLE}{$fam};
+#	my $c = $self->{FAM}{COUPLE}{$fam};
 	my $couple_from = join '==', nsort($p1, $p2);
 
 	## find everybody joined in couple group
@@ -6950,14 +6950,14 @@ sub SetLines {
 	my $fam = shift || $self->{GLOB}{CURR_FAM};
 	my $z = $self->{FAM}{ZOOM}{$fam};
 	my $d = $self->{FAM}{LINES}{$fam} = {};
-	my $s = $self->{FAM}{STRUK}{$fam};
+#	my $s = $self->{FAM}{STRUK}{$fam};
 	my $gy = $self->{FAM}{GITTER_Y}{$fam};
 	my $cf1 = $self->{FAM}{CROSS_FAKTOR1}{$fam};
 	my $cd = $self->{FAM}{CONSANG_DIST}{$fam};
 	my $lsy = $self->{FAM}{LINE_SIBS_Y}{$fam};
 	my $sz = $self->{FAM}{SYMBOL_SIZE}{$fam};
 	my $lty = $self->{FAM}{LINE_TWINS_Y}{$fam};
-	my $lcy = $self->{FAM}{LINE_CROSS_Y}{$fam};
+#	my $lcy = $self->{FAM}{LINE_CROSS_Y}{$fam};
 
 	### calculate lines between parents
 	for my $parent_node (keys %{$self->{FAM}{PARENT_NODE}{$fam}}) {
@@ -7447,7 +7447,7 @@ sub CrossCheck {
 	my $z = $self->{FAM}{ZOOM}{$fam};
 	my ($ax, $ay, $bx, $by) = @$r1;
 	my ($cx, $cy, $dx, $dy) = @$r2;
-	my $de = $self->{FAM}{CROSS_CHECK}{$fam};
+#	my $de = $self->{FAM}{CROSS_CHECK}{$fam};
 
 	### round values
 	for ($ax, $ay, $bx, $by, $cx, $cy, $dx, $dy) {
