@@ -405,7 +405,7 @@ sub _MainMenu {
 				],
 				[ 'cascade', 'Import Haplotypes ...', -tearoff => 0, -menuitems =>
 					[
-						[ 'command', 'Simwalk', -command => [ \&ImportHaplofile, 'SIMWALK' ], -accelerator => 'F9' ],
+						[ 'command', 'SimWalk', -command => [ \&ImportHaplofile, 'SIMWALK' ], -accelerator => 'F9' ],
 						[ 'command', 'GeneHunter', -command => [ \&ImportHaplofile, 'GENEHUNTER' ], -accelerator => 'F10' ],
 						[ 'command', 'Merlin', -command => [ \&ImportHaplofile, 'MERLIN' ], -accelerator => 'F11' ],
 						[ 'command', 'Allegro', -command => [ \&ImportHaplofile, 'ALLEGRO' ], -accelerator => 'F12' ],
@@ -1555,7 +1555,7 @@ sub ClickSymbol {
 					$l->[11] = $self->{FAM}{INNER_SYMBOL_TEXT}{$fam}{$id};
 					$l->[12] = $self->{FAM}{SIDE_SYMBOL_TEXT}{$fam}{$id};
 					for (2 .. 5) {
-						$l->[11 + $_] = $ci->{$id}{'Case_Info_' . $_}
+						$l->[11 + $_] = $ci->{$id}{'Case_Info_' . $_};
 					}
 					last;
 				}
@@ -2312,7 +2312,7 @@ sub FindLoops {
 			my ($p1, $p2) = (split '==', $node);
 
 			### there is a chance that this is a multiple mate case and
-			### one of that mate is further connected
+			### one of those mates is further connected
 
 			### getting all connected mates of this node which are part of the loop
 			my %P = ($p1, 1, $p2, 1);
@@ -2553,7 +2553,7 @@ sub FindLoops {
 	$s->{LOOP_COUNT} = $countl;
 
 	### skip loops that end on same node
-	### make new data structur for this task
+	### make new data structure for this task
 	my %dupl;
 	for my $loop (keys %{$s->{NR2END}}) {
 		@_ = nsort keys %{$s->{NR2END}{$loop}};
@@ -3432,7 +3432,7 @@ sub ProcessFamily {
 			my @cons = keys %{$consang{$k}} or next;
 			my @check = ();
 			for (@cons) {
-				push @check, $ci->{PID}{$_}{Case_Info_1}
+				push @check, $ci->{PID}{$_}{Case_Info_1};
 			}
 			$_ = join ',', @check;
 			unless (scalar @cons == 2) {
@@ -4267,11 +4267,11 @@ sub ImportPedigreeDBI {
 			 -bg => 'white', -disabledbackground => 'white', -width => 25, -state => 'readonly',
 			 -browsecmd => sub {
 				 if ($self->{GLOB}{DB_TYPE} =~ /Oracle/) {
-					 $self->{GLOB}{DB_PORT} = 1521
+					 $self->{GLOB}{DB_PORT} = 1521;
 				 } elsif ($self->{GLOB}{DB_TYPE} =~ /PostgreSQL/) {
-					 $self->{GLOB}{DB_PORT} = 5432
+					 $self->{GLOB}{DB_PORT} = 5432;
 				 } elsif ($self->{GLOB}{DB_TYPE} =~ /MySQL/) {
-					 $self->{GLOB}{DB_PORT} = 3306
+					 $self->{GLOB}{DB_PORT} = 3306;
 				 }
 			 })->pack(-padx => 11, qw/-side left/);
 
@@ -6825,7 +6825,7 @@ sub TranslateCoupleGroup {
 	## find everybody joined in couple group
 	my %P;
 	for (keys %{$self->{FAM}{COUPLE}{$fam}{$p1}}) {
-		$P{$_} = 1 unless $self->{FAM}{CHILDREN}{$fam}{$p1}{$_}
+		$P{$_} = 1 unless $self->{FAM}{CHILDREN}{$fam}{$p1}{$_};
 	}
 	my $flag = 1;
 	while ($flag) {
@@ -6926,7 +6926,7 @@ sub ShiftRow {
 		for my $X (sort { $a <=> $b } keys %{$m->{YX2P}{$Y}}) {
 			if ($X >= $OldPos) {
 				push @right, $X;
-				push @pid, $m->{YX2P}{$Y}{$X}
+				push @pid, $m->{YX2P}{$Y}{$X};
 			}
 		}
 		for (my $i = 0; $i <= $#right; $i++) {
@@ -7709,7 +7709,7 @@ sub DuplicatePid {
 	### add case info fields
 	if (keys %{$ci->{$p}}) {
 		for (keys %{$ci->{$p}}) {
-			$ci->{$pn}{$_} = $ci->{$p}{$_}
+			$ci->{$pn}{$_} = $ci->{$p}{$_};
 		}
 	}
 
@@ -7739,7 +7739,7 @@ sub LoopBreak {
 		next unless $self->{FAM}{BREAK_LOOP_OK}{$fam}{$_};
 		my @p = split '==', $_;
 		for (@p) {
-			delete $self->{FAM}{LOOP}{$fam}{DROP_CHILDREN_FROM}{$_} if $self->{FAM}{LOOP}{$fam}{DROP_CHILDREN_FROM}{$_}
+			delete $self->{FAM}{LOOP}{$fam}{DROP_CHILDREN_FROM}{$_} if $self->{FAM}{LOOP}{$fam}{DROP_CHILDREN_FROM}{$_};
 		}
 
 		ChangeOrder(\@p);
