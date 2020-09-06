@@ -879,10 +879,10 @@ sub Clear {
 		for (keys %{$self->{FAM}}) {
 			delete $self->{FAM}{$_}{$fam};
 		}
-		for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
-			$drawref->add('command', -label => $fam,
+		for my $family (nsort keys %{$self->{FAM}{PED_ORG}}) {
+			$drawref->add('command', -label => $family,
 				      -command => sub {
-					      DrawOrRedraw($fam);
+					      DrawOrRedraw($family);
 				      });
 		}
 		($self->{GLOB}{CURR_FAM}) = nsort keys %{$self->{FAM}{PED_ORG}};
@@ -2170,12 +2170,12 @@ sub FindLoops {
 				unless (defined $self->{FAM}{SID2FATHER}{$fam}{$parent} || defined $self->{FAM}{SID2MOTHER}{$fam}{$parent}) {
 					### pseudo node creation to connect joined mates by one parent node
 					my @mates = nsort keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$parent}};
-					my $node = 'PSNODE_' . join ('==', (@mates, $parent)) . '_PSNODE';
+					my $psnode = 'PSNODE_' . join ('==', (@mates, $parent)) . '_PSNODE';
 
 					for my $mate (@mates) {
 						my $parnode = join '==', nsort($parent, $mate);
-						$N{$node}{$parnode} = 1;
-						$N{$parnode}{$node} = 1;
+						$N{$psnode}{$parnode} = 1;
+						$N{$parnode}{$psnode} = 1;
 					}
 				}
 			}
@@ -2655,34 +2655,34 @@ sub ReadHaplo {
 			}
 		} elsif ($arg{-format} eq 'GENEHUNTER') {
 			### GENEHUNTER
-			my $fam;
+			my $family;
 			for (my $i = 0; $i < $#file; $i++) {
 				$_ = $file[$i];
 				chomp;
 				next unless $_;
 				if (/^\*+\s+(\S+)\s+/) {
 					next unless $self->{FAM}{PED_ORG}{$1};
-					$fam = $1;
-					$h1 = $haplo{$fam}{PID} = {};
+					$family = $1;
+					$h1 = $haplo{$family}{PID} = {};
 					next;
 				}
-				next unless $fam;
+				next unless $family;
 				my ($P, $M) = ($_, $file[++$i]);
 				my ($pid, undef, undef, undef, $PH) = split "\t", $P;
-				$pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid} or next;
+				$pid = $self->{FAM}{PID2PIDNEW}{$family}{$pid} or next;
 				$h1->{$pid}{P}{TEXT} = [ split ' ', $PH ];
 				for (@{$h1->{$pid}{P}{TEXT}}) {
-					s/0/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ if $_ eq '0';
+					s/0/$self->{FAM}{HAPLO_UNKNOWN}{$family}/ if $_ eq '0';
 				}
 				$M =~ s/\t//g;
 				$h1->{$pid}{M}{TEXT} = [ split ' ', $M ];
 				for (@{$h1->{$pid}{M}{TEXT}}) {
-					s/0/$self->{FAM}{HAPLO_UNKNOWN}{$fam}/ if $_ eq '0';
+					s/0/$self->{FAM}{HAPLO_UNKNOWN}{$family}/ if $_ eq '0';
 				}
 			}
 		} elsif ($arg{-format} eq 'MERLIN') {
 			### MERLIN
-			my ($fam, @p);
+			my ($family, @p);
 
 			for (@file) {
 				chomp;
@@ -2690,21 +2690,21 @@ sub ReadHaplo {
 
 				### extracting family ID
 				if (/^FAMILY\s+(\S+)\s+\[(.+)\]/) {
-					undef $fam;
+					undef $family;
 					undef @p;
 					next if $2 eq 'Uninformative';
 					next unless $self->{FAM}{PED_ORG}{$1};
-					$fam = $1;
-					$h1 = $haplo{$fam}{PID} = {};
+					$family = $1;
+					$h1 = $haplo{$family}{PID} = {};
 				}
-				next unless $fam;
+				next unless $family;
 
 				### extracting individual IDs
 				if (/\(.+\)/) {
 					@p = ();
 					my @pid = split ' ', $_;
 					for (my $k = 0; $k < $#pid; $k += 2) {
-						my $pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid[$k]} or next;
+						my $pid = $self->{FAM}{PID2PIDNEW}{$family}{$pid[$k]} or next;
 						push @p, $pid;
 						$h1->{$pid}{M}{TEXT} = [];
 						$h1->{$pid}{P}{TEXT} = [];
@@ -2724,7 +2724,7 @@ sub ReadHaplo {
 						$z = $_[0];
 					}
 					$z =~ s/[A-Za-z]//g;
-					$z = $self->{FAM}{HAPLO_UNKNOWN}{$fam} if $merlin_unknown{$z};
+					$z = $self->{FAM}{HAPLO_UNKNOWN}{$family} if $merlin_unknown{$z};
 					push @{$h1->{$pid}{M}{TEXT}}, $z;
 					my $g = $L[($m * 3) + 2];
 					if ($g =~ /,/) {
@@ -2732,7 +2732,7 @@ sub ReadHaplo {
 						$g = $_[0];
 					}
 					$g =~ s/[A-Za-z]//g;
-					$g = $self->{FAM}{HAPLO_UNKNOWN}{$fam} if $merlin_unknown{$g};
+					$g = $self->{FAM}{HAPLO_UNKNOWN}{$family} if $merlin_unknown{$g};
 					push @{$h1->{$pid}{P}{TEXT}}, $g;
 				}
 			}
@@ -2750,13 +2750,13 @@ sub ReadHaplo {
 				@_ = split;
 				next unless @_;
 				next unless $self->{FAM}{PED_ORG}{$_[0]};
-				my $fam = $_[0];
-				my $p = $self->{FAM}{PID2PIDNEW}{$fam}{$_[1]} or next;
-				$haplo{$fam}{PID}{$p}{P}{TEXT} = [ @_[6 .. $#_] ];
+				my $family = $_[0];
+				my $p = $self->{FAM}{PID2PIDNEW}{$family}{$_[1]} or next;
+				$haplo{$family}{PID}{$p}{P}{TEXT} = [ @_[6 .. $#_] ];
 				@_ = split ' ', $file[++$i];
 				next unless @_;
-				next unless $self->{FAM}{PED_ORG}{$fam};
-				$haplo{$fam}{PID}{$p}{M}{TEXT} = [ @_[6 .. $#_] ];
+				next unless $self->{FAM}{PED_ORG}{$family};
+				$haplo{$family}{PID}{$p}{M}{TEXT} = [ @_[6 .. $#_] ];
 			}
 		} else {
 			ShowInfo ("Unknown haplotype file format $arg{-format}!", 'info');
@@ -3616,11 +3616,11 @@ sub ProcessHaplotypes {
 				my ($p, $m) = ($self->{FAM}{SID2FATHER}{$fam}{$pid}, $self->{FAM}{SID2MOTHER}{$fam}{$pid});
 				if ($h->{$p}{P}{TEXT} && $h->{$p}{M}{TEXT}) {
 					if ($h->{$p}{P}{BAR} && $h->{$p}{M}{BAR}) {
-						my $a = $h->{$pid}{P}{TEXT};
+						my $ft = $h->{$pid}{P}{TEXT};
 						### BARs + ALLELE from father
 						my ($aa1, $aa2) = ($h->{$p}{P}{TEXT}, $h->{$p}{M}{TEXT});
 						my ($ba1, $ba2) = ($h->{$p}{P}{BAR}, $h->{$p}{M}{BAR});
-						$h->{$pid}{P}{BAR} = CompleteBar($fam, $a, $aa1, $ba1, $aa2, $ba2);
+						$h->{$pid}{P}{BAR} = CompleteBar($fam, $ft, $aa1, $ba1, $aa2, $ba2);
 					} else {
 						$flag = 1;
 					}
@@ -3633,11 +3633,11 @@ sub ProcessHaplotypes {
 
 				if ($h->{$m}{P}{TEXT} && $h->{$m}{M}{TEXT}) {
 					if ($h->{$m}{P}{BAR} && $h->{$m}{M}{BAR}) {
-						my $b = $h->{$pid}{M}{TEXT};
+						my $mt = $h->{$pid}{M}{TEXT};
 						### BARs + ALLELE from mother
 						my ($ba3, $ba4) = ($h->{$m}{P}{BAR}, $h->{$m}{M}{BAR});
 						my ($aa3, $aa4) = ($h->{$m}{P}{TEXT}, $h->{$m}{M}{TEXT});
-						$h->{$pid}{M}{BAR} = CompleteBar($fam, $b, $aa3, $ba3, $aa4, $ba4);
+						$h->{$pid}{M}{BAR} = CompleteBar($fam, $mt, $aa3, $ba3, $aa4, $ba4);
 					} else {
 						$flag = 1;
 					}
@@ -3655,7 +3655,7 @@ sub ProcessHaplotypes {
 #================
 sub CompleteBar {
 #================
-	my ($fam, $a, $aa1, $ba1, $aa2, $ba2) = @_;
+	my ($fam, $mt, $aa1, $ba1, $aa2, $ba2) = @_;
 	return unless $ba1 && $ba2 && @$ba1 && @$ba2;
 
 	my ($phase, @bar);
@@ -3664,9 +3664,9 @@ sub CompleteBar {
 
 	### Phase ist nicht definiert -> Vorruecken bis zur ersten informativen Stelle
 	### und Phase danach definieren
-	for (my $j = 0; $j < scalar @$a; $j++) {
+	for (my $j = 0; $j < scalar @$mt; $j++) {
 		next if $aa1->[$j] eq $aa2->[$j];
-		if ($a->[$j] eq $aa1->[$j]) {
+		if ($mt->[$j] eq $aa1->[$j]) {
 			$phase = 1;
 		} else {
 			$phase = 2;
@@ -3675,14 +3675,14 @@ sub CompleteBar {
 	}
 	### wenn das fehlschlaegt ist der Ganze Haplotyp fuer die Katz
 	unless ($phase) {
-		push @bar, [ 'NI-0', $unc ] for @$a;
+		push @bar, [ 'NI-0', $unc ] for @$mt;
 		return \@bar;
 	}
 
-	for (my $i = 0; $i < scalar @$a; $i++) {
+	for (my $i = 0; $i < scalar @$mt; $i++) {
 		### nicht informative Stelle -> entweder Haplotyp fortfuehren
 		### oder, wenn voreingestellt als uninformativ deklarieren
-		if ($a->[$i] eq $un) {
+		if ($mt->[$i] eq $un) {
 			if ($phase == 1) {
 				push @bar, [ 'NI-1', $ba1->[$i][1] ];
 			} elsif ($phase == 2) {
@@ -3695,7 +3695,7 @@ sub CompleteBar {
 				push @bar, [ 'NI-3', $ba2->[$i][1] ];
 			}
 		} else {
-			if ($a->[$i] eq $aa1->[$i]) {
+			if ($mt->[$i] eq $aa1->[$i]) {
 				push @bar, [ 'I', $ba1->[$i][1] ];
 				$phase = 1;
 			} else {
@@ -4141,29 +4141,29 @@ sub ImportPedigreeDBI {
 			return;
 		}
 
-		my $d2 = $mw->DialogBox(-title => 'Choose Pedigrees', -buttons => [ qw/Ok Cancel/ ]);
+		my $dbox = $mw->DialogBox(-title => 'Choose Pedigrees', -buttons => [ qw/Ok Cancel/ ]);
 
 		### Choosing Pedigrees from the listbox
-		my $f1 = $d2->Frame->grid(-row => 1, -column => 0, -sticky => 'w');
-		my $lab1 = $f1->Label(-text => 'Pedigree Selection', -width => 20)->pack(-side => 'top', -anchor => 'w');
-		my $lb = $f1->Scrolled('Listbox',
+		my $frame = $dbox->Frame->grid(-row => 1, -column => 0, -sticky => 'w');
+		my $label = $frame->Label(-text => 'Pedigree Selection', -width => 20)->pack(-side => 'top', -anchor => 'w');
+		my $lbox = $frame->Scrolled('Listbox',
 				       -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
 				       -height => 14, -width => 25, -exportselection => 0)->pack(-side => 'top', -fill => 'both', -expand => 1);
-		$d2->gridColumnconfigure(0, -pad => 10);
+		$dbox->gridColumnconfigure(0, -pad => 10);
 		for (@$ped_ref) {
-			$lb->insert('end', $_);
+			$lbox->insert('end', $_);
 		}
 
-		my $answ = $d2->Show();
-		if ($answ eq 'Cancel') {
+		my $answer = $dbox->Show();
+		if ($answer eq 'Cancel') {
 			$dbh->disconnect;
 			return;
 		}
 
 		### processing
 		my @ped;
-		for ($lb->curselection) {
-			push @ped, $lb->get($_);
+		for ($lbox->curselection) {
+			push @ped, $lbox->get($_);
 		}
 		return unless @ped;
 		for (@ped) {
@@ -4373,8 +4373,8 @@ sub ReadPedFromDB {
 	### read the data in global Hash %pedigree
 	my %ped_org;
 	for my $r (@$aref) {
-		my $fam = shift @$r;
-		push @{$ped_org{$fam}}, [ @$r ];
+		my $family = shift @$r;
+		push @{$ped_org{$family}}, [ @$r ];
 	}
 
 	my $er = CheckPedigreesForErrors(\%ped_org, 'CSV');
@@ -4656,9 +4656,9 @@ sub OptionsLoopBreak {
 	}
 	my $fam = $self->{GLOB}{CURR_FAM};
 	my $s = $self->{FAM}{LOOP}{$fam};
-	my $b = $self->{FAM}{BREAK_LOOP_OK}{$fam};
+	my $fbl = $self->{FAM}{BREAK_LOOP_OK}{$fam};
 	my $freeze = freeze($self);
-	my $nr_loops = scalar keys %$b;
+	my $nr_loops = scalar keys %$fbl;
 
 	my $lb6;
 	my $flag = 0;
@@ -4735,7 +4735,7 @@ sub OptionsLoopBreak {
 			  })->grid(-row => 3, -column => 1, -sticky => 'w');
 
 	### choose PIDs for Loop break
-	my $lab6 = $f2->Label(-text => 'Select loops for break', -width => 20)->pack(-side => 'top', -anchor => 'w');
+	my $label = $f2->Label(-text => 'Select loops for break', -width => 20)->pack(-side => 'top', -anchor => 'w');
 	$lb6 = $f2->Scrolled('Listbox', -scrollbars => 'osoe', -selectmode => 'extended', -selectbackground => 'red',
 			     -height => 14, -width => 25, -exportselection => 0)->pack(-side => 'top', -fill => 'both', -expand => 1);
 
@@ -5224,24 +5224,24 @@ sub Configuration {
 
 	for my $nr (sort { $a <=> $b } keys %{$c{AFF_COLOR}}) {
 		my $f = $p6_f1->Frame->grid(-row => $nr, -column => 0, -sticky => 'w');
-		my $lb = $f->Label(-width => 3, -bg => $self->{FAM}{AFF_COLOR}{$fam}{$nr})->pack(-side => 'left', -padx => 10);
+		my $label = $f->Label(-width => 3, -bg => $self->{FAM}{AFF_COLOR}{$fam}{$nr})->pack(-side => 'left', -padx => 10);
 		my $cb = $f->Button(-text => $c{AFF_COLOR}{$nr}, -width => 20, -height => 1,
 				    -command => sub {
 					    my $NewCol = $n->chooseColor() or return;
 					    $self->{FAM}{AFF_COLOR}{$fam}{$nr} = $NewCol;
-					    $lb->configure(-bg => $NewCol);
+					    $label->configure(-bg => $NewCol);
 					    $opt->focusForce;
 				    })->pack(qw/-side left/);
 	}
 
 	for my $nr (sort { $a <=> $b } keys %{$c{LC}}) {
 		my $f = $p6_f1->Frame->grid(-row => $nr, -column => 1, -sticky => 'w');
-		my $lb = $f->Label(-width => 3, -bg => $self->{FAM}{$c{LC}{$nr}[0]}{$fam})->pack(-side => 'left', -padx => 10);
+		my $label = $f->Label(-width => 3, -bg => $self->{FAM}{$c{LC}{$nr}[0]}{$fam})->pack(-side => 'left', -padx => 10);
 		my $cb = $f->Button(-text => $c{LC}{$nr}[1], -width => 20, -height => 1,
 				    -command => sub {
 					    my $NewCol = $n->chooseColor() or return;
 					    $self->{FAM}{$c{LC}{$nr}[0]}{$fam} = $NewCol;
-					    $lb->configure(-bg => $NewCol);
+					    $label->configure(-bg => $NewCol);
 					    $opt->focusForce;
 				    })->pack(qw/-side left/);
 
@@ -5385,12 +5385,12 @@ sub BatchExport {
 	my $file = SelectSaveFile(-initialfile => 'pedigree') or return;
 	my $curr_fam = $self->{GLOB}{CURR_FAM};
 	for my $fam (nsort keys %{$self->{FAM}{PED_ORG}}) {
-		my $file = File::Spec->catfile(dirname($file), basename($file) . '_' . $fam . '.' . $suffix);
+		my $filename = File::Spec->catfile(dirname($file), basename($file) . '_' . $fam . '.' . $suffix);
 		unless ($self->{FAM}{MATRIX}{$fam}) {
 			$self->{GLOB}{CURR_FAM} = $fam;
 			DoIt();
 		}
-		DrawOrExportCanvas(-modus => $suffix, -fam => $fam, -file => $file);
+		DrawOrExportCanvas(-modus => $suffix, -fam => $fam, -file => $filename);
 	}
 	$self->{GLOB}{CURR_FAM} = $curr_fam if $curr_fam;
 }
@@ -5455,11 +5455,11 @@ sub AdjustView {
 		### just shift to middle point of the drawing without zoom
 		$c->configure(-scrollregion => [ $bx[0] - $scrx, $bx[1] - $scry, $bx[2] + $scrx, $bx[3] + $scry ]);
 
-		my @xv = $c->xview;
-		my @yv = $c->yview;
+		my @xview = $c->xview;
+		my @yview = $c->yview;
 
-		$c->xviewMoveto((1 - ($xv[1] - $xv[0])) / 2);
-		$c->yviewMoveto((1 - ($yv[1] - $yv[0])) / 2);
+		$c->xviewMoveto((1 - ($xview[1] - $xview[0])) / 2);
+		$c->yviewMoveto((1 - ($yview[1] - $yview[0])) / 2);
 
 	} elsif ($arg{-fit} eq 'center') {
 		### center and fit the view
@@ -5475,26 +5475,26 @@ sub AdjustView {
 		RedrawPed();
 
 		### adapt canvas scroll region to fit the drawing bounding box and center scrollbars
-		my @bx = $canvas->bbox('all');
+		my @bbox = $canvas->bbox('all');
 
-		my $xbd = $bx[2] - $bx[0];
-		my $ybd = $bx[3] - $bx[1];
+		my $xbox = $bbox[2] - $bbox[0];
+		my $ybox = $bbox[3] - $bbox[1];
 
-		my ($scrx, $scry) = ($xbd, $ybd);
-		if ($scrx < (1.5 * $wx)) {
-			$scrx = 1.5 * $wx;
+		my ($scnx, $scny) = ($xbox, $ybox);
+		if ($scnx < (1.5 * $wx)) {
+			$scnx = 1.5 * $wx;
 		}
-		if ($scry < (1.5 * $wy)) {
-			$scry = 1.5 * $wy;
+		if ($scny < (1.5 * $wy)) {
+			$scny = 1.5 * $wy;
 		}
 
-		$c->configure(-scrollregion => [ $bx[0] - $scrx, $bx[1] - $scry, $bx[2] + $scrx, $bx[3] + $scry ]);
+		$c->configure(-scrollregion => [ $bbox[0] - $scnx, $bbox[1] - $scny, $bbox[2] + $scnx, $bbox[3] + $scny ]);
 
-		my @xv = $c->xview;
-		my @yv = $c->yview;
+		my @xview = $c->xview;
+		my @yview = $c->yview;
 
-		$c->xviewMoveto((1 - ($xv[1] - $xv[0])) / 2);
-		$c->yviewMoveto((1 - ($yv[1] - $yv[0])) / 2);
+		$c->xviewMoveto((1 - ($xview[1] - $xview[0])) / 2);
+		$c->yviewMoveto((1 - ($yview[1] - $yview[0])) / 2);
 
 	} elsif ($arg{-fit} eq 'to_button') {
 		### zooming to cursor position
@@ -5503,29 +5503,29 @@ sub AdjustView {
 		my $y = $self->{GLOB}{Y_CANVAS};
 
 		### center canvas scrollregion to that coordinates
-		my @sc = ($x - $scrx, $y - $scry, $x + $scrx, $y + $scry);
-		$c->configure(-scrollregion => \@sc);
+		my @scn = ($x - $scrx, $y - $scry, $x + $scrx, $y + $scry);
+		$c->configure(-scrollregion => \@scn);
 
-		my @xv = $c->xview;
-		my @yv = $c->yview;
+		my @xview = $c->xview;
+		my @yview = $c->yview;
 
-		my $xvd = $xv[1] - $xv[0];
-		my $yvd = $yv[1] - $yv[0];
+		my $xviewd = $xview[1] - $xview[0];
+		my $yviewd = $yview[1] - $yview[0];
 
-		my $xsd = $sc[2] - $sc[0];
-		my $ysd = $sc[3] - $sc[1];
+		my $xscnd = $scn[2] - $scn[0];
+		my $yscnd = $scn[3] - $scn[1];
 
-		my $wx = $xsd * $xvd;
-		my $wy = $ysd * $yvd;
+		my $wdx = $xscnd * $xviewd;
+		my $wdy = $yscnd * $yviewd;
 
 		my $x_diff = $x - $c->canvasx($self->{GLOB}{X_SCREEN});
 		my $y_diff = $y - $c->canvasy($self->{GLOB}{Y_SCREEN});
 
-		my $prop_x = 1 - $xvd;
-		my $prop_y = 1 - $yvd;
+		my $prop_x = 1 - $xviewd;
+		my $prop_y = 1 - $yviewd;
 
-		my $moveto_x = $xv[0] + (($prop_x * $x_diff) / ($xsd - $wx));
-		my $moveto_y = $yv[0] + (($prop_y * $y_diff) / ($ysd - $wy));
+		my $moveto_x = $xview[0] + (($prop_x * $x_diff) / ($xscnd - $wdx));
+		my $moveto_y = $yview[0] + (($prop_y * $y_diff) / ($yscnd - $wdy));
 
 		$c->xviewMoveto($moveto_x);
 		$c->yviewMoveto($moveto_y);
@@ -5679,9 +5679,9 @@ sub DrawOrExportCanvas {
 		}
 		print FH "$head\n";
 
-		for my $fam (@fams) {
+		for my $family (@fams) {
 			my %ped;
-			for my $r (@{$self->{FAM}{PED_ORG}{$fam}}) {
+			for my $r (@{$self->{FAM}{PED_ORG}{$family}}) {
 				next unless $r;
 				@_ = @$r;
 				for (@_[0 .. 17]) {
@@ -5692,7 +5692,7 @@ sub DrawOrExportCanvas {
 			for my $pid (nsort keys %ped) {
 				@_ = @{$ped{$pid}};
 				shift @_;
-				$_ = join "\t", ($fam, $pid, @_);
+				$_ = join "\t", ($family, $pid, @_);
 				print FH "$_\n";
 			}
 		}
@@ -6034,11 +6034,11 @@ sub DrawOrExportCanvas {
 			my $d2 = $self->{FAM}{ARROW_DIST2}{$fam} * $z;
 			my $d3 = $self->{FAM}{ARROW_DIST3}{$fam} * $z;
 
-			my $b = sqrt(($d2 * $d2) + ($d3 * $d3));
-			my $c = sqrt(($d3 * $d3) + (($d2 - $d1) * ($d2 - $d1)));
-			my ($aq, $bq, $cq) = ($d1 * $d1, $b * $b, $c * $c);
-			my $alpha2 = 45 - rad2deg(acos(($aq + $bq - $cq) / (2 * $d1 * $b)));
-			my $x3 = cos(deg2rad($alpha2)) * $b;
+			my $u = sqrt(($d2 * $d2) + ($d3 * $d3));
+			my $v = sqrt(($d3 * $d3) + (($d2 - $d1) * ($d2 - $d1)));
+			my ($aq, $bq, $cq) = ($d1 * $d1, $u * $u, $v * $v);
+			my $alpha2 = 45 - rad2deg(acos(($aq + $bq - $cq) / (2 * $d1 * $u)));
+			my $x3 = cos(deg2rad($alpha2)) * $u;
 			my $y3 = sqrt($bq - ($x3 * $x3));
 			my $x4 = sqrt(($d1 * $d1) / 2);
 
@@ -6268,10 +6268,10 @@ sub SetSymbols {
 			}
 
 			### Individual identifier and case information
-			for my $col (1 .. 5) {
-				if ($self->{FAM}{CASE_INFO_SHOW}{$fam}{$col} && $ci->{COL_TO_NAME}{$col}) {
-					my $yp = ($cy + $sz) * $z + $f1->{SIZE} * $z + ($col - 1) * $f1->{SIZE} * $z;
-					my $name = $ci->{COL_TO_NAME}{$col};
+			for my $column (1 .. 5) {
+				if ($self->{FAM}{CASE_INFO_SHOW}{$fam}{$column} && $ci->{COL_TO_NAME}{$column}) {
+					my $yp = ($cy + $sz) * $z + $f1->{SIZE} * $z + ($column - 1) * $f1->{SIZE} * $z;
+					my $name = $ci->{COL_TO_NAME}{$column};
 					next unless defined $ci->{PID}{$p}{$name};
 #					my $y_pid = sprintf("%0.0f", $yp + ($f1->{SIZE} * $z) / 2);
 
@@ -6830,9 +6830,9 @@ sub TranslateCoupleGroup {
 	while ($flag) {
 		$flag = 0;
 		for my $p (keys %P) {
-			for my $c (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
-				unless ($P{$c} || $self->{FAM}{CHILDREN}{$fam}{$p}{$c}) {
-					$P{$c} = 1;
+			for my $couple (keys %{$self->{FAM}{COUPLE}{$fam}{$p}}) {
+				unless ($P{$couple} || $self->{FAM}{CHILDREN}{$fam}{$p}{$couple}) {
+					$P{$couple} = 1;
 					$flag = 1;
 				}
 			}
@@ -6874,17 +6874,17 @@ sub TranslateCoupleGroup {
 		### from @S derived order of couples for example ([ p1, p3 ], [ p2, p3 ], [ p3, p4 ])
 		### list @S is screened for most right hand free mate
 		my (@D1, %SAVE);
-		for my $p1 (@S) {
-			for my $p2 (@S) {
-				next if $p1 eq $p2;
-				if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$p1}{$p2} && !$SAVE{$p1}{$p2} && !$SAVE{$p2}{$p1}) {
-					my $str = join "==", nsort($p1, $p2);
+		for my $pn1 (@S) {
+			for my $pn2 (@S) {
+				next if $pn1 eq $pn2;
+				if ($self->{FAM}{CHILDREN_COUPLE}{$fam}{$pn1}{$pn2} && !$SAVE{$pn1}{$pn2} && !$SAVE{$pn2}{$pn1}) {
+					my $str = join "==", nsort($pn1, $pn2);
 					my $last_i = $#D1 + 1;
 					if ($str eq $couple_from) {
-						return @{$D2[$last_i]}
+						return @{$D2[$last_i]};
 					}
-					push @D1, [ $p1, $p2 ];
-					$SAVE{$p1}{$p2} = 1;
+					push @D1, [ $pn1, $pn2 ];
+					$SAVE{$pn1}{$pn2} = 1;
 				}
 			}
 		}
@@ -7217,12 +7217,12 @@ sub SetLines {
 						my $ym = sprintf("%1.3f", ($co[1] + $co[3]) / 2);
 						my $xd = sprintf("%0.2f", $x3 - $xm) + 0;
 						my $yd = ($ym - $y4);
-						my $s = $sz / 2 * $z;
-						my ($xp, $yp) = (0, $s);
+						my $sc = $sz / 2 * $z;
+						my ($xp, $yp) = (0, $sc);
 						### calculate new start point for the angular lines at circle border
 						if ($xd) {
 							my $c = sqrt(($xd * $xd) + ($yd * $yd));
-							my $f = $c / $s;
+							my $f = $c / $sc;
 							$xp = $xd / $f;
 							$yp = $yd / $f;
 						}
@@ -7328,12 +7328,12 @@ sub SetLines {
 					my $ym = sprintf("%1.3f", ($co[1] + $co[3]) / 2);
 					my $xd = sprintf("%0.2f", $x3 - $xm) + 0;
 					my $yd = ($ym - $y4);
-					my $s = $sz / 2 * $z;
-					my ($xp, $yp) = (0, $s);
+					my $sc = $sz / 2 * $z;
+					my ($xp, $yp) = (0, $sc);
 					### calculate new start point for the angular lines at circle border
 					if ($xd) {
 						my $c = sqrt(($xd * $xd) + ($yd * $yd));
-						my $f = $c / $s;
+						my $f = $c / $sc;
 						$xp = $xd / $f;
 						$yp = $yd / $f;
 					}
