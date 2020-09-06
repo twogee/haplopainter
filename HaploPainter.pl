@@ -1172,7 +1172,7 @@ sub AddMateAndOffspring {
 	my $d = $mw->DialogBox(-title => 'Add mate and offspring', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 
-	my ($mate, $child, $gender) = ('', '', 0);
+	my ($mate, $child) = ('', '');
 
 	$f1->Label(-text => 'Name of mate')->grid(-row => 0, -column => 0, -sticky => 'e');
 	$f1->Entry(-textvariable => \$mate, -width => 20)->grid(-row => 0, -column => 1, -sticky => 'w');
@@ -1249,7 +1249,6 @@ sub AddSiblings {
 	my $d = $mw->DialogBox(-title => 'Add siblings', -buttons => [ qw/Ok Cancel/ ]);
 	my $f1 = $d->Frame(-relief => 'groove', -borderwidth => 2)->pack(-padx => 5, -pady => 5, -expand => 1, -fill => 'both', -anchor => 'w');
 
-	my $gender;
 	for (1 .. 8) {
 		$pid_new->{$_}{GENDER} = 1;
 		$f1->Label(-text => "Name of sibling #$_")->grid(-row => $_ - 1, -column => 0, -sticky => 'e');
@@ -2296,7 +2295,6 @@ sub FindLoops {
 	my $countl = 0;
 	my %B;
 	for my $loop (keys %D) {
-		my %start_nodes;
 		$countl++;
 		my @loop_list = @{$D{$loop}};
 		#print Dumper(\@loop_list);
@@ -2636,7 +2634,7 @@ sub ReadHaplo {
 				}
 				next unless $found_fam;
 				if (/^M /) {
-					my ($M, $z, $P) = ($_, $file[++$i], $file[++$i]);
+					my ($M, $P) = ($_, $file[++$i]);
 					my ($pid, $haplo);
 					if (($pid, $haplo) = $M =~ /^M (\S+).+\s{7}([0-9@].+[0-9@])\s+$/) {
 						$pid = $self->{FAM}{PID2PIDNEW}{$fam}{$pid} or next;
@@ -4003,7 +4001,7 @@ sub BuildStruk {
 						for my $child (keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$p->[0]}{$p->[1]}}) {
 							my $r = SetCouples($fam, $child);
 							if (ref $r) {
-								my $c = join '==', nsort @{$r->[0]};
+#								my $c = join '==', nsort @{$r->[0]};
 
 								my $founder = 0;
 								for my $coupl (@{$r->[0]}) {
@@ -4069,8 +4067,8 @@ sub BuildMatrix {
 	$self->{FAM}{MATRIX}{$fam} = {};
 	$self->{FAM}{PID_SAVE}{$fam} = {};
 	my $mt = $self->{FAM}{MATRIX}{$fam};
-	my $x = my $x0 = 0;
-	my $y = my $y0 = 0;
+	my $x = 0;
+	my $y = 0;
 	my $xs	= $self->{FAM}{X_SPACE}{$fam};
 	my $ys	= $self->{FAM}{Y_SPACE}{$fam};
 	my %save;
@@ -4096,7 +4094,7 @@ sub BuildMatrix {
 				}
 			}
 		}
-		$x = $x0;
+		$x = 0;
 		$y += $ys;
 	}
 }
@@ -5311,7 +5309,7 @@ sub Configuration {
 sub ChooseFont {
 #===============
 	my ($opt, $fam, $k, $lab) = @_;
-	my ($a, $c, $cb1);
+	my $cb1;
 	my $fo = $self->{FAM}{$k}{$fam};
 	$opt->grabRelease;
 	my $tl = $opt->Toplevel();
@@ -6276,7 +6274,7 @@ sub SetSymbols {
 					my $yp = ($cy + $sz) * $z + $f1->{SIZE} * $z + ($col - 1) * $f1->{SIZE} * $z;
 					my $name = $ci->{COL_TO_NAME}{$col};
 					next unless defined $ci->{PID}{$p}{$name};
-					my $y_pid = sprintf("%0.0f", $yp + ($f1->{SIZE} * $z) / 2);
+#					my $y_pid = sprintf("%0.0f", $yp + ($f1->{SIZE} * $z) / 2);
 
 					push @{$de->{CASE_INFO}}, [
 								   $cx * $z, $yp,
@@ -6748,8 +6746,6 @@ sub AlignMatrix {
 	my $s = $self->{FAM}{STRUK}{$fam};
 	my $m = $self->{FAM}{MATRIX}{$fam};
 	my $cc = 1;
-	my $cd = 0;
-	my $ok = 1;
 	my $max_x = $self->{FAM}{X_SPACE}{$fam} * scalar keys %{$self->{FAM}{PID}{$fam}};
 
 	for my $Y (sort { $b <=> $a } keys %{$m->{YX2P}}) {
@@ -6765,8 +6761,7 @@ sub AlignMatrix {
 			### Geschwister von $P einschliesslich $P
 			my @s = keys %{$self->{FAM}{CHILDREN_COUPLE}{$fam}{$fa}{$mo}};
 
-			my $str;
-			$str .= $_ for @s;
+			my $str = join('', @s);
 			next if $Save{$str};
 			$Save{$str} = 1;
 
@@ -6825,7 +6820,6 @@ sub TranslateCoupleGroup {
 	my ($fam, $modus, $p1, $p2) = @_;
 	my $m = $self->{FAM}{MATRIX}{$fam};
 	my $c = $self->{FAM}{COUPLE}{$fam};
-	my $cg = {};
 	my $couple_from = join '==', nsort($p1, $p2);
 
 	## find everybody joined in couple group
@@ -6955,7 +6949,6 @@ sub ShiftRow {
 sub SetLines {
 #=============
 	my $fam = shift || $self->{GLOB}{CURR_FAM};
-	my $c = $canvas;
 	my $z = $self->{FAM}{ZOOM}{$fam};
 	my $d = $self->{FAM}{LINES}{$fam} = {};
 	my $s = $self->{FAM}{STRUK}{$fam};
@@ -7143,7 +7136,7 @@ sub SetLines {
 		}
 
 		if (scalar @children > 1) {
-			my (@x, $yc, $y1, @cy, %ch, %prtg);
+			my (@cy, %ch);
 			my $r = $d->{SIB}{$parent_node} = [];
 
 			### sort Y-coordinates
