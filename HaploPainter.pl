@@ -1889,10 +1889,10 @@ sub MouseB1Click {
 
 	if ($self->{GLOB}{STATUS} == 1) {
 		### STATUS = 1 --> zoom in
-		Zoom($c, 1, 1, $x, $y);
+		Zoom($c, 1, 1);
 	} elsif ($self->{GLOB}{STATUS} == 2) {
 		### STATUS = 2 --> zoom out
-		Zoom($c, -1, 1, $x, $y);
+		Zoom($c, -1, 1);
 	}
 }
 
@@ -4498,7 +4498,7 @@ sub Zoom {
 #=========
 	shift if exists($_[0]) && ref($_[0]);
 	my $fam = $self->{GLOB}{CURR_FAM} or return;
-	my ($ori, $flag, $x_screen, $y_screen) = @_;
+	my ($ori, $flag) = @_;
 
 	if ($ori == 1) {
 		for ($self->{FAM}{ZOOM}{$fam}, $self->{GLOB}{X_CANVAS}, $self->{GLOB}{Y_CANVAS}) {
