@@ -49,7 +49,10 @@ my $param = {
 			       },
 	     GLOBAL_MAP_IMPORT => 0,
 	     HAPLOTYPE_FORMATS => {
-				   do { map { $_ => 1 } qw/allegro genehunter merlin simwalk/ }
+				   allegro => '.out',
+				   genehunter => '.dump',
+				   merlin => '.chr',
+				   simwalk => '.001'
 				  },
 	     LAST_CHANGE => '2015-04-25',
 	     MAP_FORMATS => {
@@ -4403,7 +4406,7 @@ sub ImportPedfile {
 	our $menubar;
 	my ($form, $f) = @_;
 	unless ($f) {
-		$f = SelectOpenFile() or return;
+		$f = SelectOpenFile(-filetypes => [ [ 'All files', '*' ] ]) or return;
 	}
 	ReadPed(-file => $f, -format => $form) or return;
 	($f) = fileparse($f, qr/\.[^.]*/);
@@ -4454,7 +4457,14 @@ sub ImportHaplofile {
 	return unless keys %{$self->{FAM}{PED_ORG}};
 	my ($format, $f) = @_;
 	unless ($f) {
-		$f = SelectOpenFile() or return;
+		$f = SelectOpenFile(-filetypes => [
+						   grep { $_->[1] eq $param->{HAPLOTYPE_FORMATS}{lc($format)} || $_->[1] eq '*' }
+						   [ 'Allegro Files', '.out' ],
+						   [ 'GeneHunter Files', '.dump' ],
+						   [ 'Merlin Files', '.chr' ],
+						   [ 'SimWalk Files', '.001' ],
+						   [ 'All files', '*' ]
+						  ]) or return;
 	}
 	ReadHaplo(-file => $f, -format => $format) or return;
 	DuplicateHaplotypes();
@@ -4464,7 +4474,7 @@ sub ImportHaplofile {
 sub ImportMapfile {
 #==================
 	return unless $self->{GLOB}{CURR_FAM};
-	my $f = SelectOpenFile() or return;
+	my $f = SelectOpenFile(-filetypes => [ [ 'All files', '*' ] ]) or return;
 	ReadMap(-file => $f, -format => shift) or return;
 	RedrawPed();
 	AdjustView();
