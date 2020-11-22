@@ -54,7 +54,7 @@ my $param = {
 				   merlin => '.chr',
 				   simwalk => '.001'
 				  },
-	     LAST_CHANGE => '2015-04-25',
+	     LAST_CHANGE => '2020-11-22',
 	     MAP_FORMATS => {
 			     do { map { $_ => 1 } (1..2) }
 			    },
@@ -100,7 +100,7 @@ my $def = {
 		    RESOLUTION_DPI  => 96,
 		    STATUS => 0,
 		    STRUK_MODE => 0,
-		    VERSION => '1.08'
+		    VERSION => '1.09'
 		   },
 	   FAM => {
 		   ADOPTED_SPACE1 => 5,
@@ -3117,14 +3117,14 @@ sub CheckPedigreesForErrors {
 
 	### define regex match for every column
 	my %check = (
-		LINKAGE => {
-			    0 => '.+',
-			    1 => '.+',
-			    2 => '.+',
-			    3 => '.+',
-			    4 => '[012xmfXMF]{1}',
-			    5 => '[0123456789xX]{1}'
-			   },
+		     LINKAGE => {
+				 0 => '.+',
+				 1 => '.+',
+				 2 => '.+',
+				 3 => '.+',
+				 4 => '[012xmfXMF]{1}',
+				 5 => '[0123456789xX]{1}'
+				},
 		     CSV => {
 			     6 => '[0nN1yY]{1}',
 			     7 => '[0nN1yY]{1}',
